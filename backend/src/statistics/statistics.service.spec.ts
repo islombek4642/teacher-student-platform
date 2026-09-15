@@ -1,6 +1,8 @@
+import { NotFoundException } from '@nestjs/common';
 import { StatisticsService } from './statistics.service';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { GroupsService } from '../groups/groups.service';
+import { TasksService } from '../tasks/tasks.service';
 
 describe('StatisticsService', () => {
   it('leaderboard ranks students by total score, highest first', async () => {
@@ -15,7 +17,8 @@ describe('StatisticsService', () => {
         ]),
       },
     } as unknown as PrismaService;
-    const service = new StatisticsService(prisma, groupsService);
+    const tasksService = {} as unknown as TasksService;
+    const service = new StatisticsService(prisma, groupsService, tasksService);
 
     const leaderboard = await service.leaderboard('t1', 'g1');
 
@@ -36,7 +39,8 @@ describe('StatisticsService', () => {
         ]),
       },
     } as unknown as PrismaService;
-    const service = new StatisticsService(prisma, groupsService);
+    const tasksService = {} as unknown as TasksService;
+    const service = new StatisticsService(prisma, groupsService, tasksService);
 
     const overview = await service.groupOverview('t1', 'g1');
 
@@ -47,9 +51,6 @@ describe('StatisticsService', () => {
 
   it('taskStats returns submission stats and the most missed question for a task the teacher owns', async () => {
     const prisma = {
-      task: {
-        findUnique: jest.fn().mockResolvedValue({ id: 'task1', teacherId: 't1' }),
-      },
       submission: {
         findMany: jest.fn().mockResolvedValue([
           {
@@ -69,7 +70,10 @@ describe('StatisticsService', () => {
       },
     } as unknown as PrismaService;
     const groupsService = {} as unknown as GroupsService;
-    const service = new StatisticsService(prisma, groupsService);
+    const tasksService = {
+      findOneOwned: jest.fn().mockResolvedValue({ id: 'task1', teacherId: 't1' }),
+    } as unknown as TasksService;
+    const service = new StatisticsService(prisma, groupsService, tasksService);
 
     const stats = await service.taskStats('t1', 'task1');
 
@@ -80,15 +84,15 @@ describe('StatisticsService', () => {
 
   it('taskStats returns zeroed stats for a task the teacher does not own', async () => {
     const prisma = {
-      task: {
-        findUnique: jest.fn().mockResolvedValue(null),
-      },
       submission: {
         findMany: jest.fn(),
       },
     } as unknown as PrismaService;
     const groupsService = {} as unknown as GroupsService;
-    const service = new StatisticsService(prisma, groupsService);
+    const tasksService = {
+      findOneOwned: jest.fn().mockRejectedValue(new NotFoundException({ errorCode: 'ERR_TASK_NOT_FOUND' })),
+    } as unknown as TasksService;
+    const service = new StatisticsService(prisma, groupsService, tasksService);
 
     const stats = await service.taskStats('t1', 'foreign-task');
 
@@ -108,7 +112,8 @@ describe('StatisticsService', () => {
       },
     } as unknown as PrismaService;
     const groupsService = {} as unknown as GroupsService;
-    const service = new StatisticsService(prisma, groupsService);
+    const tasksService = {} as unknown as TasksService;
+    const service = new StatisticsService(prisma, groupsService, tasksService);
 
     const progress = await service.studentProgress('student1');
 

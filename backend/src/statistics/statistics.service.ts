@@ -1,12 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { GroupsService } from '../groups/groups.service';
+import { TasksService } from '../tasks/tasks.service';
 
 @Injectable()
 export class StatisticsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly groupsService: GroupsService,
+    private readonly tasksService: TasksService,
   ) {}
 
   async groupOverview(teacherProfileId: string, groupId: string) {
@@ -46,9 +48,13 @@ export class StatisticsService {
   }
 
   async taskStats(teacherProfileId: string, taskId: string) {
-    const task = await this.prisma.task.findUnique({ where: { id: taskId } });
-    if (!task || task.teacherId !== teacherProfileId) {
-      return { submissionCount: 0, averageScore: 0, mostMissedQuestionIds: [] };
+    try {
+      await this.tasksService.findOneOwned(teacherProfileId, taskId);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return { submissionCount: 0, averageScore: 0, mostMissedQuestionIds: [] };
+      }
+      throw error;
     }
 
     const submissions = await this.prisma.submission.findMany({
