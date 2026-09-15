@@ -1,0 +1,69 @@
+import { INestApplication } from '@nestjs/common';
+import request from 'supertest';
+import { JwtService } from '@nestjs/jwt';
+import { Role } from '@prisma/client';
+import { createTestApp, resetDatabase } from './utils/test-app';
+import { PrismaService } from '../src/common/prisma/prisma.service';
+import { hashPassword } from '../src/auth/password.util';
+
+async function createTeacherWithGroup(prisma: PrismaService, username: string, groupName: string) {
+  const passwordHash = await hashPassword('0000');
+  const user = await prisma.user.create({ data: { username, passwordHash, role: Role.TEACHER } });
+  const profile = await prisma.teacherProfile.create({
+    data: { userId: user.id, firstName: 'T', lastName: username },
+  });
+  const group = await prisma.group.create({ data: { name: groupName, teacherId: profile.id } });
+  return { user, profile, group };
+}
+
+describe('Students (e2e)', () => {
+  let app: INestApplication;
+  let prisma: PrismaService;
+  let jwtService: JwtService;
+
+  beforeAll(async () => {
+    const testApp = await createTestApp();
+    app = testApp.app;
+    prisma = testApp.prisma;
+    jwtService = app.get(JwtService);
+  });
+
+  afterEach(async () => {
+    await resetDatabase(prisma);
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('creates a student in the caller own group and returns a one-time password', async () => {
+    const teacher = await createTeacherWithGroup(prisma, 'teacherA', '9-A');
+    const token = jwtService.sign({ sub: teacher.user.id, role: Role.TEACHER, profileId: teacher.profile.id });
+
+    const response = await request(app.getHttpServer())
+      .post(`/groups/${teacher.group.id}/students`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ username: 'student.anvar', firstName: 'Anvar', lastName: 'Qodirov' });
+
+    expect(response.status).toBe(201);
+    expect(response.body.temporaryPassword).toMatch(/^\d{4}$/);
+  });
+
+  it("rejects adding a student to another teacher's group", async () => {
+    const owner = await createTeacherWithGroup(prisma, 'teacherOwner', '9-A');
+    const intruder = await createTeacherWithGroup(prisma, 'teacherIntruder', '9-B');
+    const intruderToken = jwtService.sign({
+      sub: intruder.user.id,
+      role: Role.TEACHER,
+      profileId: intruder.profile.id,
+    });
+
+    const response = await request(app.getHttpServer())
+      .post(`/groups/${owner.group.id}/students`)
+      .set('Authorization', `Bearer ${intruderToken}`)
+      .send({ username: 'student.anvar', firstName: 'Anvar', lastName: 'Qodirov' });
+
+    expect(response.status).toBe(404);
+    expect(response.body.errorCode).toBe('ERR_GROUP_NOT_FOUND');
+  });
+});
