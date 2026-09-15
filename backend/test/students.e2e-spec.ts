@@ -102,4 +102,21 @@ describe('Students (e2e)', () => {
     expect(updated.status).toBe(200);
     expect(updated.body.firstName).toBe('New');
   });
+
+  it('lets the owning teacher reset a student\'s password', async () => {
+    const teacher = await createTeacherWithGroup(prisma, 'teacher-reset-pw', '9-A');
+    const token = jwtService.sign({ sub: teacher.user.id, role: Role.TEACHER, profileId: teacher.profile.id });
+    const created = await request(app.getHttpServer())
+      .post(`/groups/${teacher.group.id}/students`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ username: 'student.resetpw', firstName: 'A', lastName: 'B' });
+
+    const reset = await request(app.getHttpServer())
+      .post(`/students/${created.body.id}/reset-password`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(reset.status).toBe(201);
+    expect(reset.body.temporaryPassword).toMatch(/^\d{4}$/);
+    expect(reset.body.temporaryPassword).not.toBe(created.body.temporaryPassword);
+  });
 });

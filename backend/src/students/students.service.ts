@@ -65,6 +65,14 @@ export class StudentsService {
     });
   }
 
+  async resetPassword(teacherProfileId: string, studentProfileId: string) {
+    const student = await this.findOneOwned(teacherProfileId, studentProfileId);
+    const temporaryPassword = generateFourDigitPassword();
+    const passwordHash = await hashPassword(temporaryPassword);
+    await this.prisma.user.update({ where: { id: student.userId }, data: { passwordHash } });
+    return { temporaryPassword };
+  }
+
   async findAllInGroup(teacherProfileId: string, groupId: string) {
     await this.groupsService.findOneOwned(teacherProfileId, groupId);
     const students = await this.prisma.studentProfile.findMany({

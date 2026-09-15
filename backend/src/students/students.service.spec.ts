@@ -88,4 +88,24 @@ describe('StudentsService', () => {
       expect(result.firstName).toBe('New');
     });
   });
+
+  describe('resetPassword', () => {
+    it('generates a new one-time password and updates the hash', async () => {
+      const prisma = {
+        studentProfile: {
+          findUnique: jest.fn().mockResolvedValue({ id: 's1', userId: 'u1', group: { teacherId: 't1' } }),
+        },
+        user: { update: jest.fn().mockResolvedValue({}) },
+      } as unknown as PrismaService;
+      const service = new StudentsService(prisma, {} as GroupsService);
+
+      const result = await service.resetPassword('t1', 's1');
+
+      expect(result.temporaryPassword).toMatch(/^\d{4}$/);
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'u1' },
+        data: { passwordHash: expect.any(String) },
+      });
+    });
+  });
 });

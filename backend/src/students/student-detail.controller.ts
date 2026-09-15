@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -17,5 +17,10 @@ export class StudentDetailController {
   @Patch(':id')
   update(@CurrentUser() user: JwtPayload, @Param('id') id: string, @Body() dto: UpdateStudentDto) {
     return this.studentsService.update(user.profileId!, id, dto);
+  }
+
+  @Post(':id/reset-password')
+  resetPassword(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    return this.studentsService.resetPassword(user.profileId!, id);
   }
 }
