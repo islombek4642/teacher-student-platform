@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAssignedTasks, useSubmitTask } from './api/student-tasks.api';
 import { SubmissionResult } from './SubmissionResult';
 
@@ -13,7 +14,7 @@ export function TaskSubmissionPage() {
   const { data: tasks } = useAssignedTasks();
   const task = tasks?.find((t) => t.id === taskId);
   const { mutate, data: submission, isPending } = useSubmitTask(taskId!);
-  const { register, handleSubmit } = useForm<Record<string, string>>();
+  const { register, handleSubmit, setValue } = useForm<Record<string, string>>();
 
   if (!task) return null;
 
@@ -40,7 +41,22 @@ export function TaskSubmissionPage() {
           <Label htmlFor={question.id}>
             {index + 1}. {question.text}
           </Label>
-          <Input id={question.id} {...register(question.id)} placeholder={t('studentTasks.yourAnswer')} />
+          {question.type === 'MULTIPLE_CHOICE' ? (
+            <Select<string> onValueChange={(value) => setValue(question.id, value ?? '')}>
+              <SelectTrigger id={question.id} className="w-full">
+                <SelectValue placeholder={t('studentTasks.yourAnswer')} />
+              </SelectTrigger>
+              <SelectContent>
+                {question.options?.map((option) => (
+                  <SelectItem key={option} value={option}>
+                    {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <Input id={question.id} {...register(question.id)} placeholder={t('studentTasks.yourAnswer')} />
+          )}
         </div>
       ))}
       <Button type="submit" disabled={isPending}>

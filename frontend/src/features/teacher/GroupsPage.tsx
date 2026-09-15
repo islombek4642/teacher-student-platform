@@ -9,7 +9,7 @@ import { CreateGroupDialog } from './CreateGroupDialog';
 
 export function GroupsPage() {
   const { t } = useTranslation();
-  const { data: groups } = useGroups();
+  const { data: groups, isLoading } = useGroups();
   const { mutate: rename } = useRenameGroup();
   const { mutate: remove } = useDeleteGroup();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -30,52 +30,66 @@ export function GroupsPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {groups?.map((group) => (
-            <TableRow key={group.id}>
-              <TableCell>
-                {editingId === group.id ? (
-                  <Input value={editingName} onChange={(e) => setEditingName(e.target.value)} />
-                ) : (
-                  <Link to={`/teacher/groups/${group.id}`} className="underline">
-                    {group.name}
-                  </Link>
-                )}
-              </TableCell>
-              <TableCell className="flex gap-2">
-                {editingId === group.id ? (
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      if (!editingName.trim()) return;
-                      rename({ id: group.id, name: editingName }, { onSuccess: () => setEditingId(null) });
-                    }}
-                  >
-                    {t('groups.rename')}
-                  </Button>
-                ) : (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setEditingId(group.id);
-                      setEditingName(group.name);
-                    }}
-                  >
-                    {t('groups.rename')}
-                  </Button>
-                )}
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => {
-                    if (window.confirm(t('groups.confirmDelete'))) remove(group.id);
-                  }}
-                >
-                  {t('groups.delete')}
-                </Button>
+          {isLoading ? (
+            <TableRow>
+              <TableCell colSpan={2} className="text-center text-muted-foreground">
+                {t('groups.loading')}
               </TableCell>
             </TableRow>
-          ))}
+          ) : groups && groups.length > 0 ? (
+            groups.map((group) => (
+              <TableRow key={group.id}>
+                <TableCell>
+                  {editingId === group.id ? (
+                    <Input value={editingName} onChange={(e) => setEditingName(e.target.value)} />
+                  ) : (
+                    <Link to={`/teacher/groups/${group.id}`} className="underline">
+                      {group.name}
+                    </Link>
+                  )}
+                </TableCell>
+                <TableCell className="flex gap-2">
+                  {editingId === group.id ? (
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        if (!editingName.trim()) return;
+                        rename({ id: group.id, name: editingName }, { onSuccess: () => setEditingId(null) });
+                      }}
+                    >
+                      {t('groups.rename')}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setEditingId(group.id);
+                        setEditingName(group.name);
+                      }}
+                    >
+                      {t('groups.rename')}
+                    </Button>
+                  )}
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => {
+                      if (window.confirm(t('groups.confirmDelete'))) remove(group.id);
+                    }}
+                  >
+                    {t('groups.delete')}
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={2} className="text-center text-muted-foreground">
+                {t('groups.empty')}
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
       <CreateGroupDialog open={dialogOpen} onOpenChange={setDialogOpen} />

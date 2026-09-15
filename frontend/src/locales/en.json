@@ -28,7 +28,9 @@
     "rename": "Rename",
     "delete": "Delete",
     "confirmDelete": "Delete this group?",
-    "open": "Open"
+    "open": "Open",
+    "loading": "Loading...",
+    "empty": "No groups yet"
   },
   "students": {
     "title": "Students",

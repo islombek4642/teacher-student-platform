@@ -28,7 +28,9 @@
     "rename": "Nomini o'zgartirish",
     "delete": "O'chirish",
     "confirmDelete": "Bu guruhni o'chirmoqchimisiz?",
-    "open": "Ochish"
+    "open": "Ochish",
+    "loading": "Yuklanmoqda...",
+    "empty": "Hozircha guruhlar yo'q"
   },
   "students": {
     "title": "O'quvchilar",

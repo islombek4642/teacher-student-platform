@@ -33,7 +33,7 @@ function renderPage() {
 }
 
 describe('TaskSubmissionPage', () => {
-  it('renders one input per question when there is no submission yet', () => {
+  it('renders a plain text input for FILL_BLANK and a select for MULTIPLE_CHOICE', () => {
     vi.mocked(useAssignedTasks).mockReturnValue({ data: [task] } as unknown as ReturnType<typeof useAssignedTasks>);
     vi.mocked(useSubmitTask).mockReturnValue({ mutate: vi.fn(), data: undefined, isPending: false } as unknown as ReturnType<
       typeof useSubmitTask
@@ -41,7 +41,24 @@ describe('TaskSubmissionPage', () => {
 
     renderPage();
 
-    expect(screen.getAllByRole('textbox')).toHaveLength(2);
+    // FILL_BLANK still renders as a plain textbox.
+    expect(screen.getAllByRole('textbox')).toHaveLength(1);
+    // MULTIPLE_CHOICE renders as a select combobox, not a textbox.
+    expect(screen.getByRole('combobox')).toBeInTheDocument();
+  });
+
+  it('shows the MULTIPLE_CHOICE options as selectable choices, not free text', async () => {
+    vi.mocked(useAssignedTasks).mockReturnValue({ data: [task] } as unknown as ReturnType<typeof useAssignedTasks>);
+    vi.mocked(useSubmitTask).mockReturnValue({ mutate: vi.fn(), data: undefined, isPending: false } as unknown as ReturnType<
+      typeof useSubmitTask
+    >);
+
+    renderPage();
+
+    await userEvent.click(screen.getByRole('combobox'));
+
+    expect(await screen.findByRole('option', { name: 'A' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'B' })).toBeInTheDocument();
   });
 
   it('submits an answer for every question, including unanswered ones', async () => {
@@ -53,14 +70,36 @@ describe('TaskSubmissionPage', () => {
 
     renderPage();
 
-    const inputs = screen.getAllByRole('textbox');
-    await userEvent.type(inputs[0], 'goes');
-    // Second question deliberately left blank.
+    const input = screen.getByRole('textbox');
+    await userEvent.type(input, 'goes');
+    // MULTIPLE_CHOICE question deliberately left unanswered.
     await userEvent.click(screen.getByRole('button', { name: 'studentTasks.submit' }));
 
     expect(mutate).toHaveBeenCalledWith([
       { questionId: 'q1', answer: 'goes' },
       { questionId: 'q2', answer: '' },
+    ]);
+  });
+
+  it('includes the option selected via the MULTIPLE_CHOICE dropdown in the submit payload', async () => {
+    const mutate = vi.fn();
+    vi.mocked(useAssignedTasks).mockReturnValue({ data: [task] } as unknown as ReturnType<typeof useAssignedTasks>);
+    vi.mocked(useSubmitTask).mockReturnValue({ mutate, data: undefined, isPending: false } as unknown as ReturnType<
+      typeof useSubmitTask
+    >);
+
+    renderPage();
+
+    await userEvent.type(screen.getByRole('textbox'), 'goes');
+
+    await userEvent.click(screen.getByRole('combobox'));
+    await userEvent.click(await screen.findByRole('option', { name: 'B' }));
+
+    await userEvent.click(screen.getByRole('button', { name: 'studentTasks.submit' }));
+
+    expect(mutate).toHaveBeenCalledWith([
+      { questionId: 'q1', answer: 'goes' },
+      { questionId: 'q2', answer: 'B' },
     ]);
   });
 

@@ -29,8 +29,15 @@ export function CreateGroupDialog({ open, onOpenChange }: { open: boolean; onOpe
       },
     });
 
+  // Matches the pattern in CreateTeacherDialog/CreateStudentDialog: reset the
+  // form on close so a cancelled draft doesn't linger for the next open.
+  const handleOpenChange = (next: boolean) => {
+    if (!next) reset();
+    onOpenChange(next);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('groups.create')}</DialogTitle>
