@@ -20,7 +20,12 @@ describe('SubmissionsService', () => {
       submission: {
         findUnique: jest.fn().mockResolvedValue(null),
         create: jest.fn().mockImplementation(({ data }) =>
-          Promise.resolve({ id: 'submission-1', score: data.score, status: data.status }),
+          Promise.resolve({
+            id: 'submission-1',
+            score: data.score,
+            status: data.status,
+            answers: data.answers.create,
+          }),
         ),
       },
     } as unknown as PrismaService;
@@ -35,6 +40,8 @@ describe('SubmissionsService', () => {
 
     expect(result.score).toBe(1);
     expect(result.status).toBe(SubmissionStatus.COMPLETED);
+    expect(result.answers).toHaveLength(2);
+    expect(result.answers[0]).toMatchObject({ questionId: 'q1', isCorrect: true });
   });
 
   it('de-duplicates repeated questionIds so score cannot be inflated', async () => {

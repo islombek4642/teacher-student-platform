@@ -54,6 +54,7 @@ export class SubmissionsService {
           submittedAt: new Date(),
           answers: { create: answerRecords },
         },
+        include: { answers: true },
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {

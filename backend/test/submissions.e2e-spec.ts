@@ -66,6 +66,11 @@ describe('Submissions (e2e)', () => {
 
     expect(submitResponse.status).toBe(201);
     expect(submitResponse.body.score).toBe(1);
+    expect(submitResponse.body.answers).toHaveLength(1);
+    expect(submitResponse.body.answers[0]).toMatchObject({
+      questionId: task.questions[0].id,
+      isCorrect: true,
+    });
 
     const secondAttempt = await request(app.getHttpServer())
       .post(`/tasks/${task.id}/submit`)
