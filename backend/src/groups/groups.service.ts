@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { ERROR_CODES } from '../common/constants/error-codes.constant';
 import { CreateGroupDto } from './dto/create-group.dto';
@@ -21,5 +21,25 @@ export class GroupsService {
       throw new NotFoundException({ errorCode: ERROR_CODES.GROUP_NOT_FOUND, message: 'Group not found' });
     }
     return group;
+  }
+
+  async rename(teacherProfileId: string, groupId: string, name: string) {
+    await this.findOneOwned(teacherProfileId, groupId);
+    return this.prisma.group.update({ where: { id: groupId }, data: { name } });
+  }
+
+  async remove(teacherProfileId: string, groupId: string) {
+    await this.findOneOwned(teacherProfileId, groupId);
+    const [studentCount, taskCount] = await Promise.all([
+      this.prisma.studentProfile.count({ where: { groupId } }),
+      this.prisma.task.count({ where: { groupId } }),
+    ]);
+    if (studentCount > 0 || taskCount > 0) {
+      throw new ConflictException({
+        errorCode: ERROR_CODES.GROUP_HAS_DEPENDENTS,
+        message: 'Group still has students or tasks',
+      });
+    }
+    await this.prisma.group.delete({ where: { id: groupId } });
   }
 }

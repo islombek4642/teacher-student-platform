@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -7,6 +7,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtPayload } from '../auth/jwt-payload.interface';
 import { GroupsService } from './groups.service';
 import { CreateGroupDto } from './dto/create-group.dto';
+import { UpdateGroupDto } from './dto/update-group.dto';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.TEACHER)
@@ -22,5 +23,16 @@ export class GroupsController {
   @Get()
   findAll(@CurrentUser() user: JwtPayload) {
     return this.groupsService.findAllForTeacher(user.profileId!);
+  }
+
+  @Patch(':id')
+  rename(@CurrentUser() user: JwtPayload, @Param('id') id: string, @Body() dto: UpdateGroupDto) {
+    return this.groupsService.rename(user.profileId!, id, dto.name);
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  remove(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    return this.groupsService.remove(user.profileId!, id);
   }
 }
