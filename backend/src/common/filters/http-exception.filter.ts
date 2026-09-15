@@ -15,7 +15,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const errorCode =
       typeof body === 'object' && body !== null && 'errorCode' in body
         ? (body as { errorCode: string }).errorCode
-        : ERROR_CODES.VALIDATION_FAILED;
+        : ERROR_CODES.INTERNAL_ERROR;
 
     const message =
       exception instanceof Error ? exception.message : 'Unexpected error';
