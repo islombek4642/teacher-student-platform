@@ -13,6 +13,8 @@
     "status": "Holat",
     "active": "Faol",
     "disabled": "Faol emas",
+    "loading": "Yuklanmoqda...",
+    "empty": "Hozircha o'qituvchilar yo'q",
     "createdPasswordNotice": "Bir martalik parol: {{password}}. Uni nusxalab o'qituvchiga bering, keyin qayta ko'rsatilmaydi."
   },
   "errors": {

@@ -35,8 +35,16 @@ export function CreateTeacherDialog({ open, onOpenChange }: { open: boolean; onO
       },
     });
 
+  const handleOpenChange = (next: boolean) => {
+    if (!next) {
+      setCreatedPassword(null);
+      reset();
+    }
+    onOpenChange(next);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('teachers.create')}</DialogTitle>

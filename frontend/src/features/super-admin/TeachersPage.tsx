@@ -8,7 +8,7 @@ import { CreateTeacherDialog } from './CreateTeacherDialog';
 
 export function TeachersPage() {
   const { t } = useTranslation();
-  const { data: teachers } = useTeachers();
+  const { data: teachers, isLoading } = useTeachers();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   return (
@@ -27,18 +27,32 @@ export function TeachersPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {teachers?.map((teacher) => (
-            <TableRow key={teacher.id}>
-              <TableCell>{teacher.username}</TableCell>
-              <TableCell>{teacher.firstName}</TableCell>
-              <TableCell>{teacher.lastName}</TableCell>
-              <TableCell>
-                <Badge variant={teacher.isActive ? 'default' : 'secondary'}>
-                  {teacher.isActive ? t('teachers.active') : t('teachers.disabled')}
-                </Badge>
+          {isLoading ? (
+            <TableRow>
+              <TableCell colSpan={4} className="text-center text-muted-foreground">
+                {t('teachers.loading')}
               </TableCell>
             </TableRow>
-          ))}
+          ) : teachers && teachers.length > 0 ? (
+            teachers.map((teacher) => (
+              <TableRow key={teacher.id}>
+                <TableCell>{teacher.username}</TableCell>
+                <TableCell>{teacher.firstName}</TableCell>
+                <TableCell>{teacher.lastName}</TableCell>
+                <TableCell>
+                  <Badge variant={teacher.isActive ? 'default' : 'secondary'}>
+                    {teacher.isActive ? t('teachers.active') : t('teachers.disabled')}
+                  </Badge>
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={4} className="text-center text-muted-foreground">
+                {t('teachers.empty')}
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
       <CreateTeacherDialog open={dialogOpen} onOpenChange={setDialogOpen} />
