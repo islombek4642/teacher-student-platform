@@ -43,4 +43,11 @@ describe('POST /auth/login (e2e)', () => {
     expect(response.status).toBe(401);
     expect(response.body.errorCode).toBe('ERR_INVALID_CREDENTIALS');
   });
+
+  it('rejects an invalid body with ERR_VALIDATION_FAILED', async () => {
+    const response = await request(app.getHttpServer()).post('/auth/login').send({});
+
+    expect(response.status).toBe(400);
+    expect(response.body.errorCode).toBe('ERR_VALIDATION_FAILED');
+  });
 });
