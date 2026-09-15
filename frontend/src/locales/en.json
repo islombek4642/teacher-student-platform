@@ -77,7 +77,6 @@
     "open": "Start",
     "submit": "Submit",
     "yourAnswer": "Your answer",
-    "result": "Result",
     "score": "Score: {{score}} / {{total}}",
     "correct": "Correct",
     "incorrect": "Incorrect",
