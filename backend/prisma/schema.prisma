@@ -121,4 +121,6 @@ model Answer {
   question      Question   @relation(fields: [questionId], references: [id])
   studentAnswer String
   isCorrect     Boolean
+
+  @@unique([submissionId, questionId])
 }

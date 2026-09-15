@@ -31,13 +31,18 @@ export class SubmissionsService {
     }
 
     const questionsById = new Map(task.questions.map((q) => [q.id, q]));
+    const seenQuestionIds = new Set<string>();
     let score = 0;
-    const answerRecords = dto.answers.map((entry) => {
+    const answerRecords: { questionId: string; studentAnswer: string; isCorrect: boolean }[] = [];
+    for (const entry of dto.answers) {
+      if (seenQuestionIds.has(entry.questionId)) continue;
       const question = questionsById.get(entry.questionId);
-      const isCorrect = !!question && gradeAnswer(question, entry.answer);
+      if (!question) continue;
+      seenQuestionIds.add(entry.questionId);
+      const isCorrect = gradeAnswer(question, entry.answer);
       if (isCorrect) score += 1;
-      return { questionId: entry.questionId, studentAnswer: entry.answer, isCorrect };
-    });
+      answerRecords.push({ questionId: entry.questionId, studentAnswer: entry.answer, isCorrect });
+    }
 
     try {
       return await this.prisma.submission.create({

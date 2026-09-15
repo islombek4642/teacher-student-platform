@@ -37,6 +37,67 @@ describe('SubmissionsService', () => {
     expect(result.status).toBe(SubmissionStatus.COMPLETED);
   });
 
+  it('de-duplicates repeated questionIds so score cannot be inflated', async () => {
+    const createMock = jest.fn().mockImplementation(({ data }) =>
+      Promise.resolve({ id: 'submission-1', score: data.score, status: data.status }),
+    );
+    const prisma = {
+      studentProfile: { findUniqueOrThrow: jest.fn().mockResolvedValue({ id: 'student-1', groupId: 'g1' }) },
+      task: {
+        findFirst: jest.fn().mockResolvedValue({
+          id: 'task-1',
+          groupId: 'g1',
+          questions: [{ id: 'q1', type: QuestionType.FILL_BLANK, correctAnswer: 'goes' }],
+        }),
+      },
+      submission: {
+        findUnique: jest.fn().mockResolvedValue(null),
+        create: createMock,
+      },
+    } as unknown as PrismaService;
+    const service = new SubmissionsService(prisma);
+
+    const result = await service.submit('student-1', 'task-1', {
+      answers: [
+        { questionId: 'q1', answer: 'goes' },
+        { questionId: 'q1', answer: 'goes' },
+      ],
+    });
+
+    expect(result.score).toBe(1);
+    const createArgs = createMock.mock.calls[0][0];
+    expect(createArgs.data.answers.create).toHaveLength(1);
+  });
+
+  it('silently excludes an answer whose questionId does not belong to the task', async () => {
+    const createMock = jest.fn().mockImplementation(({ data }) =>
+      Promise.resolve({ id: 'submission-1', score: data.score, status: data.status }),
+    );
+    const prisma = {
+      studentProfile: { findUniqueOrThrow: jest.fn().mockResolvedValue({ id: 'student-1', groupId: 'g1' }) },
+      task: {
+        findFirst: jest.fn().mockResolvedValue({
+          id: 'task-1',
+          groupId: 'g1',
+          questions: [{ id: 'q1', type: QuestionType.FILL_BLANK, correctAnswer: 'goes' }],
+        }),
+      },
+      submission: {
+        findUnique: jest.fn().mockResolvedValue(null),
+        create: createMock,
+      },
+    } as unknown as PrismaService;
+    const service = new SubmissionsService(prisma);
+
+    const result = await service.submit('student-1', 'task-1', {
+      answers: [{ questionId: 'not-on-task', answer: 'goes' }],
+    });
+
+    expect(result.score).toBe(0);
+    const createArgs = createMock.mock.calls[0][0];
+    expect(createArgs.data.answers.create).toHaveLength(0);
+  });
+
   it('rejects submitting a task outside the student own group', async () => {
     const prisma = {
       studentProfile: { findUniqueOrThrow: jest.fn().mockResolvedValue({ id: 'student-1', groupId: 'g1' }) },

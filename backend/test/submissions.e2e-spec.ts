@@ -75,4 +75,47 @@ describe('Submissions (e2e)', () => {
     expect(secondAttempt.status).toBe(409);
     expect(secondAttempt.body.errorCode).toBe('ERR_SUBMISSION_ALREADY_COMPLETED');
   });
+
+  it('does not inflate score when the same correct questionId is repeated in one request', async () => {
+    const passwordHash = await hashPassword('0000');
+    const teacherUser = await prisma.user.create({ data: { username: 't2', passwordHash, role: Role.TEACHER } });
+    const teacherProfile = await prisma.teacherProfile.create({
+      data: { userId: teacherUser.id, firstName: 'T', lastName: '2' },
+    });
+    const group = await prisma.group.create({ data: { name: '9-B', teacherId: teacherProfile.id } });
+    const subject = await prisma.subject.findUniqueOrThrow({ where: { code: 'ENGLISH' } });
+    const task = await prisma.task.create({
+      data: {
+        title: 'Present Simple',
+        subjectId: subject.id,
+        groupId: group.id,
+        teacherId: teacherProfile.id,
+        questions: { create: [{ type: QuestionType.FILL_BLANK, text: 'He ___ to school.', correctAnswer: 'goes' }] },
+      },
+      include: { questions: true },
+    });
+    const studentUser = await prisma.user.create({ data: { username: 's2', passwordHash, role: Role.STUDENT } });
+    const studentProfile = await prisma.studentProfile.create({
+      data: { userId: studentUser.id, firstName: 'S', lastName: '2', groupId: group.id },
+    });
+    const studentToken = jwtService.sign({
+      sub: studentUser.id,
+      role: Role.STUDENT,
+      profileId: studentProfile.id,
+    });
+
+    const submitResponse = await request(app.getHttpServer())
+      .post(`/tasks/${task.id}/submit`)
+      .set('Authorization', `Bearer ${studentToken}`)
+      .send({
+        answers: [
+          { questionId: task.questions[0].id, answer: 'goes' },
+          { questionId: task.questions[0].id, answer: 'goes' },
+          { questionId: task.questions[0].id, answer: 'goes' },
+        ],
+      });
+
+    expect(submitResponse.status).toBe(201);
+    expect(submitResponse.body.score).toBe(1);
+  });
 });
