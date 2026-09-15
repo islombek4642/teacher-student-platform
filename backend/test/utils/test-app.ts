@@ -26,6 +26,8 @@ export async function createTestApp(): Promise<{ app: INestApplication; prisma: 
   return { app, prisma };
 }
 
+const SEEDED_SUPER_ADMIN_USERNAME = process.env.SUPER_ADMIN_USERNAME ?? 'superadmin';
+
 export async function resetDatabase(prisma: PrismaService) {
   await prisma.$transaction([
     prisma.answer.deleteMany(),
@@ -35,6 +37,10 @@ export async function resetDatabase(prisma: PrismaService) {
     prisma.studentProfile.deleteMany(),
     prisma.group.deleteMany(),
     prisma.teacherProfile.deleteMany(),
-    prisma.user.deleteMany({ where: { role: { not: 'SUPER_ADMIN' } } }),
+    prisma.user.deleteMany({
+      where: {
+        OR: [{ role: { not: 'SUPER_ADMIN' } }, { AND: [{ role: 'SUPER_ADMIN' }, { username: { not: SEEDED_SUPER_ADMIN_USERNAME } }] }],
+      },
+    }),
   ]);
 }
