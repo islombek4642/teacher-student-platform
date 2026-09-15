@@ -72,6 +72,19 @@
     "selectGroupPrompt": "Select a group to see its tasks",
     "empty": "No tasks in this group yet"
   },
+  "statistics": {
+    "title": "Statistics",
+    "selectGroup": "Select a group",
+    "studentCount": "Students",
+    "averageScore": "Average score",
+    "tasksCompleted": "Tasks completed",
+    "leaderboard": "Leaderboard",
+    "totalScore": "Total score",
+    "taskStatistics": "Task statistics",
+    "submissionCount": "Submissions",
+    "mostMissed": "Most-missed questions",
+    "noData": "No data yet"
+  },
   "errors": {
     "ERR_INVALID_CREDENTIALS": "Invalid username or password",
     "ERR_USER_NOT_FOUND": "User not found",

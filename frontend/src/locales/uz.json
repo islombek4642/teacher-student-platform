@@ -72,6 +72,19 @@
     "selectGroupPrompt": "Topshiriqlarni ko'rish uchun guruhni tanlang",
     "empty": "Bu guruhda hozircha topshiriqlar yo'q"
   },
+  "statistics": {
+    "title": "Statistika",
+    "selectGroup": "Guruhni tanlang",
+    "studentCount": "O'quvchilar soni",
+    "averageScore": "O'rtacha ball",
+    "tasksCompleted": "Bajarilgan topshiriqlar",
+    "leaderboard": "Reyting",
+    "totalScore": "Umumiy ball",
+    "taskStatistics": "Topshiriq statistikasi",
+    "submissionCount": "Topshirilganlar soni",
+    "mostMissed": "Eng ko'p xato qilingan savollar",
+    "noData": "Ma'lumot yo'q"
+  },
   "errors": {
     "ERR_INVALID_CREDENTIALS": "Login yoki parol noto'g'ri",
     "ERR_USER_NOT_FOUND": "Foydalanuvchi topilmadi",
