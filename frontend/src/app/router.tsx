@@ -2,8 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { LoginPage } from '@/auth/LoginPage';
 import { ProtectedRoute } from '@/auth/ProtectedRoute';
 import { AppLayout } from '@/components/shared/AppLayout';
-import { useAuth } from '@/auth/useAuth';
-import { roleHome } from '@/lib/role-home';
+import { RoleHomeRedirect } from '@/app/RoleHomeRedirect';
 import { TeachersPage } from '@/features/super-admin/TeachersPage';
 import { GroupsPage } from '@/features/teacher/GroupsPage';
 import { GroupDetailPage } from '@/features/teacher/GroupDetailPage';
@@ -13,11 +12,6 @@ import { TeacherStatisticsPage } from '@/features/teacher/TeacherStatisticsPage'
 import { AssignedTasksPage } from '@/features/student/AssignedTasksPage';
 import { TaskSubmissionPage } from '@/features/student/TaskSubmissionPage';
 import { StudentProgressPage } from '@/features/student/StudentProgressPage';
-
-function RoleHomeRedirect() {
-  const { payload } = useAuth();
-  return <Navigate to={payload ? roleHome(payload.role) : '/login'} replace />;
-}
 
 export function AppRouter() {
   return (
@@ -48,6 +42,8 @@ export function AppRouter() {
           <Route path="/student/progress" element={<StudentProgressPage />} />
         </Route>
       </Route>
+
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

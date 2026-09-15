@@ -7,14 +7,14 @@ import { useAuth } from '@/auth/useAuth';
 
 export function AppLayout() {
   const { t } = useTranslation();
-  const { username, logout } = useAuth();
+  const { username, payload, logout } = useAuth();
 
   return (
     <div className="min-h-screen bg-background">
       <header className="flex items-center justify-between border-b px-4 py-3">
         <span className="font-semibold">{t('app.title')}</span>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-muted-foreground">{username}</span>
+          <span className="text-sm text-muted-foreground">{username ?? payload?.sub}</span>
           <LanguageSwitcher />
           <Button variant="ghost" size="sm" onClick={logout}>
             <Icon icon="lucide:log-out" className="mr-2 h-4 w-4" />
