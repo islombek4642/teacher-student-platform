@@ -72,6 +72,18 @@
     "selectGroupPrompt": "Select a group to see its tasks",
     "empty": "No tasks in this group yet"
   },
+  "studentTasks": {
+    "title": "My tasks",
+    "open": "Start",
+    "submit": "Submit",
+    "yourAnswer": "Your answer",
+    "result": "Result",
+    "score": "Score: {{score}} / {{total}}",
+    "correct": "Correct",
+    "incorrect": "Incorrect",
+    "backToList": "Back to list",
+    "noTasks": "No tasks assigned yet"
+  },
   "statistics": {
     "title": "Statistics",
     "selectGroup": "Select a group",

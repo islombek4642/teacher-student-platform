@@ -72,6 +72,18 @@
     "selectGroupPrompt": "Topshiriqlarni ko'rish uchun guruhni tanlang",
     "empty": "Bu guruhda hozircha topshiriqlar yo'q"
   },
+  "studentTasks": {
+    "title": "Topshiriqlarim",
+    "open": "Bajarish",
+    "submit": "Yuborish",
+    "yourAnswer": "Javobingiz",
+    "result": "Natija",
+    "score": "Ball: {{score}} / {{total}}",
+    "correct": "To'g'ri",
+    "incorrect": "Noto'g'ri",
+    "backToList": "Ro'yxatga qaytish",
+    "noTasks": "Sizga biriktirilgan topshiriqlar yo'q"
+  },
   "statistics": {
     "title": "Statistika",
     "selectGroup": "Guruhni tanlang",
