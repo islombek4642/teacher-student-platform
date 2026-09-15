@@ -1,6 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useFieldArray, useForm } from 'react-hook-form';
+import {
+  useFieldArray,
+  useForm,
+  useWatch,
+  type Control,
+  type FieldErrors,
+  type UseFormRegister,
+  type UseFormSetValue,
+} from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +17,121 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useGroups } from './api/groups.api';
 import { useCreateTask } from './api/tasks.api';
 import { taskFormSchema, type TaskFormValues } from './task-form-schema';
+
+// Each question is its own component so it can call `useWatch` for its own
+// `type`/`options` fields. Reading those via the plain `watch()` accessor
+// directly inside a `fields.map(...)` loop in the parent does NOT reliably
+// re-render on `setValue` in this react-hook-form version, which silently
+// broke the type-switch UI (empirically verified). `useWatch` is the
+// documented react-hook-form pattern for isolating re-renders per
+// `useFieldArray` item, and it fixes that bug.
+function QuestionRow({
+  control,
+  register,
+  setValue,
+  errors,
+  index,
+  onRemove,
+}: {
+  control: Control<TaskFormValues>;
+  register: UseFormRegister<TaskFormValues>;
+  setValue: UseFormSetValue<TaskFormValues>;
+  errors: FieldErrors<TaskFormValues>;
+  index: number;
+  onRemove: () => void;
+}) {
+  const { t } = useTranslation();
+  const type = useWatch({ control, name: `questions.${index}.type` });
+  const options = useWatch({ control, name: `questions.${index}.options` as `questions.${number}.options` }) as
+    | string[]
+    | undefined;
+  const questionErrors = errors.questions?.[index];
+
+  return (
+    <div className="space-y-2 rounded border p-3">
+      <div className="flex items-center justify-between">
+        <Select<'FILL_BLANK' | 'MULTIPLE_CHOICE'>
+          defaultValue={type}
+          onValueChange={(value) =>
+            setValue(
+              `questions.${index}`,
+              value === 'MULTIPLE_CHOICE'
+                ? { type: 'MULTIPLE_CHOICE', text: '', options: ['', ''], correctAnswer: '' }
+                : { type: 'FILL_BLANK', text: '', correctAnswer: '' },
+            )
+          }
+        >
+          <SelectTrigger className="w-56">
+            <SelectValue placeholder={t('tasks.questionType')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="FILL_BLANK">{t('tasks.fillBlank')}</SelectItem>
+            <SelectItem value="MULTIPLE_CHOICE">{t('tasks.multipleChoice')}</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
+          {t('tasks.delete')}
+        </Button>
+      </div>
+
+      <Input placeholder={t('tasks.questionText')} {...register(`questions.${index}.text`)} />
+      {questionErrors?.text && <p className="text-sm text-destructive">{t(questionErrors.text.message!)}</p>}
+
+      {type === 'MULTIPLE_CHOICE' ? (
+        <>
+          {(options ?? []).map((_, optionIndex) => (
+            <div key={optionIndex} className="flex gap-2">
+              <Input
+                placeholder={`${t('tasks.options')} ${optionIndex + 1}`}
+                {...register(`questions.${index}.options.${optionIndex}`)}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  const current = options ?? [];
+                  setValue(
+                    `questions.${index}.options`,
+                    current.filter((_, i) => i !== optionIndex),
+                  );
+                }}
+              >
+                {t('tasks.delete')}
+              </Button>
+            </div>
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const current = options ?? [];
+              setValue(`questions.${index}.options`, [...current, '']);
+            }}
+          >
+            {t('tasks.addOption')}
+          </Button>
+          {(() => {
+            const optionsError = (questionErrors as { options?: unknown } | undefined)?.options as
+              | { message?: string }
+              | { message?: string }[]
+              | undefined;
+            const message = Array.isArray(optionsError)
+              ? optionsError.find((e) => e?.message)?.message
+              : optionsError?.message;
+            return message ? <p className="text-sm text-destructive">{t(message)}</p> : null;
+          })()}
+        </>
+      ) : null}
+
+      <Input placeholder={t('tasks.correctAnswer')} {...register(`questions.${index}.correctAnswer`)} />
+      {questionErrors?.correctAnswer && (
+        <p className="text-sm text-destructive">{t(questionErrors.correctAnswer.message!)}</p>
+      )}
+    </div>
+  );
+}
 
 export function NewTaskPage() {
   const { t } = useTranslation();
@@ -19,7 +142,6 @@ export function NewTaskPage() {
     register,
     control,
     handleSubmit,
-    watch,
     setValue,
     formState: { errors },
   } = useForm<TaskFormValues>({
@@ -77,64 +199,17 @@ export function NewTaskPage() {
         </div>
         {errors.questions?.message && <p className="text-sm text-destructive">{t(errors.questions.message)}</p>}
 
-        {fields.map((field, index) => {
-          const type = watch(`questions.${index}.type`);
-          return (
-            <div key={field.id} className="space-y-2 rounded border p-3">
-              <div className="flex items-center justify-between">
-                <Select<'FILL_BLANK' | 'MULTIPLE_CHOICE'>
-                  defaultValue={type}
-                  onValueChange={(value) =>
-                    setValue(
-                      `questions.${index}`,
-                      value === 'MULTIPLE_CHOICE'
-                        ? { type: 'MULTIPLE_CHOICE', text: '', options: ['', ''], correctAnswer: '' }
-                        : { type: 'FILL_BLANK', text: '', correctAnswer: '' },
-                    )
-                  }
-                >
-                  <SelectTrigger className="w-56">
-                    <SelectValue placeholder={t('tasks.questionType')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="FILL_BLANK">{t('tasks.fillBlank')}</SelectItem>
-                    <SelectItem value="MULTIPLE_CHOICE">{t('tasks.multipleChoice')}</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button type="button" variant="ghost" size="sm" onClick={() => remove(index)}>
-                  {t('tasks.delete')}
-                </Button>
-              </div>
-
-              <Input placeholder={t('tasks.questionText')} {...register(`questions.${index}.text`)} />
-
-              {type === 'MULTIPLE_CHOICE' ? (
-                <>
-                  {(watch(`questions.${index}.options`) ?? []).map((_, optionIndex) => (
-                    <Input
-                      key={optionIndex}
-                      placeholder={`${t('tasks.options')} ${optionIndex + 1}`}
-                      {...register(`questions.${index}.options.${optionIndex}`)}
-                    />
-                  ))}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const current = watch(`questions.${index}.options`) ?? [];
-                      setValue(`questions.${index}.options`, [...current, '']);
-                    }}
-                  >
-                    {t('tasks.addOption')}
-                  </Button>
-                </>
-              ) : null}
-
-              <Input placeholder={t('tasks.correctAnswer')} {...register(`questions.${index}.correctAnswer`)} />
-            </div>
-          );
-        })}
+        {fields.map((field, index) => (
+          <QuestionRow
+            key={field.id}
+            control={control}
+            register={register}
+            setValue={setValue}
+            errors={errors}
+            index={index}
+            onRemove={() => remove(index)}
+          />
+        ))}
       </div>
 
       <Button type="submit" disabled={isPending}>

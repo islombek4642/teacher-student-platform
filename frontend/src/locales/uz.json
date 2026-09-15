@@ -68,7 +68,9 @@
     "delete": "O'chirish",
     "confirmDelete": "Bu topshiriqni o'chirmoqchimisiz?",
     "cannotDeleteHasSubmissions": "Javoblar topshirilgan topshiriqni o'chirib bo'lmaydi",
-    "statistics": "Statistika"
+    "statistics": "Statistika",
+    "selectGroupPrompt": "Topshiriqlarni ko'rish uchun guruhni tanlang",
+    "empty": "Bu guruhda hozircha topshiriqlar yo'q"
   },
   "errors": {
     "ERR_INVALID_CREDENTIALS": "Login yoki parol noto'g'ri",

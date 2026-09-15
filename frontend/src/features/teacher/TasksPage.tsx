@@ -34,6 +34,10 @@ export function TasksPage() {
         </SelectContent>
       </Select>
 
+      {!selectedGroupId && <p className="text-muted-foreground">{t('tasks.selectGroupPrompt')}</p>}
+
+      {selectedGroupId && tasks?.length === 0 && <p className="text-muted-foreground">{t('tasks.empty')}</p>}
+
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {tasks?.map((task) => (
           <Card key={task.id}>

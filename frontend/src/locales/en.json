@@ -68,7 +68,9 @@
     "delete": "Delete",
     "confirmDelete": "Delete this task?",
     "cannotDeleteHasSubmissions": "A task with submissions can't be deleted",
-    "statistics": "Statistics"
+    "statistics": "Statistics",
+    "selectGroupPrompt": "Select a group to see its tasks",
+    "empty": "No tasks in this group yet"
   },
   "errors": {
     "ERR_INVALID_CREDENTIALS": "Invalid username or password",
