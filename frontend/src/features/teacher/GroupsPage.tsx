@@ -46,8 +46,8 @@ export function GroupsPage() {
                   <Button
                     size="sm"
                     onClick={() => {
-                      rename({ id: group.id, name: editingName });
-                      setEditingId(null);
+                      if (!editingName.trim()) return;
+                      rename({ id: group.id, name: editingName }, { onSuccess: () => setEditingId(null) });
                     }}
                   >
                     {t('groups.rename')}
