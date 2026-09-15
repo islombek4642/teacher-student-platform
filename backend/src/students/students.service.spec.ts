@@ -1,3 +1,5 @@
+import { ConflictException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { StudentsService } from './students.service';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { GroupsService } from '../groups/groups.service';
@@ -29,5 +31,28 @@ describe('StudentsService', () => {
 
     expect(groupsService.findOneOwned).toHaveBeenCalledWith('t1', 'g1');
     expect(result.temporaryPassword).toMatch(/^\d{4}$/);
+  });
+
+  it('throws ConflictException with ERR_USERNAME_TAKEN when the username already exists', async () => {
+    const groupsService = {
+      findOneOwned: jest.fn().mockResolvedValue({ id: 'g1', teacherId: 't1' }),
+    } as unknown as GroupsService;
+    const prisma = {
+      $transaction: jest.fn().mockRejectedValue(
+        new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+          code: 'P2002',
+          clientVersion: '5.22.0',
+        }),
+      ),
+    } as unknown as PrismaService;
+    const service = new StudentsService(prisma, groupsService);
+
+    expect.assertions(2);
+    try {
+      await service.create('t1', 'g1', { username: 'student.anvar', firstName: 'Anvar', lastName: 'Qodirov' });
+    } catch (error) {
+      expect(error).toBeInstanceOf(ConflictException);
+      expect((error as ConflictException).getResponse()).toMatchObject({ errorCode: 'ERR_USERNAME_TAKEN' });
+    }
   });
 });

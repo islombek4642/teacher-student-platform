@@ -66,4 +66,23 @@ describe('Students (e2e)', () => {
     expect(response.status).toBe(404);
     expect(response.body.errorCode).toBe('ERR_GROUP_NOT_FOUND');
   });
+
+  it('rejects creating a student with a username that is already taken', async () => {
+    const teacher = await createTeacherWithGroup(prisma, 'teacherDup', '9-C');
+    const token = jwtService.sign({ sub: teacher.user.id, role: Role.TEACHER, profileId: teacher.profile.id });
+
+    const first = await request(app.getHttpServer())
+      .post(`/groups/${teacher.group.id}/students`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ username: 'student.dup', firstName: 'Anvar', lastName: 'Qodirov' });
+    expect(first.status).toBe(201);
+
+    const second = await request(app.getHttpServer())
+      .post(`/groups/${teacher.group.id}/students`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ username: 'student.dup', firstName: 'Bek', lastName: 'Yusupov' });
+
+    expect(second.status).toBe(409);
+    expect(second.body.errorCode).toBe('ERR_USERNAME_TAKEN');
+  });
 });

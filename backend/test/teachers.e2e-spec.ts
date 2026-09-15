@@ -59,4 +59,26 @@ describe('Teachers (e2e)', () => {
 
     expect(response.status).toBe(403);
   });
+
+  it('rejects creating a teacher with a username that is already taken', async () => {
+    const passwordHash = await hashPassword('0000');
+    const admin = await prisma.user.create({
+      data: { username: 'admin-dup-teacher', passwordHash, role: Role.SUPER_ADMIN },
+    });
+    const token = jwtService.sign({ sub: admin.id, role: Role.SUPER_ADMIN, profileId: null });
+
+    const first = await request(app.getHttpServer())
+      .post('/teachers')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ username: 'teacher.dup', firstName: 'Ali', lastName: 'Vali' });
+    expect(first.status).toBe(201);
+
+    const second = await request(app.getHttpServer())
+      .post('/teachers')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ username: 'teacher.dup', firstName: 'Boris', lastName: 'Ivanov' });
+
+    expect(second.status).toBe(409);
+    expect(second.body.errorCode).toBe('ERR_USERNAME_TAKEN');
+  });
 });

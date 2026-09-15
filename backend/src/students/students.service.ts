@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { Role } from '@prisma/client';
+import { ConflictException, Injectable } from '@nestjs/common';
+import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { ERROR_CODES } from '../common/constants/error-codes.constant';
 import { GroupsService } from '../groups/groups.service';
 import { generateFourDigitPassword, hashPassword } from '../auth/password.util';
 import { CreateStudentDto } from './dto/create-student.dto';
@@ -18,23 +19,30 @@ export class StudentsService {
     const temporaryPassword = generateFourDigitPassword();
     const passwordHash = await hashPassword(temporaryPassword);
 
-    const { user, profile } = await this.prisma.$transaction(async (tx) => {
-      const user = await tx.user.create({
-        data: { username: dto.username, passwordHash, role: Role.STUDENT },
+    try {
+      const { user, profile } = await this.prisma.$transaction(async (tx) => {
+        const user = await tx.user.create({
+          data: { username: dto.username, passwordHash, role: Role.STUDENT },
+        });
+        const profile = await tx.studentProfile.create({
+          data: { userId: user.id, firstName: dto.firstName, lastName: dto.lastName, groupId },
+        });
+        return { user, profile };
       });
-      const profile = await tx.studentProfile.create({
-        data: { userId: user.id, firstName: dto.firstName, lastName: dto.lastName, groupId },
-      });
-      return { user, profile };
-    });
 
-    return {
-      id: profile.id,
-      username: user.username,
-      firstName: profile.firstName,
-      lastName: profile.lastName,
-      temporaryPassword,
-    };
+      return {
+        id: profile.id,
+        username: user.username,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        temporaryPassword,
+      };
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        throw new ConflictException({ errorCode: ERROR_CODES.USERNAME_TAKEN, message: 'Username already taken' });
+      }
+      throw error;
+    }
   }
 
   async findAllInGroup(teacherProfileId: string, groupId: string) {
