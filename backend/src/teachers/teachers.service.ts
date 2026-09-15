@@ -66,7 +66,13 @@ export class TeachersService {
     if (!profile) {
       throw new NotFoundException({ errorCode: ERROR_CODES.TEACHER_NOT_FOUND, message: 'Teacher not found' });
     }
-    await this.prisma.teacherProfile.delete({ where: { id: teacherProfileId } });
-    await this.prisma.user.delete({ where: { id: profile.userId } });
+    const groupCount = await this.prisma.group.count({ where: { teacherId: teacherProfileId } });
+    if (groupCount > 0) {
+      throw new ConflictException({ errorCode: ERROR_CODES.TEACHER_HAS_GROUPS, message: 'Teacher still has groups' });
+    }
+    await this.prisma.$transaction([
+      this.prisma.teacherProfile.delete({ where: { id: teacherProfileId } }),
+      this.prisma.user.delete({ where: { id: profile.userId } }),
+    ]);
   }
 }

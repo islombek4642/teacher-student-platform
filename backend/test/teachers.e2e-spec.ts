@@ -101,6 +101,14 @@ describe('Teachers (e2e)', () => {
 
     expect(disabled.status).toBe(200);
     expect(disabled.body.isActive).toBe(false);
+
+    const reenabled = await request(app.getHttpServer())
+      .patch(`/teachers/${created.body.id}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ isActive: true });
+
+    expect(reenabled.status).toBe(200);
+    expect(reenabled.body.isActive).toBe(true);
   });
 
   it('lets a SUPER_ADMIN delete a teacher', async () => {
@@ -125,5 +133,27 @@ describe('Teachers (e2e)', () => {
       .get('/teachers')
       .set('Authorization', `Bearer ${adminToken}`);
     expect(list.body.find((t: { id: string }) => t.id === created.body.id)).toBeUndefined();
+  });
+
+  it('rejects deleting a teacher that still owns groups', async () => {
+    const passwordHash = await hashPassword('0000');
+    const admin = await prisma.user.create({
+      data: { username: 'admin-delete-blocked', passwordHash, role: Role.SUPER_ADMIN },
+    });
+    const adminToken = jwtService.sign({ sub: admin.id, role: Role.SUPER_ADMIN, profileId: null });
+
+    const created = await request(app.getHttpServer())
+      .post('/teachers')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ username: 'teacher.with-group', firstName: 'A', lastName: 'B' });
+
+    await prisma.group.create({ data: { name: '9-A', teacherId: created.body.id } });
+
+    const deleted = await request(app.getHttpServer())
+      .delete(`/teachers/${created.body.id}`)
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(deleted.status).toBe(409);
+    expect(deleted.body.errorCode).toBe('ERR_TEACHER_HAS_GROUPS');
   });
 });
