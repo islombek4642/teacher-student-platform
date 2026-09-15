@@ -75,4 +75,56 @@ describe('Tasks (e2e)', () => {
     expect(assignedResponse.status).toBe(200);
     expect(assignedResponse.body[0].questions[0].correctAnswer).toBeUndefined();
   });
+
+  it('rejects a MULTIPLE_CHOICE question whose options do not include the correct answer', async () => {
+    const passwordHash = await hashPassword('0000');
+    const teacherUser = await prisma.user.create({ data: { username: 't2', passwordHash, role: Role.TEACHER } });
+    const teacherProfile = await prisma.teacherProfile.create({
+      data: { userId: teacherUser.id, firstName: 'T', lastName: '2' },
+    });
+    const group = await prisma.group.create({ data: { name: '9-B', teacherId: teacherProfile.id } });
+    const teacherToken = jwtService.sign({
+      sub: teacherUser.id,
+      role: Role.TEACHER,
+      profileId: teacherProfile.id,
+    });
+
+    const missingCorrectAnswer = await request(app.getHttpServer())
+      .post('/tasks')
+      .set('Authorization', `Bearer ${teacherToken}`)
+      .send({
+        subjectCode: 'ENGLISH',
+        groupId: group.id,
+        title: 'Grammar Quiz',
+        questions: [
+          {
+            type: QuestionType.MULTIPLE_CHOICE,
+            text: 'Pick the correct verb form.',
+            options: ['go', 'goes'],
+            correctAnswer: 'went',
+          },
+        ],
+      });
+    expect(missingCorrectAnswer.status).toBe(400);
+    expect(missingCorrectAnswer.body.errorCode).toBe('ERR_VALIDATION_FAILED');
+
+    const tooFewOptions = await request(app.getHttpServer())
+      .post('/tasks')
+      .set('Authorization', `Bearer ${teacherToken}`)
+      .send({
+        subjectCode: 'ENGLISH',
+        groupId: group.id,
+        title: 'Grammar Quiz 2',
+        questions: [
+          {
+            type: QuestionType.MULTIPLE_CHOICE,
+            text: 'Pick the correct verb form.',
+            options: ['goes'],
+            correctAnswer: 'goes',
+          },
+        ],
+      });
+    expect(tooFewOptions.status).toBe(400);
+    expect(tooFewOptions.body.errorCode).toBe('ERR_VALIDATION_FAILED');
+  });
 });
