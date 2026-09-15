@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { JwtService } from '@nestjs/jwt';
-import { Role } from '@prisma/client';
+import { QuestionType, Role, SubmissionStatus } from '@prisma/client';
 import { createTestApp, resetDatabase } from './utils/test-app';
 import { PrismaService } from '../src/common/prisma/prisma.service';
 import { hashPassword } from '../src/auth/password.util';
@@ -26,6 +26,11 @@ describe('Students (e2e)', () => {
     app = testApp.app;
     prisma = testApp.prisma;
     jwtService = app.get(JwtService);
+    await prisma.subject.upsert({
+      where: { code: 'ENGLISH' },
+      update: {},
+      create: { code: 'ENGLISH', name: 'English' },
+    });
   });
 
   afterEach(async () => {
@@ -118,5 +123,58 @@ describe('Students (e2e)', () => {
     expect(reset.status).toBe(201);
     expect(reset.body.temporaryPassword).toMatch(/^\d{4}$/);
     expect(reset.body.temporaryPassword).not.toBe(created.body.temporaryPassword);
+  });
+
+  it('lets the owning teacher remove a student with no submissions', async () => {
+    const teacher = await createTeacherWithGroup(prisma, 'teacher-remove-student', '9-A');
+    const token = jwtService.sign({ sub: teacher.user.id, role: Role.TEACHER, profileId: teacher.profile.id });
+    const created = await request(app.getHttpServer())
+      .post(`/groups/${teacher.group.id}/students`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ username: 'student.remove', firstName: 'A', lastName: 'B' });
+
+    const deleted = await request(app.getHttpServer())
+      .delete(`/groups/${teacher.group.id}/students/${created.body.id}`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(deleted.status).toBe(204);
+
+    const list = await request(app.getHttpServer())
+      .get(`/groups/${teacher.group.id}/students`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(list.body).toEqual([]);
+  });
+
+  it('rejects removing a student that still has submissions', async () => {
+    const teacher = await createTeacherWithGroup(prisma, 'teacher-remove-blocked', '9-A');
+    const token = jwtService.sign({ sub: teacher.user.id, role: Role.TEACHER, profileId: teacher.profile.id });
+    const subject = await prisma.subject.findUniqueOrThrow({ where: { code: 'ENGLISH' } });
+    const task = await prisma.task.create({
+      data: {
+        title: 'Present Simple',
+        subjectId: subject.id,
+        groupId: teacher.group.id,
+        teacherId: teacher.profile.id,
+        questions: { create: [{ type: QuestionType.FILL_BLANK, text: 'He ___ to school.', correctAnswer: 'goes' }] },
+      },
+    });
+    const created = await request(app.getHttpServer())
+      .post(`/groups/${teacher.group.id}/students`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ username: 'student.blocked', firstName: 'A', lastName: 'B' });
+    await prisma.submission.create({
+      data: {
+        taskId: task.id,
+        studentId: created.body.id,
+        status: SubmissionStatus.IN_PROGRESS,
+      },
+    });
+
+    const deleted = await request(app.getHttpServer())
+      .delete(`/groups/${teacher.group.id}/students/${created.body.id}`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(deleted.status).toBe(409);
+    expect(deleted.body.errorCode).toBe('ERR_STUDENT_HAS_SUBMISSIONS');
   });
 });

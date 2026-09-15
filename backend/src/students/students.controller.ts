@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, UseGuards } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -22,5 +22,11 @@ export class StudentsController {
   @Get()
   findAll(@CurrentUser() user: JwtPayload, @Param('groupId') groupId: string) {
     return this.studentsService.findAllInGroup(user.profileId!, groupId);
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  remove(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    return this.studentsService.remove(user.profileId!, id);
   }
 }

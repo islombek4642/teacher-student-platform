@@ -89,6 +89,42 @@ describe('StudentsService', () => {
     });
   });
 
+  describe('remove', () => {
+    it('deletes the student profile and user record when there are no submissions', async () => {
+      const prisma = {
+        studentProfile: {
+          findUnique: jest.fn().mockResolvedValue({ id: 's1', userId: 'u1', group: { teacherId: 't1' } }),
+          delete: jest.fn().mockResolvedValue({}),
+        },
+        user: { delete: jest.fn().mockResolvedValue({}) },
+        submission: { count: jest.fn().mockResolvedValue(0) },
+        $transaction: jest.fn().mockImplementation((ops: unknown[]) => Promise.all(ops)),
+      } as unknown as PrismaService;
+      const service = new StudentsService(prisma, {} as GroupsService);
+
+      await service.remove('t1', 's1');
+
+      expect(prisma.$transaction).toHaveBeenCalled();
+      expect(prisma.studentProfile.delete).toHaveBeenCalledWith({ where: { id: 's1' } });
+      expect(prisma.user.delete).toHaveBeenCalledWith({ where: { id: 'u1' } });
+    });
+
+    it('rejects deleting a student that has submissions', async () => {
+      const prisma = {
+        studentProfile: {
+          findUnique: jest.fn().mockResolvedValue({ id: 's1', userId: 'u1', group: { teacherId: 't1' } }),
+          delete: jest.fn(),
+        },
+        user: { delete: jest.fn() },
+        submission: { count: jest.fn().mockResolvedValue(3) },
+      } as unknown as PrismaService;
+      const service = new StudentsService(prisma, {} as GroupsService);
+
+      await expect(service.remove('t1', 's1')).rejects.toBeInstanceOf(ConflictException);
+      expect(prisma.studentProfile.delete).not.toHaveBeenCalled();
+    });
+  });
+
   describe('resetPassword', () => {
     it('generates a new one-time password and updates the hash', async () => {
       const prisma = {
