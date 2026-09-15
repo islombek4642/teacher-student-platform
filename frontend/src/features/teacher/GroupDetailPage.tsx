@@ -46,9 +46,23 @@ export function GroupDetailPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">{group?.name ?? t('students.title')}</h1>
-        <Button onClick={() => setDialogOpen(true)}>{t('students.create')}</Button>
+        <Button
+          onClick={() => {
+            setResetNotice(null);
+            setDialogOpen(true);
+          }}
+        >
+          {t('students.create')}
+        </Button>
       </div>
-      {resetNotice && <p className="rounded bg-muted p-2 text-sm">{resetNotice}</p>}
+      {resetNotice && (
+        <div className="flex items-center justify-between rounded bg-muted p-2 text-sm">
+          <span>{resetNotice}</span>
+          <Button variant="ghost" size="sm" onClick={() => setResetNotice(null)}>
+            ×
+          </Button>
+        </div>
+      )}
       <Table>
         <TableHeader>
           <TableRow>
@@ -93,6 +107,7 @@ export function GroupDetailPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => {
+                        setResetNotice(null);
                         setEditingId(student.id);
                         setEditingFirstName(student.firstName);
                         setEditingLastName(student.lastName);
