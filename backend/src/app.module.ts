@@ -7,6 +7,7 @@ import { TeachersModule } from './teachers/teachers.module';
 import { GroupsModule } from './groups/groups.module';
 import { StudentsModule } from './students/students.module';
 import { TasksModule } from './tasks/tasks.module';
+import { SubmissionsModule } from './submissions/submissions.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { TasksModule } from './tasks/tasks.module';
     GroupsModule,
     StudentsModule,
     TasksModule,
+    SubmissionsModule,
   ],
   controllers: [AppController],
 })
