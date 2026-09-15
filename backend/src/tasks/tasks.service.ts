@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { ERROR_CODES } from '../common/constants/error-codes.constant';
 import { GroupsService } from '../groups/groups.service';
@@ -44,6 +44,19 @@ export class TasksService {
       throw new NotFoundException({ errorCode: ERROR_CODES.TASK_NOT_FOUND, message: 'Task not found' });
     }
     return task;
+  }
+
+  async remove(teacherProfileId: string, taskId: string) {
+    await this.findOneOwned(teacherProfileId, taskId);
+    const submissionCount = await this.prisma.submission.count({ where: { taskId } });
+    if (submissionCount > 0) {
+      throw new ConflictException({
+        errorCode: ERROR_CODES.TASK_HAS_SUBMISSIONS,
+        message: 'Task already has submissions',
+      });
+    }
+    await this.prisma.question.deleteMany({ where: { taskId } });
+    await this.prisma.task.delete({ where: { id: taskId } });
   }
 
   async findAllForGroup(teacherProfileId: string, groupId: string) {

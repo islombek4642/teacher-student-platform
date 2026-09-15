@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { QuestionType } from '@prisma/client';
 import { TasksService } from './tasks.service';
 import { PrismaService } from '../common/prisma/prisma.service';
@@ -43,5 +43,33 @@ describe('TasksService', () => {
     const service = new TasksService(prisma, groupsService);
 
     await expect(service.findOneOwned('t1', 'task-1')).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  describe('remove', () => {
+    it('deletes a task that has no submissions', async () => {
+      const prisma = {
+        task: {
+          findUnique: jest.fn().mockResolvedValue({ id: 'task-1', teacherId: 't1' }),
+          delete: jest.fn().mockResolvedValue({}),
+        },
+        question: { deleteMany: jest.fn().mockResolvedValue({}) },
+        submission: { count: jest.fn().mockResolvedValue(0) },
+      } as unknown as PrismaService;
+      const service = new TasksService(prisma, {} as GroupsService);
+
+      await service.remove('t1', 'task-1');
+
+      expect(prisma.task.delete).toHaveBeenCalledWith({ where: { id: 'task-1' } });
+    });
+
+    it('rejects deleting a task that already has submissions', async () => {
+      const prisma = {
+        task: { findUnique: jest.fn().mockResolvedValue({ id: 'task-1', teacherId: 't1' }) },
+        submission: { count: jest.fn().mockResolvedValue(2) },
+      } as unknown as PrismaService;
+      const service = new TasksService(prisma, {} as GroupsService);
+
+      await expect(service.remove('t1', 'task-1')).rejects.toBeInstanceOf(ConflictException);
+    });
   });
 });

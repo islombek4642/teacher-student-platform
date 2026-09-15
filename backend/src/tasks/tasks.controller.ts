@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, UseGuards } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -34,5 +34,12 @@ export class TasksController {
   async findAssigned(@CurrentUser() user: JwtPayload) {
     const profile = await this.prisma.studentProfile.findUniqueOrThrow({ where: { id: user.profileId! } });
     return this.tasksService.findAssignedToStudent(profile.groupId);
+  }
+
+  @Roles(Role.TEACHER)
+  @Delete('tasks/:id')
+  @HttpCode(204)
+  remove(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    return this.tasksService.remove(user.profileId!, id);
   }
 }
