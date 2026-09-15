@@ -6,9 +6,18 @@ import { AuthModule } from './auth/auth.module';
 import { TeachersModule } from './teachers/teachers.module';
 import { GroupsModule } from './groups/groups.module';
 import { StudentsModule } from './students/students.module';
+import { TasksModule } from './tasks/tasks.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, AuthModule, TeachersModule, GroupsModule, StudentsModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
+    AuthModule,
+    TeachersModule,
+    GroupsModule,
+    StudentsModule,
+    TasksModule,
+  ],
   controllers: [AppController],
 })
 export class AppModule {}
