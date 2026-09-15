@@ -1,5 +1,5 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { SubmissionStatus } from '@prisma/client';
+import { Prisma, SubmissionStatus } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { ERROR_CODES } from '../common/constants/error-codes.constant';
 import { gradeAnswer } from './grading.util';
@@ -39,15 +39,25 @@ export class SubmissionsService {
       return { questionId: entry.questionId, studentAnswer: entry.answer, isCorrect };
     });
 
-    return this.prisma.submission.create({
-      data: {
-        taskId,
-        studentId: studentProfileId,
-        status: SubmissionStatus.COMPLETED,
-        score,
-        submittedAt: new Date(),
-        answers: { create: answerRecords },
-      },
-    });
+    try {
+      return await this.prisma.submission.create({
+        data: {
+          taskId,
+          studentId: studentProfileId,
+          status: SubmissionStatus.COMPLETED,
+          score,
+          submittedAt: new Date(),
+          answers: { create: answerRecords },
+        },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        throw new ConflictException({
+          errorCode: ERROR_CODES.SUBMISSION_ALREADY_COMPLETED,
+          message: 'Task already submitted',
+        });
+      }
+      throw error;
+    }
   }
 }
