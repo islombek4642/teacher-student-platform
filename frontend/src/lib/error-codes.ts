@@ -1,6 +1,10 @@
 import type { AxiosError } from 'axios';
 import type { ApiErrorBody } from '@/api/types';
 
+// Manually synced with backend/src/common/constants/error-codes.constant.ts.
+// There is no automated check tying the two together, so whenever that file
+// changes, update this set to match or new codes will silently fall back to
+// errors.UNKNOWN.
 const KNOWN_CODES = new Set([
   'ERR_INVALID_CREDENTIALS',
   'ERR_USER_NOT_FOUND',
