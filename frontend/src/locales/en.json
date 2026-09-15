@@ -18,6 +18,9 @@
     "ERR_VALIDATION_FAILED": "The submitted data is invalid",
     "ERR_USERNAME_TAKEN": "That username is already taken",
     "ERR_TASK_HAS_SUBMISSIONS": "This task can't be deleted, it already has submissions",
+    "ERR_TEACHER_HAS_GROUPS": "This teacher can't be deleted, they still have groups",
+    "ERR_GROUP_HAS_DEPENDENTS": "This group can't be deleted, it still has students or tasks",
+    "ERR_STUDENT_HAS_SUBMISSIONS": "This student can't be deleted, they have submitted answers",
     "ERR_INTERNAL_ERROR": "Server error, please try again shortly",
     "UNKNOWN": "An unknown error occurred"
   }

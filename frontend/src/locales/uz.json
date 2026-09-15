@@ -18,6 +18,9 @@
     "ERR_VALIDATION_FAILED": "Kiritilgan ma'lumotlar noto'g'ri",
     "ERR_USERNAME_TAKEN": "Bu foydalanuvchi nomi band",
     "ERR_TASK_HAS_SUBMISSIONS": "Bu topshiriqni o'chirib bo'lmaydi, unga javoblar topshirilgan",
+    "ERR_TEACHER_HAS_GROUPS": "Bu o'qituvchini o'chirib bo'lmaydi, uning guruhlari bor",
+    "ERR_GROUP_HAS_DEPENDENTS": "Bu guruhni o'chirib bo'lmaydi, unda o'quvchilar yoki topshiriqlar bor",
+    "ERR_STUDENT_HAS_SUBMISSIONS": "Bu o'quvchini o'chirib bo'lmaydi, uning topshirilgan javoblari bor",
     "ERR_INTERNAL_ERROR": "Server xatosi, birozdan keyin urinib ko'ring",
     "UNKNOWN": "Noma'lum xatolik yuz berdi"
   }
