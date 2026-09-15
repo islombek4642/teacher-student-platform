@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { ERROR_CODES } from '../common/constants/error-codes.constant';
@@ -50,5 +50,23 @@ export class TeachersService {
       lastName: t.lastName,
       isActive: t.user.isActive,
     }));
+  }
+
+  async setActive(teacherProfileId: string, isActive: boolean) {
+    const profile = await this.prisma.teacherProfile.findUnique({ where: { id: teacherProfileId } });
+    if (!profile) {
+      throw new NotFoundException({ errorCode: ERROR_CODES.TEACHER_NOT_FOUND, message: 'Teacher not found' });
+    }
+    const user = await this.prisma.user.update({ where: { id: profile.userId }, data: { isActive } });
+    return { id: profile.id, isActive: user.isActive };
+  }
+
+  async remove(teacherProfileId: string) {
+    const profile = await this.prisma.teacherProfile.findUnique({ where: { id: teacherProfileId } });
+    if (!profile) {
+      throw new NotFoundException({ errorCode: ERROR_CODES.TEACHER_NOT_FOUND, message: 'Teacher not found' });
+    }
+    await this.prisma.teacherProfile.delete({ where: { id: teacherProfileId } });
+    await this.prisma.user.delete({ where: { id: profile.userId } });
   }
 }

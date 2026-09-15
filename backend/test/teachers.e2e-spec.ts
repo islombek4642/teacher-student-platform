@@ -81,4 +81,49 @@ describe('Teachers (e2e)', () => {
     expect(second.status).toBe(409);
     expect(second.body.errorCode).toBe('ERR_USERNAME_TAKEN');
   });
+
+  it('lets a SUPER_ADMIN disable and re-enable a teacher', async () => {
+    const passwordHash = await hashPassword('0000');
+    const admin = await prisma.user.create({
+      data: { username: 'admin-disable', passwordHash, role: Role.SUPER_ADMIN },
+    });
+    const adminToken = jwtService.sign({ sub: admin.id, role: Role.SUPER_ADMIN, profileId: null });
+
+    const created = await request(app.getHttpServer())
+      .post('/teachers')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ username: 'teacher.disable', firstName: 'A', lastName: 'B' });
+
+    const disabled = await request(app.getHttpServer())
+      .patch(`/teachers/${created.body.id}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ isActive: false });
+
+    expect(disabled.status).toBe(200);
+    expect(disabled.body.isActive).toBe(false);
+  });
+
+  it('lets a SUPER_ADMIN delete a teacher', async () => {
+    const passwordHash = await hashPassword('0000');
+    const admin = await prisma.user.create({
+      data: { username: 'admin-delete', passwordHash, role: Role.SUPER_ADMIN },
+    });
+    const adminToken = jwtService.sign({ sub: admin.id, role: Role.SUPER_ADMIN, profileId: null });
+
+    const created = await request(app.getHttpServer())
+      .post('/teachers')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ username: 'teacher.delete', firstName: 'A', lastName: 'B' });
+
+    const deleted = await request(app.getHttpServer())
+      .delete(`/teachers/${created.body.id}`)
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(deleted.status).toBe(204);
+
+    const list = await request(app.getHttpServer())
+      .get('/teachers')
+      .set('Authorization', `Bearer ${adminToken}`);
+    expect(list.body.find((t: { id: string }) => t.id === created.body.id)).toBeUndefined();
+  });
 });
