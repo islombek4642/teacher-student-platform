@@ -1,0 +1,124 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  TEACHER
+  STUDENT
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  FILL_BLANK
+}
+
+enum SubmissionStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+model User {
+  id             String          @id @default(uuid())
+  username       String          @unique
+  passwordHash   String
+  role           Role
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  teacherProfile TeacherProfile?
+  studentProfile StudentProfile?
+}
+
+model TeacherProfile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  firstName String
+  lastName  String
+  groups    Group[]
+  createdAt DateTime @default(now())
+}
+
+model StudentProfile {
+  id          String       @id @default(uuid())
+  userId      String       @unique
+  user        User         @relation(fields: [userId], references: [id])
+  firstName   String
+  lastName    String
+  groupId     String
+  group       Group        @relation(fields: [groupId], references: [id])
+  submissions Submission[]
+  createdAt   DateTime     @default(now())
+}
+
+model Group {
+  id        String           @id @default(uuid())
+  name      String
+  teacherId String
+  teacher   TeacherProfile   @relation(fields: [teacherId], references: [id])
+  students  StudentProfile[]
+  tasks     Task[]
+  createdAt DateTime         @default(now())
+}
+
+model Subject {
+  id    String @id @default(uuid())
+  code  String @unique
+  name  String
+  tasks Task[]
+}
+
+model Task {
+  id          String       @id @default(uuid())
+  subjectId   String
+  subject     Subject      @relation(fields: [subjectId], references: [id])
+  groupId     String
+  group       Group        @relation(fields: [groupId], references: [id])
+  teacherId   String
+  title       String
+  description String?
+  createdAt   DateTime     @default(now())
+  questions   Question[]
+  submissions Submission[]
+}
+
+model Question {
+  id            String       @id @default(uuid())
+  taskId        String
+  task          Task         @relation(fields: [taskId], references: [id])
+  type          QuestionType
+  text          String
+  options       Json?
+  correctAnswer String
+  answers       Answer[]
+}
+
+model Submission {
+  id          String           @id @default(uuid())
+  taskId      String
+  task        Task             @relation(fields: [taskId], references: [id])
+  studentId   String
+  student     StudentProfile   @relation(fields: [studentId], references: [id])
+  status      SubmissionStatus @default(IN_PROGRESS)
+  score       Int              @default(0)
+  submittedAt DateTime?
+  createdAt   DateTime         @default(now())
+  answers     Answer[]
+
+  @@unique([taskId, studentId])
+}
+
+model Answer {
+  id            String     @id @default(uuid())
+  submissionId  String
+  submission    Submission @relation(fields: [submissionId], references: [id])
+  questionId    String
+  question      Question   @relation(fields: [questionId], references: [id])
+  studentAnswer String
+  isCorrect     Boolean
+}
