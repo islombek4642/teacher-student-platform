@@ -30,6 +30,22 @@
     "confirmDelete": "Bu guruhni o'chirmoqchimisiz?",
     "open": "Ochish"
   },
+  "students": {
+    "title": "O'quvchilar",
+    "create": "Yangi o'quvchi",
+    "username": "Foydalanuvchi nomi",
+    "firstName": "Ism",
+    "lastName": "Familiya",
+    "edit": "Tahrirlash",
+    "save": "Saqlash",
+    "resetPassword": "Parolni tiklash",
+    "delete": "O'chirish",
+    "confirmDelete": "Bu o'quvchini o'chirmoqchimisiz?",
+    "createdPasswordNotice": "Bir martalik parol: {{password}}. Uni nusxalab o'quvchiga bering, keyin qayta ko'rsatilmaydi.",
+    "resetPasswordNotice": "Yangi bir martalik parol: {{password}}.",
+    "loading": "Yuklanmoqda...",
+    "empty": "Bu guruhda hozircha o'quvchilar yo'q"
+  },
   "errors": {
     "ERR_INVALID_CREDENTIALS": "Login yoki parol noto'g'ri",
     "ERR_USER_NOT_FOUND": "Foydalanuvchi topilmadi",

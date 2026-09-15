@@ -30,6 +30,22 @@
     "confirmDelete": "Delete this group?",
     "open": "Open"
   },
+  "students": {
+    "title": "Students",
+    "create": "New student",
+    "username": "Username",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "edit": "Edit",
+    "save": "Save",
+    "resetPassword": "Reset password",
+    "delete": "Delete",
+    "confirmDelete": "Delete this student?",
+    "createdPasswordNotice": "One-time password: {{password}}. Copy it for the student now, it won't be shown again.",
+    "resetPasswordNotice": "New one-time password: {{password}}.",
+    "loading": "Loading...",
+    "empty": "No students in this group yet"
+  },
   "errors": {
     "ERR_INVALID_CREDENTIALS": "Invalid username or password",
     "ERR_USER_NOT_FOUND": "User not found",
