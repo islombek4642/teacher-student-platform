@@ -1,0 +1,24 @@
+{
+  "app": { "title": "Teacher-Student Platform" },
+  "auth": {
+    "login": { "title": "Sign in", "username": "Username", "password": "Password", "submit": "Sign in" }
+  },
+  "nav": { "logout": "Log out", "language": "Language" },
+  "errors": {
+    "ERR_INVALID_CREDENTIALS": "Invalid username or password",
+    "ERR_USER_NOT_FOUND": "User not found",
+    "ERR_TEACHER_NOT_FOUND": "Teacher not found",
+    "ERR_GROUP_NOT_FOUND": "Group not found",
+    "ERR_STUDENT_NOT_FOUND": "Student not found",
+    "ERR_TASK_NOT_FOUND": "Task not found",
+    "ERR_SUBJECT_NOT_FOUND": "Subject not found",
+    "ERR_SUBMISSION_NOT_FOUND": "Submission not found",
+    "ERR_SUBMISSION_ALREADY_COMPLETED": "This task was already submitted",
+    "ERR_FORBIDDEN_RESOURCE": "You are not allowed to do that",
+    "ERR_VALIDATION_FAILED": "The submitted data is invalid",
+    "ERR_USERNAME_TAKEN": "That username is already taken",
+    "ERR_TASK_HAS_SUBMISSIONS": "This task can't be deleted, it already has submissions",
+    "ERR_INTERNAL_ERROR": "Server error, please try again shortly",
+    "UNKNOWN": "An unknown error occurred"
+  }
+}

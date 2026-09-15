@@ -1,0 +1,24 @@
+{
+  "app": { "title": "Teacher-Student Platform" },
+  "auth": {
+    "login": { "title": "Kirish", "username": "Foydalanuvchi nomi", "password": "Parol", "submit": "Kirish" }
+  },
+  "nav": { "logout": "Chiqish", "language": "Til" },
+  "errors": {
+    "ERR_INVALID_CREDENTIALS": "Login yoki parol noto'g'ri",
+    "ERR_USER_NOT_FOUND": "Foydalanuvchi topilmadi",
+    "ERR_TEACHER_NOT_FOUND": "O'qituvchi topilmadi",
+    "ERR_GROUP_NOT_FOUND": "Guruh topilmadi",
+    "ERR_STUDENT_NOT_FOUND": "O'quvchi topilmadi",
+    "ERR_TASK_NOT_FOUND": "Topshiriq topilmadi",
+    "ERR_SUBJECT_NOT_FOUND": "Fan topilmadi",
+    "ERR_SUBMISSION_NOT_FOUND": "Topshirilgan javob topilmadi",
+    "ERR_SUBMISSION_ALREADY_COMPLETED": "Bu topshiriq allaqachon bajarilgan",
+    "ERR_FORBIDDEN_RESOURCE": "Sizda bu amalni bajarishga ruxsat yo'q",
+    "ERR_VALIDATION_FAILED": "Kiritilgan ma'lumotlar noto'g'ri",
+    "ERR_USERNAME_TAKEN": "Bu foydalanuvchi nomi band",
+    "ERR_TASK_HAS_SUBMISSIONS": "Bu topshiriqni o'chirib bo'lmaydi, unga javoblar topshirilgan",
+    "ERR_INTERNAL_ERROR": "Server xatosi, birozdan keyin urinib ko'ring",
+    "UNKNOWN": "Noma'lum xatolik yuz berdi"
+  }
+}
