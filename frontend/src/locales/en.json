@@ -21,6 +21,15 @@
     "empty": "No teachers yet",
     "createdPasswordNotice": "One-time password: {{password}}. Copy it for the teacher now, it won't be shown again."
   },
+  "groups": {
+    "title": "Groups",
+    "create": "New group",
+    "name": "Group name",
+    "rename": "Rename",
+    "delete": "Delete",
+    "confirmDelete": "Delete this group?",
+    "open": "Open"
+  },
   "errors": {
     "ERR_INVALID_CREDENTIALS": "Invalid username or password",
     "ERR_USER_NOT_FOUND": "User not found",

@@ -21,6 +21,15 @@
     "empty": "Hozircha o'qituvchilar yo'q",
     "createdPasswordNotice": "Bir martalik parol: {{password}}. Uni nusxalab o'qituvchiga bering, keyin qayta ko'rsatilmaydi."
   },
+  "groups": {
+    "title": "Guruhlar",
+    "create": "Yangi guruh",
+    "name": "Guruh nomi",
+    "rename": "Nomini o'zgartirish",
+    "delete": "O'chirish",
+    "confirmDelete": "Bu guruhni o'chirmoqchimisiz?",
+    "open": "Ochish"
+  },
   "errors": {
     "ERR_INVALID_CREDENTIALS": "Login yoki parol noto'g'ri",
     "ERR_USER_NOT_FOUND": "Foydalanuvchi topilmadi",
