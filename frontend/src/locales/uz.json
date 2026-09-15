@@ -4,6 +4,17 @@
     "login": { "title": "Kirish", "username": "Foydalanuvchi nomi", "password": "Parol", "submit": "Kirish" }
   },
   "nav": { "logout": "Chiqish", "language": "Til" },
+  "teachers": {
+    "title": "O'qituvchilar",
+    "create": "Yangi o'qituvchi",
+    "username": "Foydalanuvchi nomi",
+    "firstName": "Ism",
+    "lastName": "Familiya",
+    "status": "Holat",
+    "active": "Faol",
+    "disabled": "Faol emas",
+    "createdPasswordNotice": "Bir martalik parol: {{password}}. Uni nusxalab o'qituvchiga bering, keyin qayta ko'rsatilmaydi."
+  },
   "errors": {
     "ERR_INVALID_CREDENTIALS": "Login yoki parol noto'g'ri",
     "ERR_USER_NOT_FOUND": "Foydalanuvchi topilmadi",

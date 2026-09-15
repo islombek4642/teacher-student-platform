@@ -4,6 +4,17 @@
     "login": { "title": "Sign in", "username": "Username", "password": "Password", "submit": "Sign in" }
   },
   "nav": { "logout": "Log out", "language": "Language" },
+  "teachers": {
+    "title": "Teachers",
+    "create": "New teacher",
+    "username": "Username",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "status": "Status",
+    "active": "Active",
+    "disabled": "Disabled",
+    "createdPasswordNotice": "One-time password: {{password}}. Copy it for the teacher now, it won't be shown again."
+  },
   "errors": {
     "ERR_INVALID_CREDENTIALS": "Invalid username or password",
     "ERR_USER_NOT_FOUND": "User not found",
