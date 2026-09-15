@@ -85,4 +85,21 @@ describe('Students (e2e)', () => {
     expect(second.status).toBe(409);
     expect(second.body.errorCode).toBe('ERR_USERNAME_TAKEN');
   });
+
+  it('lets the owning teacher edit a student\'s name', async () => {
+    const teacher = await createTeacherWithGroup(prisma, 'teacher-edit-student', '9-A');
+    const token = jwtService.sign({ sub: teacher.user.id, role: Role.TEACHER, profileId: teacher.profile.id });
+    const created = await request(app.getHttpServer())
+      .post(`/groups/${teacher.group.id}/students`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ username: 'student.edit', firstName: 'Old', lastName: 'Name' });
+
+    const updated = await request(app.getHttpServer())
+      .patch(`/students/${created.body.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ firstName: 'New', lastName: 'Name' });
+
+    expect(updated.status).toBe(200);
+    expect(updated.body.firstName).toBe('New');
+  });
 });

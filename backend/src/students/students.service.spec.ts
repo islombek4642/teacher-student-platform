@@ -1,4 +1,4 @@
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { StudentsService } from './students.service';
 import { PrismaService } from '../common/prisma/prisma.service';
@@ -54,5 +54,38 @@ describe('StudentsService', () => {
       expect(error).toBeInstanceOf(ConflictException);
       expect((error as ConflictException).getResponse()).toMatchObject({ errorCode: 'ERR_USERNAME_TAKEN' });
     }
+  });
+
+  describe('findOneOwned', () => {
+    it('throws NotFoundException when the student belongs to another teacher\'s group', async () => {
+      const prisma = {
+        studentProfile: {
+          findUnique: jest.fn().mockResolvedValue({ id: 's1', group: { teacherId: 'other' } }),
+        },
+      } as unknown as PrismaService;
+      const service = new StudentsService(prisma, {} as GroupsService);
+
+      await expect(service.findOneOwned('t1', 's1')).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe('update', () => {
+    it('updates the student\'s name', async () => {
+      const prisma = {
+        studentProfile: {
+          findUnique: jest.fn().mockResolvedValue({ id: 's1', group: { teacherId: 't1' } }),
+          update: jest.fn().mockResolvedValue({ id: 's1', firstName: 'New', lastName: 'Name' }),
+        },
+      } as unknown as PrismaService;
+      const service = new StudentsService(prisma, {} as GroupsService);
+
+      const result = await service.update('t1', 's1', { firstName: 'New', lastName: 'Name' });
+
+      expect(prisma.studentProfile.update).toHaveBeenCalledWith({
+        where: { id: 's1' },
+        data: { firstName: 'New', lastName: 'Name' },
+      });
+      expect(result.firstName).toBe('New');
+    });
   });
 });

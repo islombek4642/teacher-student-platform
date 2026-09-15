@@ -1,10 +1,11 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { ERROR_CODES } from '../common/constants/error-codes.constant';
 import { GroupsService } from '../groups/groups.service';
 import { generateFourDigitPassword, hashPassword } from '../auth/password.util';
 import { CreateStudentDto } from './dto/create-student.dto';
+import { UpdateStudentDto } from './dto/update-student.dto';
 
 @Injectable()
 export class StudentsService {
@@ -43,6 +44,25 @@ export class StudentsService {
       }
       throw error;
     }
+  }
+
+  async findOneOwned(teacherProfileId: string, studentProfileId: string) {
+    const student = await this.prisma.studentProfile.findUnique({
+      where: { id: studentProfileId },
+      include: { group: true },
+    });
+    if (!student || student.group.teacherId !== teacherProfileId) {
+      throw new NotFoundException({ errorCode: ERROR_CODES.STUDENT_NOT_FOUND, message: 'Student not found' });
+    }
+    return student;
+  }
+
+  async update(teacherProfileId: string, studentProfileId: string, dto: UpdateStudentDto) {
+    await this.findOneOwned(teacherProfileId, studentProfileId);
+    return this.prisma.studentProfile.update({
+      where: { id: studentProfileId },
+      data: { firstName: dto.firstName, lastName: dto.lastName },
+    });
   }
 
   async findAllInGroup(teacherProfileId: string, groupId: string) {
