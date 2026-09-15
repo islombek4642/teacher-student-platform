@@ -13,6 +13,10 @@
     "status": "Holat",
     "active": "Faol",
     "disabled": "Faol emas",
+    "disable": "Faolsizlantirish",
+    "enable": "Faollashtirish",
+    "confirmDelete": "Bu o'qituvchini butunlay o'chirmoqchimisiz?",
+    "delete": "O'chirish",
     "loading": "Yuklanmoqda...",
     "empty": "Hozircha o'qituvchilar yo'q",
     "createdPasswordNotice": "Bir martalik parol: {{password}}. Uni nusxalab o'qituvchiga bering, keyin qayta ko'rsatilmaydi."

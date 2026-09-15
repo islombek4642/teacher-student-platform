@@ -17,3 +17,20 @@ export function useCreateTeacher() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['teachers'] }),
   });
 }
+
+export function useSetTeacherActive() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) =>
+      (await apiClient.patch<{ id: string; isActive: boolean }>(`/teachers/${id}`, { isActive })).data,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['teachers'] }),
+  });
+}
+
+export function useDeleteTeacher() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => apiClient.delete(`/teachers/${id}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['teachers'] }),
+  });
+}

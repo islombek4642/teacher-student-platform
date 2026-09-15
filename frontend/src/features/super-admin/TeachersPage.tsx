@@ -3,13 +3,15 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useTeachers } from './api/teachers.api';
+import { useDeleteTeacher, useSetTeacherActive, useTeachers } from './api/teachers.api';
 import { CreateTeacherDialog } from './CreateTeacherDialog';
 
 export function TeachersPage() {
   const { t } = useTranslation();
   const { data: teachers, isLoading } = useTeachers();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const { mutate: setActive } = useSetTeacherActive();
+  const { mutate: remove } = useDeleteTeacher();
 
   return (
     <div className="space-y-4">
@@ -24,12 +26,13 @@ export function TeachersPage() {
             <TableHead>{t('teachers.firstName')}</TableHead>
             <TableHead>{t('teachers.lastName')}</TableHead>
             <TableHead>{t('teachers.status')}</TableHead>
+            <TableHead />
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={4} className="text-center text-muted-foreground">
+              <TableCell colSpan={5} className="text-center text-muted-foreground">
                 {t('teachers.loading')}
               </TableCell>
             </TableRow>
@@ -44,11 +47,25 @@ export function TeachersPage() {
                     {teacher.isActive ? t('teachers.active') : t('teachers.disabled')}
                   </Badge>
                 </TableCell>
+                <TableCell className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setActive({ id: teacher.id, isActive: !teacher.isActive })}>
+                    {teacher.isActive ? t('teachers.disable') : t('teachers.enable')}
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => {
+                      if (window.confirm(t('teachers.confirmDelete'))) remove(teacher.id);
+                    }}
+                  >
+                    {t('teachers.delete')}
+                  </Button>
+                </TableCell>
               </TableRow>
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={4} className="text-center text-muted-foreground">
+              <TableCell colSpan={5} className="text-center text-muted-foreground">
                 {t('teachers.empty')}
               </TableCell>
             </TableRow>
