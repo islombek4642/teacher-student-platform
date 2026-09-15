@@ -96,6 +96,13 @@
     "mostMissed": "Eng ko'p xato qilingan savollar",
     "noData": "Ma'lumot yo'q"
   },
+  "studentProgress": {
+    "title": "Mening natijalarim",
+    "tasksCompleted": "Bajarilgan topshiriqlar",
+    "averageScore": "O'rtacha ball",
+    "lastActivity": "Oxirgi faollik",
+    "never": "Hali yo'q"
+  },
   "errors": {
     "ERR_INVALID_CREDENTIALS": "Login yoki parol noto'g'ri",
     "ERR_USER_NOT_FOUND": "Foydalanuvchi topilmadi",

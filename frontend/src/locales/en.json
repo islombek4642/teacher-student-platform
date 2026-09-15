@@ -96,6 +96,13 @@
     "mostMissed": "Most-missed questions",
     "noData": "No data yet"
   },
+  "studentProgress": {
+    "title": "My progress",
+    "tasksCompleted": "Tasks completed",
+    "averageScore": "Average score",
+    "lastActivity": "Last activity",
+    "never": "Not yet"
+  },
   "errors": {
     "ERR_INVALID_CREDENTIALS": "Invalid username or password",
     "ERR_USER_NOT_FOUND": "User not found",
