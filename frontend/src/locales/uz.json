@@ -1,5 +1,6 @@
 {
   "app": { "title": "Teacher-Student Platform" },
+  "required": "Bu maydon to'ldirilishi shart",
   "auth": {
     "login": { "title": "Kirish", "username": "Foydalanuvchi nomi", "password": "Parol", "submit": "Kirish" }
   },

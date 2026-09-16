@@ -56,17 +56,17 @@ export function CreateTeacherDialog({ open, onOpenChange }: { open: boolean; onO
             <div className="space-y-1">
               <Label htmlFor="username">{t('teachers.username')}</Label>
               <Input id="username" {...register('username')} />
-              {errors.username && <p className="text-sm text-destructive">{errors.username.message}</p>}
+              {errors.username && <p className="text-sm text-destructive">{t(errors.username.message!)}</p>}
             </div>
             <div className="space-y-1">
               <Label htmlFor="firstName">{t('teachers.firstName')}</Label>
               <Input id="firstName" {...register('firstName')} />
-              {errors.firstName && <p className="text-sm text-destructive">{errors.firstName.message}</p>}
+              {errors.firstName && <p className="text-sm text-destructive">{t(errors.firstName.message!)}</p>}
             </div>
             <div className="space-y-1">
               <Label htmlFor="lastName">{t('teachers.lastName')}</Label>
               <Input id="lastName" {...register('lastName')} />
-              {errors.lastName && <p className="text-sm text-destructive">{errors.lastName.message}</p>}
+              {errors.lastName && <p className="text-sm text-destructive">{t(errors.lastName.message!)}</p>}
             </div>
             <Button type="submit" disabled={isPending}>
               {t('teachers.create')}

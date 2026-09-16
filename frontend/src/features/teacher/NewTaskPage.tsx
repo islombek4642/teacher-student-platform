@@ -171,13 +171,13 @@ export function NewTaskPage() {
             ))}
           </SelectContent>
         </Select>
-        {errors.groupId && <p className="text-sm text-destructive">{errors.groupId.message}</p>}
+        {errors.groupId && <p className="text-sm text-destructive">{t(errors.groupId.message!)}</p>}
       </div>
 
       <div className="space-y-1">
         <Label htmlFor="title">{t('tasks.taskTitle')}</Label>
         <Input id="title" {...register('title')} />
-        {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
+        {errors.title && <p className="text-sm text-destructive">{t(errors.title.message!)}</p>}
       </div>
 
       <div className="space-y-1">

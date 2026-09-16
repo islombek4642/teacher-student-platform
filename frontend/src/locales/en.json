@@ -1,5 +1,6 @@
 {
   "app": { "title": "Teacher-Student Platform" },
+  "required": "This field is required",
   "auth": {
     "login": { "title": "Sign in", "username": "Username", "password": "Password", "submit": "Sign in" }
   },

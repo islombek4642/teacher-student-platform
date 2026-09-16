@@ -46,7 +46,7 @@ export function CreateGroupDialog({ open, onOpenChange }: { open: boolean; onOpe
           <div className="space-y-1">
             <Label htmlFor="name">{t('groups.name')}</Label>
             <Input id="name" {...register('name')} />
-            {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+            {errors.name && <p className="text-sm text-destructive">{t(errors.name.message!)}</p>}
           </div>
           <Button type="submit" disabled={isPending}>
             {t('groups.create')}

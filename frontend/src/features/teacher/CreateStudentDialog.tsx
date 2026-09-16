@@ -68,17 +68,17 @@ export function CreateStudentDialog({
             <div className="space-y-1">
               <Label htmlFor="username">{t('students.username')}</Label>
               <Input id="username" {...register('username')} />
-              {errors.username && <p className="text-sm text-destructive">{errors.username.message}</p>}
+              {errors.username && <p className="text-sm text-destructive">{t(errors.username.message!)}</p>}
             </div>
             <div className="space-y-1">
               <Label htmlFor="firstName">{t('students.firstName')}</Label>
               <Input id="firstName" {...register('firstName')} />
-              {errors.firstName && <p className="text-sm text-destructive">{errors.firstName.message}</p>}
+              {errors.firstName && <p className="text-sm text-destructive">{t(errors.firstName.message!)}</p>}
             </div>
             <div className="space-y-1">
               <Label htmlFor="lastName">{t('students.lastName')}</Label>
               <Input id="lastName" {...register('lastName')} />
-              {errors.lastName && <p className="text-sm text-destructive">{errors.lastName.message}</p>}
+              {errors.lastName && <p className="text-sm text-destructive">{t(errors.lastName.message!)}</p>}
             </div>
             <Button type="submit" disabled={isPending}>
               {t('students.create')}

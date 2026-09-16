@@ -34,12 +34,12 @@ export function LoginPage() {
         <div className="space-y-1">
           <Label htmlFor="username">{t('auth.login.username')}</Label>
           <Input id="username" {...register('username')} />
-          {errors.username && <p className="text-sm text-destructive">{errors.username.message}</p>}
+          {errors.username && <p className="text-sm text-destructive">{t(errors.username.message!)}</p>}
         </div>
         <div className="space-y-1">
           <Label htmlFor="password">{t('auth.login.password')}</Label>
           <Input id="password" type="password" {...register('password')} />
-          {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
+          {errors.password && <p className="text-sm text-destructive">{t(errors.password.message!)}</p>}
         </div>
         <Button type="submit" className="w-full" disabled={isPending}>
           {t('auth.login.submit')}
