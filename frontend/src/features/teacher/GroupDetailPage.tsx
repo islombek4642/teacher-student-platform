@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { PasswordReveal } from '@/components/shared/PasswordReveal';
 import { useGroup } from './api/groups.api';
 import {
   useDeleteStudent,
@@ -26,7 +27,7 @@ export function GroupDetailPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingFirstName, setEditingFirstName] = useState('');
   const [editingLastName, setEditingLastName] = useState('');
-  const [resetNotice, setResetNotice] = useState<string | null>(null);
+  const [resetPasswordValue, setResetPasswordValue] = useState<string | null>(null);
 
   const saveEdit = (studentId: string) => {
     // Guard against blank names — a lesson from Task 16's GroupsPage rename
@@ -48,17 +49,18 @@ export function GroupDetailPage() {
         <h1 className="text-xl font-semibold">{group?.name ?? t('students.title')}</h1>
         <Button
           onClick={() => {
-            setResetNotice(null);
+            setResetPasswordValue(null);
             setDialogOpen(true);
           }}
         >
           {t('students.create')}
         </Button>
       </div>
-      {resetNotice && (
-        <div className="flex items-center justify-between rounded bg-muted p-2 text-sm">
-          <span>{resetNotice}</span>
-          <Button variant="ghost" size="sm" onClick={() => setResetNotice(null)}>
+      {resetPasswordValue && (
+        <div className="flex items-center justify-between gap-2 rounded bg-muted p-2 text-sm">
+          <span>{t('students.resetPasswordNotice')}</span>
+          <PasswordReveal value={resetPasswordValue} />
+          <Button variant="ghost" size="sm" onClick={() => setResetPasswordValue(null)}>
             ×
           </Button>
         </div>
@@ -107,7 +109,7 @@ export function GroupDetailPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        setResetNotice(null);
+                        setResetPasswordValue(null);
                         setEditingId(student.id);
                         setEditingFirstName(student.firstName);
                         setEditingLastName(student.lastName);
@@ -121,8 +123,7 @@ export function GroupDetailPage() {
                     size="sm"
                     onClick={() =>
                       resetPassword(student.id, {
-                        onSuccess: (result) =>
-                          setResetNotice(t('students.resetPasswordNotice', { password: result.temporaryPassword })),
+                        onSuccess: (result) => setResetPasswordValue(result.temporaryPassword),
                       })
                     }
                   >

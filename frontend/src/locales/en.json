@@ -1,6 +1,7 @@
 {
   "app": { "title": "Teacher-Student Platform" },
   "required": "This field is required",
+  "common": { "show": "Show", "hide": "Hide", "copy": "Copy", "copied": "Copied to clipboard" },
   "auth": {
     "login": { "title": "Sign in", "username": "Username", "password": "Password", "submit": "Sign in" }
   },
@@ -20,7 +21,7 @@
     "delete": "Delete",
     "loading": "Loading...",
     "empty": "No teachers yet",
-    "createdPasswordNotice": "One-time password: {{password}}. Copy it for the teacher now, it won't be shown again."
+    "createdPasswordNotice": "One-time password created — copy it for the teacher now, it won't be shown again."
   },
   "groups": {
     "title": "Groups",
@@ -44,8 +45,8 @@
     "resetPassword": "Reset password",
     "delete": "Delete",
     "confirmDelete": "Delete this student?",
-    "createdPasswordNotice": "One-time password: {{password}}. Copy it for the student now, it won't be shown again.",
-    "resetPasswordNotice": "New one-time password: {{password}}.",
+    "createdPasswordNotice": "One-time password created — copy it for the student now, it won't be shown again.",
+    "resetPasswordNotice": "New one-time password generated.",
     "loading": "Loading...",
     "empty": "No students in this group yet"
   },

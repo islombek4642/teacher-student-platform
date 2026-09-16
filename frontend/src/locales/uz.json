@@ -1,6 +1,7 @@
 {
   "app": { "title": "Teacher-Student Platform" },
   "required": "Bu maydon to'ldirilishi shart",
+  "common": { "show": "Ko'rsatish", "hide": "Yashirish", "copy": "Nusxalash", "copied": "Nusxalandi" },
   "auth": {
     "login": { "title": "Kirish", "username": "Foydalanuvchi nomi", "password": "Parol", "submit": "Kirish" }
   },
@@ -20,7 +21,7 @@
     "delete": "O'chirish",
     "loading": "Yuklanmoqda...",
     "empty": "Hozircha o'qituvchilar yo'q",
-    "createdPasswordNotice": "Bir martalik parol: {{password}}. Uni nusxalab o'qituvchiga bering, keyin qayta ko'rsatilmaydi."
+    "createdPasswordNotice": "Bir martalik parol yaratildi — uni hozir nusxalab o'qituvchiga bering, keyin qayta ko'rsatilmaydi."
   },
   "groups": {
     "title": "Guruhlar",
@@ -44,8 +45,8 @@
     "resetPassword": "Parolni tiklash",
     "delete": "O'chirish",
     "confirmDelete": "Bu o'quvchini o'chirmoqchimisiz?",
-    "createdPasswordNotice": "Bir martalik parol: {{password}}. Uni nusxalab o'quvchiga bering, keyin qayta ko'rsatilmaydi.",
-    "resetPasswordNotice": "Yangi bir martalik parol: {{password}}.",
+    "createdPasswordNotice": "Bir martalik parol yaratildi — uni hozir nusxalab o'quvchiga bering, keyin qayta ko'rsatilmaydi.",
+    "resetPasswordNotice": "Yangi bir martalik parol yaratildi.",
     "loading": "Yuklanmoqda...",
     "empty": "Bu guruhda hozircha o'quvchilar yo'q"
   },

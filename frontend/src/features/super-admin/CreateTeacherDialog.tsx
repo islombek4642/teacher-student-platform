@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { PasswordReveal } from '@/components/shared/PasswordReveal';
 import { useCreateTeacher } from './api/teachers.api';
 
 const schema = z.object({
@@ -50,7 +51,10 @@ export function CreateTeacherDialog({ open, onOpenChange }: { open: boolean; onO
           <DialogTitle>{t('teachers.create')}</DialogTitle>
         </DialogHeader>
         {createdPassword ? (
-          <p>{t('teachers.createdPasswordNotice', { password: createdPassword })}</p>
+          <div className="space-y-2">
+            <p>{t('teachers.createdPasswordNotice')}</p>
+            <PasswordReveal value={createdPassword} />
+          </div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
             <div className="space-y-1">
