@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 export function LoginPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { mutate, isPending } = useLogin();
   const {
     register,
@@ -23,7 +25,7 @@ export function LoginPage() {
     formState: { errors },
   } = useForm<LoginForm>({ resolver: zodResolver(loginSchema) });
 
-  const onSubmit = (data: LoginForm) => mutate(data);
+  const onSubmit = (data: LoginForm) => mutate(data, { onSuccess: () => navigate('/') });
 
   return (
     <div className="flex min-h-screen items-center justify-center">
