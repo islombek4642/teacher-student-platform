@@ -11,7 +11,7 @@ describe('CreateStudentDialog', () => {
   it('does not submit when required fields are empty', async () => {
     const mutate = vi.fn();
     vi.mocked(useCreateStudent).mockReturnValue({ mutate, isPending: false } as unknown as ReturnType<typeof useCreateStudent>);
-    render(<CreateStudentDialog groupId="g1" open onOpenChange={() => {}} onCreated={() => {}} />);
+    render(<CreateStudentDialog groupId="g1" open onOpenChange={() => {}} />);
 
     await userEvent.click(screen.getByRole('button', { name: /students.create/i }));
 
@@ -21,7 +21,7 @@ describe('CreateStudentDialog', () => {
   it('submits the form with entered values', async () => {
     const mutate = vi.fn();
     vi.mocked(useCreateStudent).mockReturnValue({ mutate, isPending: false } as unknown as ReturnType<typeof useCreateStudent>);
-    render(<CreateStudentDialog groupId="g1" open onOpenChange={() => {}} onCreated={() => {}} />);
+    render(<CreateStudentDialog groupId="g1" open onOpenChange={() => {}} />);
 
     await userEvent.type(screen.getByLabelText(/students.username/i), 'student.a');
     await userEvent.type(screen.getByLabelText(/students.firstName/i), 'Anvar');

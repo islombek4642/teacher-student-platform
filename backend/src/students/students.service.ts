@@ -23,7 +23,7 @@ export class StudentsService {
     try {
       const { user, profile } = await this.prisma.$transaction(async (tx) => {
         const user = await tx.user.create({
-          data: { username: dto.username, passwordHash, role: Role.STUDENT },
+          data: { username: dto.username, passwordHash, currentPassword: temporaryPassword, role: Role.STUDENT },
         });
         const profile = await tx.studentProfile.create({
           data: { userId: user.id, firstName: dto.firstName, lastName: dto.lastName, groupId },
@@ -69,7 +69,10 @@ export class StudentsService {
     const student = await this.findOneOwned(teacherProfileId, studentProfileId);
     const temporaryPassword = generateFourDigitPassword();
     const passwordHash = await hashPassword(temporaryPassword);
-    await this.prisma.user.update({ where: { id: student.userId }, data: { passwordHash } });
+    await this.prisma.user.update({
+      where: { id: student.userId },
+      data: { passwordHash, currentPassword: temporaryPassword },
+    });
     return { temporaryPassword };
   }
 
@@ -92,13 +95,14 @@ export class StudentsService {
     await this.groupsService.findOneOwned(teacherProfileId, groupId);
     const students = await this.prisma.studentProfile.findMany({
       where: { groupId },
-      include: { user: { select: { username: true, isActive: true } } },
+      include: { user: { select: { username: true, isActive: true, currentPassword: true } } },
     });
     return students.map((s) => ({
       id: s.id,
       username: s.user.username,
       firstName: s.firstName,
       lastName: s.lastName,
+      temporaryPassword: s.user.currentPassword,
     }));
   }
 }

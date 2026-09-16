@@ -20,12 +20,10 @@ export function CreateStudentDialog({
   groupId,
   open,
   onOpenChange,
-  onCreated,
 }: {
   groupId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated: (id: string, temporaryPassword: string) => void;
 }) {
   const { t } = useTranslation();
   const { mutate, isPending } = useCreateStudent(groupId);
@@ -38,8 +36,7 @@ export function CreateStudentDialog({
 
   const onSubmit = (data: FormValues) =>
     mutate(data, {
-      onSuccess: (created) => {
-        onCreated(created.id, created.temporaryPassword);
+      onSuccess: () => {
         toast.add({ type: 'success', description: t('students.createSuccess') });
         reset();
         onOpenChange(false);

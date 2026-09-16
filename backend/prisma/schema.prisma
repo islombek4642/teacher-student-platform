@@ -27,6 +27,11 @@ model User {
   id             String          @id @default(uuid())
   username       String          @unique
   passwordHash   String
+  // Plaintext copy of the current password, kept only for teacher/student
+  // accounts so a super-admin/teacher can look it up again from the list
+  // (unlike passwordHash, which is one-way). Null for accounts that were
+  // never given a generated password (e.g. the seeded super-admin).
+  currentPassword String?
   role           Role
   isActive       Boolean         @default(true)
   createdAt      DateTime        @default(now())

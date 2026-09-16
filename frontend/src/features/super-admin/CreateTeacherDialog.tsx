@@ -19,11 +19,9 @@ type FormValues = z.infer<typeof schema>;
 export function CreateTeacherDialog({
   open,
   onOpenChange,
-  onCreated,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated: (id: string, temporaryPassword: string) => void;
 }) {
   const { t } = useTranslation();
   const { mutate, isPending } = useCreateTeacher();
@@ -36,8 +34,7 @@ export function CreateTeacherDialog({
 
   const onSubmit = (data: FormValues) =>
     mutate(data, {
-      onSuccess: (created) => {
-        onCreated(created.id, created.temporaryPassword);
+      onSuccess: () => {
         toast.add({ type: 'success', description: t('teachers.createSuccess') });
         reset();
         onOpenChange(false);

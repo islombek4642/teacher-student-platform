@@ -6,6 +6,7 @@ export interface Teacher {
   firstName: string;
   lastName: string;
   isActive: boolean;
+  temporaryPassword: string | null;
 }
 
 export interface CreatedAccount {
@@ -28,6 +29,7 @@ export interface Student {
   username: string;
   firstName: string;
   lastName: string;
+  temporaryPassword: string | null;
 }
 
 export type QuestionType = 'MULTIPLE_CHOICE' | 'FILL_BLANK';

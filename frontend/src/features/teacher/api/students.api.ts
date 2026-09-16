@@ -28,10 +28,12 @@ export function useUpdateStudent(groupId: string) {
   });
 }
 
-export function useResetStudentPassword() {
+export function useResetStudentPassword(groupId: string) {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) =>
       (await apiClient.post<{ temporaryPassword: string }>(`/students/${id}/reset-password`)).data,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['groups', groupId, 'students'] }),
   });
 }
 

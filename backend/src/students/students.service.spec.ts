@@ -140,7 +140,7 @@ describe('StudentsService', () => {
       expect(result.temporaryPassword).toMatch(/^\d{4}$/);
       expect(prisma.user.update).toHaveBeenCalledWith({
         where: { id: 'u1' },
-        data: { passwordHash: expect.any(String) },
+        data: { passwordHash: expect.any(String), currentPassword: expect.stringMatching(/^\d{4}$/) },
       });
     });
   });

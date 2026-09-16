@@ -16,7 +16,7 @@ export class TeachersService {
     try {
       const { user, profile } = await this.prisma.$transaction(async (tx) => {
         const user = await tx.user.create({
-          data: { username: dto.username, passwordHash, role: Role.TEACHER },
+          data: { username: dto.username, passwordHash, currentPassword: temporaryPassword, role: Role.TEACHER },
         });
         const profile = await tx.teacherProfile.create({
           data: { userId: user.id, firstName: dto.firstName, lastName: dto.lastName },
@@ -41,7 +41,7 @@ export class TeachersService {
 
   async findAll() {
     const teachers = await this.prisma.teacherProfile.findMany({
-      include: { user: { select: { username: true, isActive: true } } },
+      include: { user: { select: { username: true, isActive: true, currentPassword: true } } },
     });
     return teachers.map((t) => ({
       id: t.id,
@@ -49,6 +49,7 @@ export class TeachersService {
       firstName: t.firstName,
       lastName: t.lastName,
       isActive: t.user.isActive,
+      temporaryPassword: t.user.currentPassword,
     }));
   }
 

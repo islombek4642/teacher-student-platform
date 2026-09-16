@@ -12,6 +12,7 @@
     "username": "Username",
     "firstName": "First name",
     "lastName": "Last name",
+    "password": "Password",
     "status": "Status",
     "active": "Active",
     "disabled": "Disabled",
@@ -21,8 +22,7 @@
     "delete": "Delete",
     "loading": "Loading...",
     "empty": "No teachers yet",
-    "createSuccess": "Teacher created successfully",
-    "createdPasswordNotice": "One-time password created — copy it for the teacher now, it won't be shown again."
+    "createSuccess": "Teacher created successfully"
   },
   "groups": {
     "title": "Groups",
@@ -43,13 +43,12 @@
     "lastName": "Last name",
     "edit": "Edit",
     "save": "Save",
+    "password": "Password",
     "resetPassword": "Reset password",
     "delete": "Delete",
     "confirmDelete": "Delete this student?",
     "createSuccess": "Student created successfully",
     "resetSuccess": "Password reset successfully",
-    "createdPasswordNotice": "One-time password created — copy it for the student now, it won't be shown again.",
-    "resetPasswordNotice": "New one-time password generated.",
     "loading": "Loading...",
     "empty": "No students in this group yet"
   },

@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,16 +11,8 @@ export function TeachersPage() {
   const { t } = useTranslation();
   const { data: teachers, isLoading } = useTeachers();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [revealedPasswords, setRevealedPasswords] = useState<Record<string, string>>({});
   const { mutate: setActive } = useSetTeacherActive();
   const { mutate: remove } = useDeleteTeacher();
-
-  const dismissPassword = (id: string) =>
-    setRevealedPasswords((prev) => {
-      const next = { ...prev };
-      delete next[id];
-      return next;
-    });
 
   return (
     <div className="space-y-4">
@@ -34,6 +26,7 @@ export function TeachersPage() {
             <TableHead>{t('teachers.username')}</TableHead>
             <TableHead>{t('teachers.firstName')}</TableHead>
             <TableHead>{t('teachers.lastName')}</TableHead>
+            <TableHead>{t('teachers.password')}</TableHead>
             <TableHead>{t('teachers.status')}</TableHead>
             <TableHead />
           </TableRow>
@@ -41,66 +34,54 @@ export function TeachersPage() {
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={5} className="text-center text-muted-foreground">
+              <TableCell colSpan={6} className="text-center text-muted-foreground">
                 {t('teachers.loading')}
               </TableCell>
             </TableRow>
           ) : teachers && teachers.length > 0 ? (
             teachers.map((teacher) => (
-              <Fragment key={teacher.id}>
-                <TableRow>
-                  <TableCell>{teacher.username}</TableCell>
-                  <TableCell>{teacher.firstName}</TableCell>
-                  <TableCell>{teacher.lastName}</TableCell>
-                  <TableCell>
-                    <Badge variant={teacher.isActive ? 'default' : 'secondary'}>
-                      {teacher.isActive ? t('teachers.active') : t('teachers.disabled')}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setActive({ id: teacher.id, isActive: !teacher.isActive })}>
-                      {teacher.isActive ? t('teachers.disable') : t('teachers.enable')}
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => {
-                        if (window.confirm(t('teachers.confirmDelete'))) remove(teacher.id);
-                      }}
-                    >
-                      {t('teachers.delete')}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-                {revealedPasswords[teacher.id] && (
-                  <TableRow className="bg-muted">
-                    <TableCell colSpan={5}>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm">{t('teachers.createdPasswordNotice')}</span>
-                        <PasswordReveal value={revealedPasswords[teacher.id]} />
-                        <Button variant="ghost" size="sm" onClick={() => dismissPassword(teacher.id)}>
-                          ×
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </Fragment>
+              <TableRow key={teacher.id}>
+                <TableCell>{teacher.username}</TableCell>
+                <TableCell>{teacher.firstName}</TableCell>
+                <TableCell>{teacher.lastName}</TableCell>
+                <TableCell>
+                  {teacher.temporaryPassword ? (
+                    <PasswordReveal value={teacher.temporaryPassword} />
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <Badge variant={teacher.isActive ? 'default' : 'secondary'}>
+                    {teacher.isActive ? t('teachers.active') : t('teachers.disabled')}
+                  </Badge>
+                </TableCell>
+                <TableCell className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setActive({ id: teacher.id, isActive: !teacher.isActive })}>
+                    {teacher.isActive ? t('teachers.disable') : t('teachers.enable')}
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => {
+                      if (window.confirm(t('teachers.confirmDelete'))) remove(teacher.id);
+                    }}
+                  >
+                    {t('teachers.delete')}
+                  </Button>
+                </TableCell>
+              </TableRow>
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={5} className="text-center text-muted-foreground">
+              <TableCell colSpan={6} className="text-center text-muted-foreground">
                 {t('teachers.empty')}
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
-      <CreateTeacherDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        onCreated={(id, password) => setRevealedPasswords((prev) => ({ ...prev, [id]: password }))}
-      />
+      <CreateTeacherDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>
   );
 }
