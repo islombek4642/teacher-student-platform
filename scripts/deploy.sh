@@ -111,7 +111,7 @@ sudo $COMPOSE ps
 # Step 7: Database migrations + seed
 echo -e "${YELLOW}[7/8] Running database migrations...${NC}"
 sudo $COMPOSE exec -T api npx prisma migrate deploy || echo -e "${RED}Migration failed! Check logs.${NC}"
-sudo $COMPOSE exec -T api npx ts-node prisma/seed.ts || echo -e "${RED}Seed failed! Check logs.${NC}"
+sudo $COMPOSE exec -T api node dist/seed.js || echo -e "${RED}Seed failed! Check logs.${NC}"
 
 # Step 8: Health check
 echo -e "${YELLOW}[8/8] Running health checks...${NC}"

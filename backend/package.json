@@ -6,6 +6,7 @@
     "build": "nest build",
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main.js",
+    "build:seed": "tsc prisma/seed.ts --outDir dist --module commonjs --target ES2021 --esModuleInterop --skipLibCheck",
     "test": "jest",
     "test:e2e": "jest --config ./test/jest-e2e.json --runInBand",
     "prisma:generate": "prisma generate",

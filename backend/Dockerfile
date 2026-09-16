@@ -18,6 +18,7 @@ WORKDIR /app
 COPY . .
 RUN npx prisma generate
 RUN npm run build
+RUN npm run build:seed
 
 # --- Stage 3: Runtime ---
 FROM node:20-slim AS runtime
