@@ -28,16 +28,17 @@ ENV TZ=Asia/Tashkent
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && useradd -m -u 1000 appuser
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/package.json ./package.json
 
-RUN chown -R appuser:appuser /app
-USER appuser
+# node:20-slim already ships a non-root "node" user (uid 1000) — reuse it
+# instead of creating a new one to avoid a uid collision.
+RUN chown -R node:node /app
+USER node
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
     CMD curl -f http://localhost:3000/health || exit 1
