@@ -61,7 +61,7 @@ echo -e "${YELLOW}[4/8] Checking .env configuration...${NC}"
 if [[ ! -f .env ]]; then
     if [[ -f .env.example ]]; then
         cp .env.example .env
-        echo -e "${RED}Created .env from .env.example — edit it now (DB_PASSWORD, JWT_SECRET, "
+        echo -e "${RED}Created .env from .env.example — edit it now (DB_PASSWORD, "
         echo -e "SUPER_ADMIN_PASSWORD, API_DOMAIN, APP_DOMAIN, SSL_EMAIL), then re-run this script.${NC}"
         exit 1
     else
@@ -70,7 +70,15 @@ if [[ ! -f .env ]]; then
     fi
 fi
 
-if grep -qE '^(DB_PASSWORD|JWT_SECRET|SUPER_ADMIN_PASSWORD)=CHANGE_THIS' .env; then
+# JWT_SECRET is an internal-only secret nobody ever needs to type or
+# remember, so generate it automatically instead of asking for it.
+if grep -qE '^JWT_SECRET=CHANGE_THIS' .env; then
+    GENERATED_JWT_SECRET=$(openssl rand -hex 32)
+    sed -i "s|^JWT_SECRET=.*|JWT_SECRET=${GENERATED_JWT_SECRET}|" .env
+    echo -e "${GREEN}Generated a random JWT_SECRET.${NC}"
+fi
+
+if grep -qE '^(DB_PASSWORD|SUPER_ADMIN_PASSWORD)=CHANGE_THIS' .env; then
     echo -e "${RED}.env still has placeholder secrets (CHANGE_THIS...). Edit .env and re-run.${NC}"
     exit 1
 fi

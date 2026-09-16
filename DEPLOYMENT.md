@@ -64,8 +64,9 @@ cd teacher-student-platform
 
 # 2. Configure environment
 cp .env.example .env
-# Edit .env: DB_PASSWORD, JWT_SECRET, SUPER_ADMIN_PASSWORD, API_DOMAIN,
-# APP_DOMAIN, SSL_EMAIL — do not leave any CHANGE_THIS placeholder.
+# Edit .env: DB_PASSWORD, SUPER_ADMIN_PASSWORD, API_DOMAIN, APP_DOMAIN,
+# SSL_EMAIL — do not leave any CHANGE_THIS placeholder.
+# (JWT_SECRET is generated automatically by deploy.sh — leave it as-is.)
 
 # 3. Deploy
 bash scripts/deploy.sh
