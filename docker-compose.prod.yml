@@ -1,0 +1,81 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: tsp_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-app}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-app}
+      POSTGRES_DB: ${DB_NAME:-teacher_student}
+      TZ: Asia/Tashkent
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-app}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  api:
+    build:
+      context: ./backend
+    container_name: tsp_api
+    restart: on-failure:5
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER:-app}:${DB_PASSWORD:-app}@db:5432/${DB_NAME:-teacher_student}
+      - PORT=3000
+      - TZ=Asia/Tashkent
+      - CORS_ORIGIN=https://${APP_DOMAIN}
+      - VIRTUAL_HOST=${API_DOMAIN}
+      - VIRTUAL_PORT=3000
+      - LETSENCRYPT_HOST=${API_DOMAIN}
+      - LETSENCRYPT_EMAIL=${SSL_EMAIL}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    expose:
+      - "3000"
+    networks:
+      - internal
+      - proxy_network
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: https://${API_DOMAIN}
+    container_name: tsp_web
+    restart: on-failure:5
+    depends_on:
+      - api
+    environment:
+      - VIRTUAL_HOST=${APP_DOMAIN}
+      - LETSENCRYPT_HOST=${APP_DOMAIN}
+      - LETSENCRYPT_EMAIL=${SSL_EMAIL}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    expose:
+      - "80"
+    networks:
+      - proxy_network
+
+networks:
+  internal:
+  proxy_network:
+    external: true
+
+volumes:
+  postgres_data:
