@@ -112,8 +112,8 @@ describe('TaskSubmissionPage', () => {
       score: 1,
       submittedAt: '2026-09-15T00:00:00.000Z',
       answers: [
-        { id: 'a1', questionId: 'q1', studentAnswer: 'goes', isCorrect: true },
-        { id: 'a2', questionId: 'q2', studentAnswer: '', isCorrect: false },
+        { id: 'a1', questionId: 'q1', studentAnswer: 'goes', isCorrect: true, questionText: 'He ___ to school.', correctAnswer: 'goes' },
+        { id: 'a2', questionId: 'q2', studentAnswer: '', isCorrect: false, questionText: 'Pick one', correctAnswer: 'B' },
       ],
     };
     vi.mocked(useAssignedTasks).mockReturnValue({ data: [task] } as unknown as ReturnType<typeof useAssignedTasks>);
@@ -127,8 +127,8 @@ describe('TaskSubmissionPage', () => {
 
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'studentTasks.submit' })).not.toBeInTheDocument();
-    expect(screen.getByText('studentTasks.correct')).toBeInTheDocument();
-    expect(screen.getByText('studentTasks.incorrect')).toBeInTheDocument();
+    expect(screen.getByText(/studentTasks.correct\)/)).toBeInTheDocument();
+    expect(screen.getByText(/studentTasks.incorrect\)/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'studentTasks.backToList' })).toBeInTheDocument();
   });
 });

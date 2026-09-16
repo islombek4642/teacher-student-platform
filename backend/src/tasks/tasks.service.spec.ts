@@ -45,6 +45,29 @@ describe('TasksService', () => {
     await expect(service.findOneOwned('t1', 'task-1')).rejects.toBeInstanceOf(NotFoundException);
   });
 
+  describe('findAssignedToStudent', () => {
+    it("attaches the student's own submission (if any) to each task", async () => {
+      const prisma = {
+        task: {
+          findMany: jest.fn().mockResolvedValue([
+            { id: 'task-1', title: 'Done task', questions: [], submissions: [{ score: 2, submittedAt: new Date('2026-01-01') }] },
+            { id: 'task-2', title: 'Pending task', questions: [], submissions: [] },
+          ]),
+        },
+      } as unknown as PrismaService;
+      const service = new TasksService(prisma, {} as GroupsService);
+
+      const result = await service.findAssignedToStudent('s1', 'g1');
+
+      expect(prisma.task.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { groupId: 'g1' } }),
+      );
+      expect(result[0].mySubmission).toEqual({ score: 2, submittedAt: new Date('2026-01-01') });
+      expect(result[1].mySubmission).toBeNull();
+      expect((result[0] as { submissions?: unknown }).submissions).toBeUndefined();
+    });
+  });
+
   describe('remove', () => {
     it('deletes a task that has no submissions', async () => {
       const prisma = {

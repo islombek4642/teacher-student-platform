@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,18 +10,30 @@ import { useDeleteTask, useTasksForGroup } from './api/tasks.api';
 export function TasksPage() {
   const { t } = useTranslation();
   const { data: groups } = useGroups();
-  const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>(undefined);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>(
+    searchParams.get('groupId') ?? undefined,
+  );
   const { data: tasks } = useTasksForGroup(selectedGroupId);
   const { mutate: remove } = useDeleteTask(selectedGroupId);
+
+  const selectGroup = (groupId: string | undefined) => {
+    setSelectedGroupId(groupId);
+    setSearchParams(groupId ? { groupId } : {}, { replace: true });
+  };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">{t('tasks.title')}</h1>
-        <Button render={<Link to="/teacher/tasks/new" />}>{t('tasks.create')}</Button>
+        <Button
+          render={<Link to={selectedGroupId ? `/teacher/tasks/new?groupId=${selectedGroupId}` : '/teacher/tasks/new'} />}
+        >
+          {t('tasks.create')}
+        </Button>
       </div>
 
-      <Select<string> onValueChange={(value) => setSelectedGroupId(value ?? undefined)}>
+      <Select<string> defaultValue={selectedGroupId} onValueChange={(value) => selectGroup(value ?? undefined)}>
         <SelectTrigger className="w-64">
           <SelectValue placeholder={t('tasks.selectGroup')}>
             {(value: string | null) => groups?.find((group) => group.id === value)?.name ?? t('tasks.selectGroup')}
@@ -52,7 +64,7 @@ export function TasksPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  render={<Link to={`/teacher/statistics?taskId=${task.id}`} />}
+                  render={<Link to={`/teacher/statistics?taskId=${task.id}&groupId=${task.groupId}`} />}
                 >
                   {t('tasks.statistics')}
                 </Button>

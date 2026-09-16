@@ -15,25 +15,26 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
 
 export function StudentProgressPage() {
   const { t } = useTranslation();
-  const { data: progress } = useStudentProgress();
-
-  if (!progress) return null;
+  const { data: progress, isLoading } = useStudentProgress();
 
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-semibold">{t('studentProgress.title')}</h1>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <StatCard label={t('studentProgress.tasksCompleted')} value={progress.tasksCompleted} />
-        <StatCard label={t('studentProgress.averageScore')} value={progress.averageScore.toFixed(1)} />
-        <StatCard
-          label={t('studentProgress.lastActivity')}
-          value={
-            progress.lastActivityAt
-              ? new Date(progress.lastActivityAt).toLocaleDateString()
-              : t('studentProgress.never')
-          }
-        />
-      </div>
+      {isLoading && <p className="text-muted-foreground">{t('studentProgress.loading')}</p>}
+      {progress && (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <StatCard label={t('studentProgress.tasksCompleted')} value={progress.tasksCompleted} />
+          <StatCard label={t('studentProgress.averageScore')} value={progress.averageScore.toFixed(1)} />
+          <StatCard
+            label={t('studentProgress.lastActivity')}
+            value={
+              progress.lastActivityAt
+                ? new Date(progress.lastActivityAt).toLocaleDateString()
+                : t('studentProgress.never')
+            }
+          />
+        </div>
+      )}
     </div>
   );
 }

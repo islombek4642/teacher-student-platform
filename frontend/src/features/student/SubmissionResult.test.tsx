@@ -20,15 +20,17 @@ describe('SubmissionResult', () => {
           score: 1,
           submittedAt: '2026-09-15T00:00:00.000Z',
           answers: [
-            { id: 'a1', questionId: 'q1', studentAnswer: 'goes', isCorrect: true },
-            { id: 'a2', questionId: 'q2', studentAnswer: 'A', isCorrect: false },
+            { id: 'a1', questionId: 'q1', studentAnswer: 'goes', isCorrect: true, questionText: 'She ___ to school.', correctAnswer: 'goes' },
+            { id: 'a2', questionId: 'q2', studentAnswer: 'A', isCorrect: false, questionText: 'Pick B.', correctAnswer: 'B' },
           ],
         }}
       />,
     );
 
     expect(screen.getByText(/studentTasks.score/)).toBeInTheDocument();
-    expect(screen.getByText('studentTasks.correct')).toBeInTheDocument();
-    expect(screen.getByText('studentTasks.incorrect')).toBeInTheDocument();
+    expect(screen.getByText(/studentTasks.correct\)/)).toBeInTheDocument();
+    expect(screen.getByText(/studentTasks.incorrect\)/)).toBeInTheDocument();
+    expect(screen.getByText('She ___ to school.')).toBeInTheDocument();
+    expect(screen.getByText(/studentTasks.correctAnswerIs/)).toBeInTheDocument();
   });
 });

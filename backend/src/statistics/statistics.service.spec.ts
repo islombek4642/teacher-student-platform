@@ -71,7 +71,14 @@ describe('StatisticsService', () => {
     } as unknown as PrismaService;
     const groupsService = {} as unknown as GroupsService;
     const tasksService = {
-      findOneOwned: jest.fn().mockResolvedValue({ id: 'task1', teacherId: 't1' }),
+      findOneOwned: jest.fn().mockResolvedValue({
+        id: 'task1',
+        teacherId: 't1',
+        questions: [
+          { id: 'q1', text: 'She ___ to school.' },
+          { id: 'q2', text: 'They ___ football.' },
+        ],
+      }),
     } as unknown as TasksService;
     const service = new StatisticsService(prisma, groupsService, tasksService);
 
@@ -79,7 +86,7 @@ describe('StatisticsService', () => {
 
     expect(stats.submissionCount).toBe(2);
     expect(stats.averageScore).toBe(6);
-    expect(stats.mostMissedQuestionIds).toEqual(['q1']);
+    expect(stats.mostMissedQuestions).toEqual([{ id: 'q1', text: 'She ___ to school.', missCount: 2 }]);
   });
 
   it('taskStats returns zeroed stats for a task the teacher does not own', async () => {
@@ -96,7 +103,7 @@ describe('StatisticsService', () => {
 
     const stats = await service.taskStats('t1', 'foreign-task');
 
-    expect(stats).toEqual({ submissionCount: 0, averageScore: 0, mostMissedQuestionIds: [] });
+    expect(stats).toEqual({ submissionCount: 0, averageScore: 0, mostMissedQuestions: [] });
     expect(prisma.submission.findMany).not.toHaveBeenCalled();
   });
 

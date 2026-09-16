@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
@@ -21,9 +20,16 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
 export function TeacherStatisticsPage() {
   const { t } = useTranslation();
   const { data: groups } = useGroups();
-  const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>(undefined);
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const taskId = searchParams.get('taskId') ?? undefined;
+  const selectedGroupId = searchParams.get('groupId') ?? undefined;
+
+  const selectGroup = (groupId: string | undefined) => {
+    const next = new URLSearchParams(searchParams);
+    if (groupId) next.set('groupId', groupId);
+    else next.delete('groupId');
+    setSearchParams(next, { replace: true });
+  };
 
   const { data: overview } = useGroupOverview(selectedGroupId);
   const { data: leaderboard } = useLeaderboard(selectedGroupId);
@@ -45,12 +51,14 @@ export function TeacherStatisticsPage() {
             </div>
             <div>
               <p className="text-sm font-medium">{t('statistics.mostMissed')}</p>
-              {taskStats.mostMissedQuestionIds.length === 0 ? (
+              {taskStats.mostMissedQuestions.length === 0 ? (
                 <p className="text-sm text-muted-foreground">{t('statistics.noData')}</p>
               ) : (
                 <ol className="ml-4 list-decimal text-sm">
-                  {taskStats.mostMissedQuestionIds.map((id) => (
-                    <li key={id}>{id}</li>
+                  {taskStats.mostMissedQuestions.map((question) => (
+                    <li key={question.id}>
+                      {question.text} {t('statistics.missedByCount', { count: question.missCount })}
+                    </li>
                   ))}
                 </ol>
               )}
@@ -59,7 +67,7 @@ export function TeacherStatisticsPage() {
         </Card>
       )}
 
-      <Select<string> onValueChange={(value) => setSelectedGroupId(value ?? undefined)}>
+      <Select<string> defaultValue={selectedGroupId} onValueChange={(value) => selectGroup(value ?? undefined)}>
         <SelectTrigger className="w-64">
           <SelectValue placeholder={t('statistics.selectGroup')}>
             {(value: string | null) =>

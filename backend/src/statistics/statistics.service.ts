@@ -48,11 +48,12 @@ export class StatisticsService {
   }
 
   async taskStats(teacherProfileId: string, taskId: string) {
+    let task;
     try {
-      await this.tasksService.findOneOwned(teacherProfileId, taskId);
+      task = await this.tasksService.findOneOwned(teacherProfileId, taskId);
     } catch (error) {
       if (error instanceof NotFoundException) {
-        return { submissionCount: 0, averageScore: 0, mostMissedQuestionIds: [] };
+        return { submissionCount: 0, averageScore: 0, mostMissedQuestions: [] };
       }
       throw error;
     }
@@ -73,11 +74,16 @@ export class StatisticsService {
         }
       }
     }
-    const mostMissedQuestionIds = [...missCounts.entries()]
+    const questionsById = new Map(task.questions.map((q) => [q.id, q]));
+    const mostMissedQuestions = [...missCounts.entries()]
       .sort((a, b) => b[1] - a[1])
-      .map(([questionId]) => questionId);
+      .map(([questionId, missCount]) => ({
+        id: questionId,
+        text: questionsById.get(questionId)?.text ?? '',
+        missCount,
+      }));
 
-    return { submissionCount, averageScore, mostMissedQuestionIds };
+    return { submissionCount, averageScore, mostMissedQuestions };
   }
 
   async studentProgress(studentProfileId: string) {

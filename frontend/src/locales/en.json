@@ -1,7 +1,13 @@
 {
   "app": { "title": "Teacher-Student Platform" },
   "required": "This field is required",
-  "common": { "show": "Show", "hide": "Hide", "copy": "Copy", "copied": "Copied to clipboard" },
+  "common": {
+    "show": "Show",
+    "hide": "Hide",
+    "copy": "Copy",
+    "copied": "Copied to clipboard",
+    "moreActions": "More actions"
+  },
   "auth": {
     "login": { "title": "Sign in", "username": "Username", "password": "Password", "submit": "Sign in" }
   },
@@ -58,6 +64,7 @@
   "tasks": {
     "title": "Tasks",
     "create": "New task",
+    "createSuccess": "Task created successfully",
     "selectGroup": "Select a group",
     "taskTitle": "Title",
     "description": "Description",
@@ -84,13 +91,18 @@
   "studentTasks": {
     "title": "My tasks",
     "open": "Start",
+    "viewResult": "View result",
+    "completedScore": "{{score}}/{{total}}",
     "submit": "Submit",
     "yourAnswer": "Your answer",
     "score": "Score: {{score}} / {{total}}",
     "correct": "Correct",
     "incorrect": "Incorrect",
+    "correctAnswerIs": "Correct answer: {{answer}}",
     "backToList": "Back to list",
-    "noTasks": "No tasks assigned yet"
+    "noTasks": "No tasks assigned yet",
+    "loading": "Loading...",
+    "notFound": "This task could not be found."
   },
   "statistics": {
     "title": "Statistics",
@@ -103,10 +115,12 @@
     "taskStatistics": "Task statistics",
     "submissionCount": "Submissions",
     "mostMissed": "Most-missed questions",
+    "missedByCount": "(missed by {{count}})",
     "noData": "No data yet"
   },
   "studentProgress": {
     "title": "My progress",
+    "loading": "Loading...",
     "tasksCompleted": "Tasks completed",
     "averageScore": "Average score",
     "lastActivity": "Last activity",

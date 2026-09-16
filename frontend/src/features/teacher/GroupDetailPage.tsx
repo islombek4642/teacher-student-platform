@@ -5,6 +5,7 @@ import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { PasswordReveal } from '@/components/shared/PasswordReveal';
 import { toast } from '@/components/ui/toast';
 import { useGroup } from './api/groups.api';
@@ -96,7 +97,7 @@ export function GroupDetailPage() {
                     <span className="text-muted-foreground">—</span>
                   )}
                 </TableCell>
-                <TableCell className="flex gap-2">
+                <TableCell className="flex justify-end gap-1">
                   {editingId === student.id ? (
                     <Button size="sm" onClick={() => saveEdit(student.id)}>
                       {t('students.save')}
@@ -114,26 +115,36 @@ export function GroupDetailPage() {
                       {t('students.edit')}
                     </Button>
                   )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      resetPassword(student.id, {
-                        onSuccess: () => toast.add({ type: 'success', description: t('students.resetSuccess') }),
-                      })
-                    }
-                  >
-                    {t('students.resetPassword')}
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => {
-                      if (window.confirm(t('students.confirmDelete'))) remove(student.id);
-                    }}
-                  >
-                    {t('students.delete')}
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={
+                        <Button variant="ghost" size="icon-sm" aria-label={t('common.moreActions')}>
+                          <Icon icon="lucide:more-vertical" />
+                        </Button>
+                      }
+                    />
+                    <DropdownMenuContent>
+                      <DropdownMenuItem
+                        onClick={() =>
+                          resetPassword(student.id, {
+                            onSuccess: () => toast.add({ type: 'success', description: t('students.resetSuccess') }),
+                          })
+                        }
+                      >
+                        <Icon icon="lucide:key-round" />
+                        {t('students.resetPassword')}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={() => {
+                          if (window.confirm(t('students.confirmDelete'))) remove(student.id);
+                        }}
+                      >
+                        <Icon icon="lucide:trash-2" />
+                        {t('students.delete')}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))

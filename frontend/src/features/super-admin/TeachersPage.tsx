@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { PasswordReveal } from '@/components/shared/PasswordReveal';
 import { toast } from '@/components/ui/toast';
 import { useDeleteTeacher, useResetTeacherPassword, useSetTeacherActive, useTeachers } from './api/teachers.api';
@@ -58,30 +60,40 @@ export function TeachersPage() {
                     {teacher.isActive ? t('teachers.active') : t('teachers.disabled')}
                   </Badge>
                 </TableCell>
-                <TableCell className="flex gap-2">
+                <TableCell className="flex justify-end gap-1">
                   <Button variant="outline" size="sm" onClick={() => setActive({ id: teacher.id, isActive: !teacher.isActive })}>
                     {teacher.isActive ? t('teachers.disable') : t('teachers.enable')}
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      resetPassword(teacher.id, {
-                        onSuccess: () => toast.add({ type: 'success', description: t('teachers.resetSuccess') }),
-                      })
-                    }
-                  >
-                    {t('teachers.resetPassword')}
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => {
-                      if (window.confirm(t('teachers.confirmDelete'))) remove(teacher.id);
-                    }}
-                  >
-                    {t('teachers.delete')}
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={
+                        <Button variant="ghost" size="icon-sm" aria-label={t('common.moreActions')}>
+                          <Icon icon="lucide:more-vertical" />
+                        </Button>
+                      }
+                    />
+                    <DropdownMenuContent>
+                      <DropdownMenuItem
+                        onClick={() =>
+                          resetPassword(teacher.id, {
+                            onSuccess: () => toast.add({ type: 'success', description: t('teachers.resetSuccess') }),
+                          })
+                        }
+                      >
+                        <Icon icon="lucide:key-round" />
+                        {t('teachers.resetPassword')}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={() => {
+                          if (window.confirm(t('teachers.confirmDelete'))) remove(teacher.id);
+                        }}
+                      >
+                        <Icon icon="lucide:trash-2" />
+                        {t('teachers.delete')}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))

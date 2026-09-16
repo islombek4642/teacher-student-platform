@@ -64,11 +64,17 @@ export class TasksService {
     return this.prisma.task.findMany({ where: { groupId }, include: { questions: true } });
   }
 
-  async findAssignedToStudent(studentGroupId: string) {
+  async findAssignedToStudent(studentProfileId: string, studentGroupId: string) {
     const tasks = await this.prisma.task.findMany({
       where: { groupId: studentGroupId },
-      include: { questions: { select: { id: true, type: true, text: true, options: true } } },
+      include: {
+        questions: { select: { id: true, type: true, text: true, options: true } },
+        submissions: { where: { studentId: studentProfileId }, select: { score: true, submittedAt: true } },
+      },
     });
-    return tasks;
+    return tasks.map(({ submissions, ...task }) => ({
+      ...task,
+      mySubmission: submissions[0] ?? null,
+    }));
   }
 }

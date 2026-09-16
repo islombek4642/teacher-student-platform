@@ -51,6 +51,8 @@ export interface Task {
   description: string | null;
   createdAt: string;
   questions: Question[];
+  // Only present on the student-facing "assigned tasks" endpoint.
+  mySubmission?: { score: number; submittedAt: string | null } | null;
 }
 
 export interface Answer {
@@ -58,6 +60,8 @@ export interface Answer {
   questionId: string;
   studentAnswer: string;
   isCorrect: boolean;
+  questionText: string | null;
+  correctAnswer: string | null;
 }
 
 export interface Submission {
@@ -86,7 +90,7 @@ export interface LeaderboardEntry {
 export interface TaskStats {
   submissionCount: number;
   averageScore: number;
-  mostMissedQuestionIds: string[];
+  mostMissedQuestions: { id: string; text: string; missCount: number }[];
 }
 
 export interface StudentProgress {

@@ -1,7 +1,13 @@
 {
   "app": { "title": "Teacher-Student Platform" },
   "required": "Bu maydon to'ldirilishi shart",
-  "common": { "show": "Ko'rsatish", "hide": "Yashirish", "copy": "Nusxalash", "copied": "Nusxalandi" },
+  "common": {
+    "show": "Ko'rsatish",
+    "hide": "Yashirish",
+    "copy": "Nusxalash",
+    "copied": "Nusxalandi",
+    "moreActions": "Qo'shimcha amallar"
+  },
   "auth": {
     "login": { "title": "Kirish", "username": "Foydalanuvchi nomi", "password": "Parol", "submit": "Kirish" }
   },
@@ -58,6 +64,7 @@
   "tasks": {
     "title": "Topshiriqlar",
     "create": "Yangi topshiriq",
+    "createSuccess": "Topshiriq muvaffaqiyatli yaratildi",
     "selectGroup": "Guruhni tanlang",
     "taskTitle": "Sarlavha",
     "description": "Tavsif",
@@ -84,13 +91,18 @@
   "studentTasks": {
     "title": "Topshiriqlarim",
     "open": "Bajarish",
+    "viewResult": "Natijani ko'rish",
+    "completedScore": "{{score}}/{{total}}",
     "submit": "Yuborish",
     "yourAnswer": "Javobingiz",
     "score": "Ball: {{score}} / {{total}}",
     "correct": "To'g'ri",
     "incorrect": "Noto'g'ri",
+    "correctAnswerIs": "To'g'ri javob: {{answer}}",
     "backToList": "Ro'yxatga qaytish",
-    "noTasks": "Sizga biriktirilgan topshiriqlar yo'q"
+    "noTasks": "Sizga biriktirilgan topshiriqlar yo'q",
+    "loading": "Yuklanmoqda...",
+    "notFound": "Bu topshiriq topilmadi."
   },
   "statistics": {
     "title": "Statistika",
@@ -103,10 +115,12 @@
     "taskStatistics": "Topshiriq statistikasi",
     "submissionCount": "Topshirilganlar soni",
     "mostMissed": "Eng ko'p xato qilingan savollar",
+    "missedByCount": "({{count}} kishi xato qildi)",
     "noData": "Ma'lumot yo'q"
   },
   "studentProgress": {
     "title": "Mening natijalarim",
+    "loading": "Yuklanmoqda...",
     "tasksCompleted": "Bajarilgan topshiriqlar",
     "averageScore": "O'rtacha ball",
     "lastActivity": "Oxirgi faollik",

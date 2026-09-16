@@ -45,7 +45,7 @@ export class SubmissionsService {
     }
 
     try {
-      return await this.prisma.submission.create({
+      const submission = await this.prisma.submission.create({
         data: {
           taskId,
           studentId: studentProfileId,
@@ -56,6 +56,13 @@ export class SubmissionsService {
         },
         include: { answers: true },
       });
+      return {
+        ...submission,
+        answers: submission.answers.map((answer) => {
+          const question = questionsById.get(answer.questionId);
+          return { ...answer, questionText: question?.text ?? null, correctAnswer: question?.correctAnswer ?? null };
+        }),
+      };
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
         throw new ConflictException({

@@ -33,7 +33,7 @@ export class TasksController {
   @Get('tasks/assigned')
   async findAssigned(@CurrentUser() user: JwtPayload) {
     const profile = await this.prisma.studentProfile.findUniqueOrThrow({ where: { id: user.profileId! } });
-    return this.tasksService.findAssignedToStudent(profile.groupId);
+    return this.tasksService.findAssignedToStudent(user.profileId!, profile.groupId);
   }
 
   @Roles(Role.TEACHER)

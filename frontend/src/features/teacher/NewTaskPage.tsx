@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   useFieldArray,
@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from '@/components/ui/toast';
 import { useGroups } from './api/groups.api';
 import { useCreateTask } from './api/tasks.api';
 import { taskFormSchema, type TaskFormValues } from './task-form-schema';
@@ -144,6 +145,7 @@ function QuestionRow({
 export function NewTaskPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { data: groups } = useGroups();
   const { mutate, isPending } = useCreateTask();
   const {
@@ -154,12 +156,17 @@ export function NewTaskPage() {
     formState: { errors },
   } = useForm<TaskFormValues>({
     resolver: zodResolver(taskFormSchema),
-    defaultValues: { groupId: '', title: '', description: '', questions: [] },
+    defaultValues: { groupId: searchParams.get('groupId') ?? '', title: '', description: '', questions: [] },
   });
   const { fields, append, remove } = useFieldArray({ control, name: 'questions' });
 
   const onSubmit = (data: TaskFormValues) =>
-    mutate(data, { onSuccess: () => navigate('/teacher/tasks') });
+    mutate(data, {
+      onSuccess: (task) => {
+        toast.add({ type: 'success', description: t('tasks.createSuccess') });
+        navigate(`/teacher/tasks?groupId=${task.groupId}`);
+      },
+    });
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="max-w-2xl space-y-4">
@@ -167,7 +174,10 @@ export function NewTaskPage() {
 
       <div className="space-y-1">
         <Label htmlFor="groupId">{t('tasks.selectGroup')}</Label>
-        <Select<string> onValueChange={(value) => setValue('groupId', value ?? '')}>
+        <Select<string>
+          defaultValue={searchParams.get('groupId') ?? undefined}
+          onValueChange={(value) => setValue('groupId', value ?? '')}
+        >
           <SelectTrigger id="groupId">
             <SelectValue placeholder={t('tasks.selectGroup')}>
               {(value: string | null) => groups?.find((group) => group.id === value)?.name ?? t('tasks.selectGroup')}
