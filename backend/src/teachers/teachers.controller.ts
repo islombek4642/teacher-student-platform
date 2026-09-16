@@ -28,6 +28,11 @@ export class TeachersController {
     return this.teachersService.setActive(id, dto.isActive);
   }
 
+  @Post(':id/reset-password')
+  resetPassword(@Param('id') id: string) {
+    return this.teachersService.resetPassword(id);
+  }
+
   @Delete(':id')
   @HttpCode(204)
   remove(@Param('id') id: string) {

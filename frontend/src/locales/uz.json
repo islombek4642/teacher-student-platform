@@ -18,6 +18,8 @@
     "disabled": "Faol emas",
     "disable": "Faolsizlantirish",
     "enable": "Faollashtirish",
+    "resetPassword": "Parolni tiklash",
+    "resetSuccess": "Parol muvaffaqiyatli yangilandi",
     "confirmDelete": "Bu o'qituvchini butunlay o'chirmoqchimisiz?",
     "delete": "O'chirish",
     "loading": "Yuklanmoqda...",

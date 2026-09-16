@@ -59,6 +59,20 @@ export class TeachersService {
     }));
   }
 
+  async resetPassword(teacherProfileId: string) {
+    const profile = await this.prisma.teacherProfile.findUnique({ where: { id: teacherProfileId } });
+    if (!profile) {
+      throw new NotFoundException({ errorCode: ERROR_CODES.TEACHER_NOT_FOUND, message: 'Teacher not found' });
+    }
+    const temporaryPassword = generateFourDigitPassword();
+    const passwordHash = await hashPassword(temporaryPassword);
+    await this.prisma.user.update({
+      where: { id: profile.userId },
+      data: { passwordHash, currentPassword: encryptCredential(temporaryPassword) },
+    });
+    return { temporaryPassword };
+  }
+
   async setActive(teacherProfileId: string, isActive: boolean) {
     const profile = await this.prisma.teacherProfile.findUnique({ where: { id: teacherProfileId } });
     if (!profile) {

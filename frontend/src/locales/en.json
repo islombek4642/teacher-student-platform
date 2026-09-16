@@ -18,6 +18,8 @@
     "disabled": "Disabled",
     "disable": "Disable",
     "enable": "Enable",
+    "resetPassword": "Reset password",
+    "resetSuccess": "Password reset successfully",
     "confirmDelete": "Permanently delete this teacher?",
     "delete": "Delete",
     "loading": "Loading...",

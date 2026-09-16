@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { PasswordReveal } from '@/components/shared/PasswordReveal';
-import { useDeleteTeacher, useSetTeacherActive, useTeachers } from './api/teachers.api';
+import { toast } from '@/components/ui/toast';
+import { useDeleteTeacher, useResetTeacherPassword, useSetTeacherActive, useTeachers } from './api/teachers.api';
 import { CreateTeacherDialog } from './CreateTeacherDialog';
 
 export function TeachersPage() {
@@ -12,6 +13,7 @@ export function TeachersPage() {
   const { data: teachers, isLoading } = useTeachers();
   const [dialogOpen, setDialogOpen] = useState(false);
   const { mutate: setActive } = useSetTeacherActive();
+  const { mutate: resetPassword } = useResetTeacherPassword();
   const { mutate: remove } = useDeleteTeacher();
 
   return (
@@ -59,6 +61,17 @@ export function TeachersPage() {
                 <TableCell className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={() => setActive({ id: teacher.id, isActive: !teacher.isActive })}>
                     {teacher.isActive ? t('teachers.disable') : t('teachers.enable')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      resetPassword(teacher.id, {
+                        onSuccess: () => toast.add({ type: 'success', description: t('teachers.resetSuccess') }),
+                      })
+                    }
+                  >
+                    {t('teachers.resetPassword')}
                   </Button>
                   <Button
                     variant="destructive"

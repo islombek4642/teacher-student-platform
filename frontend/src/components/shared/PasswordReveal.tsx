@@ -16,7 +16,12 @@ export function PasswordReveal({ value }: { value: string }) {
 
   return (
     <div className="flex items-center gap-1">
-      <Input readOnly type={visible ? 'text' : 'password'} value={value} className="font-mono tracking-widest" />
+      <Input
+        readOnly
+        type={visible ? 'text' : 'password'}
+        value={value}
+        className="w-16 min-w-0 font-mono tracking-widest"
+      />
       <Button
         type="button"
         variant="ghost"

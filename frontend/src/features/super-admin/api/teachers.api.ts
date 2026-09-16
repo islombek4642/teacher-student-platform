@@ -27,6 +27,15 @@ export function useSetTeacherActive() {
   });
 }
 
+export function useResetTeacherPassword() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) =>
+      (await apiClient.post<{ temporaryPassword: string }>(`/teachers/${id}/reset-password`)).data,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['teachers'] }),
+  });
+}
+
 export function useDeleteTeacher() {
   const queryClient = useQueryClient();
   return useMutation({

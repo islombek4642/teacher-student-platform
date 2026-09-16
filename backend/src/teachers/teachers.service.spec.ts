@@ -2,6 +2,7 @@ import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Prisma, Role } from '@prisma/client';
 import { TeachersService } from './teachers.service';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { decryptCredential } from '../common/crypto/credential-crypto.util';
 
 describe('TeachersService', () => {
   it('creates a teacher user + profile and returns a one-time plaintext password', async () => {
@@ -41,6 +42,35 @@ describe('TeachersService', () => {
       expect(error).toBeInstanceOf(ConflictException);
       expect((error as ConflictException).getResponse()).toMatchObject({ errorCode: 'ERR_USERNAME_TAKEN' });
     }
+  });
+
+  describe('resetPassword', () => {
+    it("generates a new one-time password and updates the teacher's hash", async () => {
+      const prisma = {
+        teacherProfile: { findUnique: jest.fn().mockResolvedValue({ id: 't1', userId: 'u1' }) },
+        user: { update: jest.fn().mockResolvedValue({}) },
+      } as unknown as PrismaService;
+      const service = new TeachersService(prisma);
+
+      const result = await service.resetPassword('t1');
+
+      expect(result.temporaryPassword).toMatch(/^\d{4}$/);
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'u1' },
+        data: { passwordHash: expect.any(String), currentPassword: expect.any(String) },
+      });
+      const [[{ data }]] = (prisma.user.update as jest.Mock).mock.calls;
+      expect(decryptCredential(data.currentPassword)).toBe(result.temporaryPassword);
+    });
+
+    it('throws NotFoundException when the teacher does not exist', async () => {
+      const prisma = {
+        teacherProfile: { findUnique: jest.fn().mockResolvedValue(null) },
+      } as unknown as PrismaService;
+      const service = new TeachersService(prisma);
+
+      await expect(service.resetPassword('missing')).rejects.toBeInstanceOf(NotFoundException);
+    });
   });
 
   describe('setActive', () => {
