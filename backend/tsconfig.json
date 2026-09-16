@@ -5,6 +5,7 @@
     "target": "ES2021",
     "sourceMap": true,
     "outDir": "./dist",
+    "rootDir": "./src",
     "baseUrl": "./",
     "incremental": true,
     "experimentalDecorators": true,
@@ -13,5 +14,6 @@
     "skipLibCheck": true,
     "strictNullChecks": true,
     "esModuleInterop": true
-  }
+  },
+  "exclude": ["node_modules", "dist", "test", "prisma"]
 }
