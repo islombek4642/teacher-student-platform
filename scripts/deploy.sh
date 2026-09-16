@@ -72,16 +72,25 @@ fi
 
 # JWT_SECRET and CREDENTIALS_ENCRYPTION_KEY are internal-only secrets
 # nobody ever needs to type or remember, so generate them automatically
-# instead of asking for them. CREDENTIALS_ENCRYPTION_KEY must never change
-# once generated — doing so would make every already-stored teacher/
-# student password permanently undecryptable, so this only ever fires
-# once, the first time it finds the placeholder.
+# instead of asking for them. An existing .env from before these lines
+# existed in .env.example won't have them at all, so append the
+# placeholder first if the key is missing entirely — then the placeholder
+# check below fills in a real value. CREDENTIALS_ENCRYPTION_KEY must never
+# change once generated — doing so would make every already-stored
+# teacher/student password permanently undecryptable, so this only ever
+# replaces the placeholder, never an already-generated value.
+if ! grep -qE '^JWT_SECRET=' .env; then
+    echo 'JWT_SECRET=CHANGE_THIS_TO_A_LONG_RANDOM_VALUE' >> .env
+fi
 if grep -qE '^JWT_SECRET=CHANGE_THIS' .env; then
     GENERATED_JWT_SECRET=$(openssl rand -hex 32)
     sed -i "s|^JWT_SECRET=.*|JWT_SECRET=${GENERATED_JWT_SECRET}|" .env
     echo -e "${GREEN}Generated a random JWT_SECRET.${NC}"
 fi
 
+if ! grep -qE '^CREDENTIALS_ENCRYPTION_KEY=' .env; then
+    echo 'CREDENTIALS_ENCRYPTION_KEY=CHANGE_THIS_TO_A_LONG_RANDOM_VALUE' >> .env
+fi
 if grep -qE '^CREDENTIALS_ENCRYPTION_KEY=CHANGE_THIS' .env; then
     GENERATED_CREDENTIALS_KEY=$(openssl rand -hex 32)
     sed -i "s|^CREDENTIALS_ENCRYPTION_KEY=.*|CREDENTIALS_ENCRYPTION_KEY=${GENERATED_CREDENTIALS_KEY}|" .env
