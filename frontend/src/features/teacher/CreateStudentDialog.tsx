@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -7,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { PasswordReveal } from '@/components/shared/PasswordReveal';
+import { toast } from '@/components/ui/toast';
 import { useCreateStudent } from './api/students.api';
 
 const schema = z.object({
@@ -21,14 +20,15 @@ export function CreateStudentDialog({
   groupId,
   open,
   onOpenChange,
+  onCreated,
 }: {
   groupId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onCreated: (id: string, temporaryPassword: string) => void;
 }) {
   const { t } = useTranslation();
   const { mutate, isPending } = useCreateStudent(groupId);
-  const [createdPassword, setCreatedPassword] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -39,20 +39,15 @@ export function CreateStudentDialog({
   const onSubmit = (data: FormValues) =>
     mutate(data, {
       onSuccess: (created) => {
-        setCreatedPassword(created.temporaryPassword);
+        onCreated(created.id, created.temporaryPassword);
+        toast.add({ type: 'success', description: t('students.createSuccess') });
         reset();
+        onOpenChange(false);
       },
     });
 
-  // Fix for the stale-password-notice bug found in Task 14's identical
-  // CreateTeacherDialog pattern: without this, closing the dialog after a
-  // successful create and reopening it would still show the old one-time
-  // password instead of a fresh form.
   const handleOpenChange = (next: boolean) => {
-    if (!next) {
-      setCreatedPassword(null);
-      reset();
-    }
+    if (!next) reset();
     onOpenChange(next);
   };
 
@@ -62,33 +57,26 @@ export function CreateStudentDialog({
         <DialogHeader>
           <DialogTitle>{t('students.create')}</DialogTitle>
         </DialogHeader>
-        {createdPassword ? (
-          <div className="space-y-2">
-            <p>{t('students.createdPasswordNotice')}</p>
-            <PasswordReveal value={createdPassword} />
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+          <div className="space-y-1">
+            <Label htmlFor="username">{t('students.username')}</Label>
+            <Input id="username" {...register('username')} />
+            {errors.username && <p className="text-sm text-destructive">{t(errors.username.message!)}</p>}
           </div>
-        ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-            <div className="space-y-1">
-              <Label htmlFor="username">{t('students.username')}</Label>
-              <Input id="username" {...register('username')} />
-              {errors.username && <p className="text-sm text-destructive">{t(errors.username.message!)}</p>}
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="firstName">{t('students.firstName')}</Label>
-              <Input id="firstName" {...register('firstName')} />
-              {errors.firstName && <p className="text-sm text-destructive">{t(errors.firstName.message!)}</p>}
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="lastName">{t('students.lastName')}</Label>
-              <Input id="lastName" {...register('lastName')} />
-              {errors.lastName && <p className="text-sm text-destructive">{t(errors.lastName.message!)}</p>}
-            </div>
-            <Button type="submit" disabled={isPending}>
-              {t('students.create')}
-            </Button>
-          </form>
-        )}
+          <div className="space-y-1">
+            <Label htmlFor="firstName">{t('students.firstName')}</Label>
+            <Input id="firstName" {...register('firstName')} />
+            {errors.firstName && <p className="text-sm text-destructive">{t(errors.firstName.message!)}</p>}
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="lastName">{t('students.lastName')}</Label>
+            <Input id="lastName" {...register('lastName')} />
+            {errors.lastName && <p className="text-sm text-destructive">{t(errors.lastName.message!)}</p>}
+          </div>
+          <Button type="submit" disabled={isPending}>
+            {t('students.create')}
+          </Button>
+        </form>
       </DialogContent>
     </Dialog>
   );

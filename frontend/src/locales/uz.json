@@ -21,6 +21,7 @@
     "delete": "O'chirish",
     "loading": "Yuklanmoqda...",
     "empty": "Hozircha o'qituvchilar yo'q",
+    "createSuccess": "O'qituvchi muvaffaqiyatli yaratildi",
     "createdPasswordNotice": "Bir martalik parol yaratildi — uni hozir nusxalab o'qituvchiga bering, keyin qayta ko'rsatilmaydi."
   },
   "groups": {
@@ -45,6 +46,8 @@
     "resetPassword": "Parolni tiklash",
     "delete": "O'chirish",
     "confirmDelete": "Bu o'quvchini o'chirmoqchimisiz?",
+    "createSuccess": "O'quvchi muvaffaqiyatli yaratildi",
+    "resetSuccess": "Parol muvaffaqiyatli yangilandi",
     "createdPasswordNotice": "Bir martalik parol yaratildi — uni hozir nusxalab o'quvchiga bering, keyin qayta ko'rsatilmaydi.",
     "resetPasswordNotice": "Yangi bir martalik parol yaratildi.",
     "loading": "Yuklanmoqda...",

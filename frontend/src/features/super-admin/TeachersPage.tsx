@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { PasswordReveal } from '@/components/shared/PasswordReveal';
 import { useDeleteTeacher, useSetTeacherActive, useTeachers } from './api/teachers.api';
 import { CreateTeacherDialog } from './CreateTeacherDialog';
 
@@ -10,8 +11,16 @@ export function TeachersPage() {
   const { t } = useTranslation();
   const { data: teachers, isLoading } = useTeachers();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [revealedPasswords, setRevealedPasswords] = useState<Record<string, string>>({});
   const { mutate: setActive } = useSetTeacherActive();
   const { mutate: remove } = useDeleteTeacher();
+
+  const dismissPassword = (id: string) =>
+    setRevealedPasswords((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
 
   return (
     <div className="space-y-4">
@@ -38,30 +47,45 @@ export function TeachersPage() {
             </TableRow>
           ) : teachers && teachers.length > 0 ? (
             teachers.map((teacher) => (
-              <TableRow key={teacher.id}>
-                <TableCell>{teacher.username}</TableCell>
-                <TableCell>{teacher.firstName}</TableCell>
-                <TableCell>{teacher.lastName}</TableCell>
-                <TableCell>
-                  <Badge variant={teacher.isActive ? 'default' : 'secondary'}>
-                    {teacher.isActive ? t('teachers.active') : t('teachers.disabled')}
-                  </Badge>
-                </TableCell>
-                <TableCell className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setActive({ id: teacher.id, isActive: !teacher.isActive })}>
-                    {teacher.isActive ? t('teachers.disable') : t('teachers.enable')}
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => {
-                      if (window.confirm(t('teachers.confirmDelete'))) remove(teacher.id);
-                    }}
-                  >
-                    {t('teachers.delete')}
-                  </Button>
-                </TableCell>
-              </TableRow>
+              <Fragment key={teacher.id}>
+                <TableRow>
+                  <TableCell>{teacher.username}</TableCell>
+                  <TableCell>{teacher.firstName}</TableCell>
+                  <TableCell>{teacher.lastName}</TableCell>
+                  <TableCell>
+                    <Badge variant={teacher.isActive ? 'default' : 'secondary'}>
+                      {teacher.isActive ? t('teachers.active') : t('teachers.disabled')}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => setActive({ id: teacher.id, isActive: !teacher.isActive })}>
+                      {teacher.isActive ? t('teachers.disable') : t('teachers.enable')}
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => {
+                        if (window.confirm(t('teachers.confirmDelete'))) remove(teacher.id);
+                      }}
+                    >
+                      {t('teachers.delete')}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+                {revealedPasswords[teacher.id] && (
+                  <TableRow className="bg-muted">
+                    <TableCell colSpan={5}>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">{t('teachers.createdPasswordNotice')}</span>
+                        <PasswordReveal value={revealedPasswords[teacher.id]} />
+                        <Button variant="ghost" size="sm" onClick={() => dismissPassword(teacher.id)}>
+                          ×
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </Fragment>
             ))
           ) : (
             <TableRow>
@@ -72,7 +96,11 @@ export function TeachersPage() {
           )}
         </TableBody>
       </Table>
-      <CreateTeacherDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <CreateTeacherDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onCreated={(id, password) => setRevealedPasswords((prev) => ({ ...prev, [id]: password }))}
+      />
     </div>
   );
 }

@@ -11,12 +11,12 @@ vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => k
 // Stateful wrapper so we can drive `open` the way TeachersPage really does:
 // closing the dialog (X button) must flow back through `onOpenChange` into
 // real state, and reopening must re-render with that updated `open` value.
-function Wrapper({ initialOpen = true }: { initialOpen?: boolean }) {
+function Wrapper({ initialOpen = true, onCreated = () => {} }: { initialOpen?: boolean; onCreated?: (id: string, password: string) => void }) {
   const [open, setOpen] = useState(initialOpen);
   return (
     <>
       <button onClick={() => setOpen(true)}>reopen</button>
-      <CreateTeacherDialog open={open} onOpenChange={setOpen} />
+      <CreateTeacherDialog open={open} onOpenChange={setOpen} onCreated={onCreated} />
     </>
   );
 }
@@ -29,7 +29,7 @@ describe('CreateTeacherDialog', () => {
       isPending: false,
     } as unknown as ReturnType<typeof useCreateTeacher>);
 
-    render(<CreateTeacherDialog open onOpenChange={() => {}} />);
+    render(<CreateTeacherDialog open onOpenChange={() => {}} onCreated={() => {}} />);
     await userEvent.click(screen.getByRole('button', { name: /teachers.create/i }));
 
     expect(mutate).not.toHaveBeenCalled();
@@ -42,7 +42,7 @@ describe('CreateTeacherDialog', () => {
       isPending: false,
     } as unknown as ReturnType<typeof useCreateTeacher>);
 
-    render(<CreateTeacherDialog open onOpenChange={() => {}} />);
+    render(<CreateTeacherDialog open onOpenChange={() => {}} onCreated={() => {}} />);
     await userEvent.type(screen.getByLabelText(/teachers.username/i), 'teacher.ali');
     await userEvent.type(screen.getByLabelText(/teachers.firstName/i), 'Ali');
     await userEvent.type(screen.getByLabelText(/teachers.lastName/i), 'Valiyev');
@@ -54,7 +54,7 @@ describe('CreateTeacherDialog', () => {
     );
   });
 
-  it('clears the one-time password notice when the dialog is closed and reopened', async () => {
+  it('reports the created id/password and closes the dialog on success', async () => {
     const mutate = vi.fn((_data, options) => {
       options.onSuccess({
         id: 't1',
@@ -68,21 +68,20 @@ describe('CreateTeacherDialog', () => {
       mutate,
       isPending: false,
     } as unknown as ReturnType<typeof useCreateTeacher>);
+    const onCreated = vi.fn();
 
-    render(<Wrapper />);
+    render(<Wrapper onCreated={onCreated} />);
 
     await userEvent.type(screen.getByLabelText(/teachers.username/i), 'teacher.ali');
     await userEvent.type(screen.getByLabelText(/teachers.firstName/i), 'Ali');
     await userEvent.type(screen.getByLabelText(/teachers.lastName/i), 'Valiyev');
     await userEvent.click(screen.getByRole('button', { name: /teachers.create/i }));
 
-    expect(await screen.findByText(/teachers.createdPasswordNotice/i)).toBeInTheDocument();
+    expect(onCreated).toHaveBeenCalledWith('t1', 'temp-pass-123');
+    expect(screen.queryByLabelText(/teachers.username/i)).not.toBeInTheDocument();
 
-    // Close the dialog (the X / DialogClose button) and reopen it.
-    await userEvent.click(screen.getByRole('button', { name: /close/i }));
+    // Reopening shows a fresh, empty form rather than a lingering notice.
     await userEvent.click(screen.getByRole('button', { name: 'reopen' }));
-
-    expect(screen.queryByText(/teachers.createdPasswordNotice/i)).not.toBeInTheDocument();
-    expect(screen.getByLabelText(/teachers.username/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/teachers.username/i)).toHaveValue('');
   });
 });

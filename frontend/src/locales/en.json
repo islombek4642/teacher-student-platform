@@ -21,6 +21,7 @@
     "delete": "Delete",
     "loading": "Loading...",
     "empty": "No teachers yet",
+    "createSuccess": "Teacher created successfully",
     "createdPasswordNotice": "One-time password created — copy it for the teacher now, it won't be shown again."
   },
   "groups": {
@@ -45,6 +46,8 @@
     "resetPassword": "Reset password",
     "delete": "Delete",
     "confirmDelete": "Delete this student?",
+    "createSuccess": "Student created successfully",
+    "resetSuccess": "Password reset successfully",
     "createdPasswordNotice": "One-time password created — copy it for the student now, it won't be shown again.",
     "resetPasswordNotice": "New one-time password generated.",
     "loading": "Loading...",
