@@ -70,12 +70,22 @@ if [[ ! -f .env ]]; then
     fi
 fi
 
-# JWT_SECRET is an internal-only secret nobody ever needs to type or
-# remember, so generate it automatically instead of asking for it.
+# JWT_SECRET and CREDENTIALS_ENCRYPTION_KEY are internal-only secrets
+# nobody ever needs to type or remember, so generate them automatically
+# instead of asking for them. CREDENTIALS_ENCRYPTION_KEY must never change
+# once generated — doing so would make every already-stored teacher/
+# student password permanently undecryptable, so this only ever fires
+# once, the first time it finds the placeholder.
 if grep -qE '^JWT_SECRET=CHANGE_THIS' .env; then
     GENERATED_JWT_SECRET=$(openssl rand -hex 32)
     sed -i "s|^JWT_SECRET=.*|JWT_SECRET=${GENERATED_JWT_SECRET}|" .env
     echo -e "${GREEN}Generated a random JWT_SECRET.${NC}"
+fi
+
+if grep -qE '^CREDENTIALS_ENCRYPTION_KEY=CHANGE_THIS' .env; then
+    GENERATED_CREDENTIALS_KEY=$(openssl rand -hex 32)
+    sed -i "s|^CREDENTIALS_ENCRYPTION_KEY=.*|CREDENTIALS_ENCRYPTION_KEY=${GENERATED_CREDENTIALS_KEY}|" .env
+    echo -e "${GREEN}Generated a random CREDENTIALS_ENCRYPTION_KEY.${NC}"
 fi
 
 if grep -qE '^(DB_PASSWORD|SUPER_ADMIN_PASSWORD)=CHANGE_THIS' .env; then

@@ -4,6 +4,7 @@ import { PrismaService } from '../common/prisma/prisma.service';
 import { ERROR_CODES } from '../common/constants/error-codes.constant';
 import { GroupsService } from '../groups/groups.service';
 import { generateFourDigitPassword, hashPassword } from '../auth/password.util';
+import { decryptCredential, encryptCredential } from '../common/crypto/credential-crypto.util';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 
@@ -23,7 +24,12 @@ export class StudentsService {
     try {
       const { user, profile } = await this.prisma.$transaction(async (tx) => {
         const user = await tx.user.create({
-          data: { username: dto.username, passwordHash, currentPassword: temporaryPassword, role: Role.STUDENT },
+          data: {
+            username: dto.username,
+            passwordHash,
+            currentPassword: encryptCredential(temporaryPassword),
+            role: Role.STUDENT,
+          },
         });
         const profile = await tx.studentProfile.create({
           data: { userId: user.id, firstName: dto.firstName, lastName: dto.lastName, groupId },
@@ -71,7 +77,7 @@ export class StudentsService {
     const passwordHash = await hashPassword(temporaryPassword);
     await this.prisma.user.update({
       where: { id: student.userId },
-      data: { passwordHash, currentPassword: temporaryPassword },
+      data: { passwordHash, currentPassword: encryptCredential(temporaryPassword) },
     });
     return { temporaryPassword };
   }
@@ -102,7 +108,7 @@ export class StudentsService {
       username: s.user.username,
       firstName: s.firstName,
       lastName: s.lastName,
-      temporaryPassword: s.user.currentPassword,
+      temporaryPassword: s.user.currentPassword ? decryptCredential(s.user.currentPassword) : null,
     }));
   }
 }

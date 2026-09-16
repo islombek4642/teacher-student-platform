@@ -66,7 +66,10 @@ cd teacher-student-platform
 cp .env.example .env
 # Edit .env: DB_PASSWORD, SUPER_ADMIN_PASSWORD, API_DOMAIN, APP_DOMAIN,
 # SSL_EMAIL — do not leave any CHANGE_THIS placeholder.
-# (JWT_SECRET is generated automatically by deploy.sh — leave it as-is.)
+# (JWT_SECRET and CREDENTIALS_ENCRYPTION_KEY are generated automatically
+# by deploy.sh — leave them as-is. Never change CREDENTIALS_ENCRYPTION_KEY
+# after it's generated: every teacher/student password stored in the
+# database is encrypted with it and becomes unrecoverable if it changes.)
 
 # 3. Deploy
 bash scripts/deploy.sh
@@ -171,3 +174,10 @@ manually:
 ```bash
 docker compose -f docker-compose.prod.yml exec api npx prisma migrate deploy
 ```
+
+**Teachers/students list returns a 500 ("Unsupported state or unable to authenticate data")**
+`CREDENTIALS_ENCRYPTION_KEY` in `.env` was changed after some passwords
+were already stored — they were encrypted with the old key and can no
+longer be decrypted with the new one. There is no fix short of resetting
+every affected password; going forward, never edit that value by hand
+once `deploy.sh` has generated it.

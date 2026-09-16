@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { StudentsService } from './students.service';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { GroupsService } from '../groups/groups.service';
+import { decryptCredential } from '../common/crypto/credential-crypto.util';
 
 describe('StudentsService', () => {
   it('creates a student inside a group the teacher owns, with a one-time password', async () => {
@@ -140,8 +141,10 @@ describe('StudentsService', () => {
       expect(result.temporaryPassword).toMatch(/^\d{4}$/);
       expect(prisma.user.update).toHaveBeenCalledWith({
         where: { id: 'u1' },
-        data: { passwordHash: expect.any(String), currentPassword: expect.stringMatching(/^\d{4}$/) },
+        data: { passwordHash: expect.any(String), currentPassword: expect.any(String) },
       });
+      const [[{ data }]] = (prisma.user.update as jest.Mock).mock.calls;
+      expect(decryptCredential(data.currentPassword)).toBe(result.temporaryPassword);
     });
   });
 });

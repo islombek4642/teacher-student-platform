@@ -3,6 +3,7 @@ import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { ERROR_CODES } from '../common/constants/error-codes.constant';
 import { generateFourDigitPassword, hashPassword } from '../auth/password.util';
+import { decryptCredential, encryptCredential } from '../common/crypto/credential-crypto.util';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
 
 @Injectable()
@@ -16,7 +17,12 @@ export class TeachersService {
     try {
       const { user, profile } = await this.prisma.$transaction(async (tx) => {
         const user = await tx.user.create({
-          data: { username: dto.username, passwordHash, currentPassword: temporaryPassword, role: Role.TEACHER },
+          data: {
+            username: dto.username,
+            passwordHash,
+            currentPassword: encryptCredential(temporaryPassword),
+            role: Role.TEACHER,
+          },
         });
         const profile = await tx.teacherProfile.create({
           data: { userId: user.id, firstName: dto.firstName, lastName: dto.lastName },
@@ -49,7 +55,7 @@ export class TeachersService {
       firstName: t.firstName,
       lastName: t.lastName,
       isActive: t.user.isActive,
-      temporaryPassword: t.user.currentPassword,
+      temporaryPassword: t.user.currentPassword ? decryptCredential(t.user.currentPassword) : null,
     }));
   }
 
