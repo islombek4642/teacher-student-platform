@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -45,6 +46,10 @@ export function GroupDetailPage() {
 
   return (
     <div className="space-y-4">
+      <Link to="/teacher/groups" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+        <Icon icon="lucide:arrow-left" className="h-4 w-4" />
+        {t('groups.backToList')}
+      </Link>
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">{group?.name ?? t('students.title')}</h1>
         <Button onClick={() => setDialogOpen(true)}>{t('students.create')}</Button>

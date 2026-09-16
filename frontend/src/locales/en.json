@@ -28,6 +28,7 @@
   },
   "groups": {
     "title": "Groups",
+    "backToList": "Back to groups",
     "create": "New group",
     "name": "Group name",
     "rename": "Rename",

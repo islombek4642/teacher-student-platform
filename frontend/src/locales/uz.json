@@ -28,6 +28,7 @@
   },
   "groups": {
     "title": "Guruhlar",
+    "backToList": "Guruhlarga qaytish",
     "create": "Yangi guruh",
     "name": "Guruh nomi",
     "rename": "Nomini o'zgartirish",
