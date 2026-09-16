@@ -23,7 +23,9 @@ export function TasksPage() {
 
       <Select<string> onValueChange={(value) => setSelectedGroupId(value ?? undefined)}>
         <SelectTrigger className="w-64">
-          <SelectValue placeholder={t('tasks.selectGroup')} />
+          <SelectValue placeholder={t('tasks.selectGroup')}>
+            {(value: string | null) => groups?.find((group) => group.id === value)?.name ?? t('tasks.selectGroup')}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {groups?.map((group) => (

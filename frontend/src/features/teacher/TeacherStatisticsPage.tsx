@@ -61,7 +61,11 @@ export function TeacherStatisticsPage() {
 
       <Select<string> onValueChange={(value) => setSelectedGroupId(value ?? undefined)}>
         <SelectTrigger className="w-64">
-          <SelectValue placeholder={t('statistics.selectGroup')} />
+          <SelectValue placeholder={t('statistics.selectGroup')}>
+            {(value: string | null) =>
+              groups?.find((group) => group.id === value)?.name ?? t('statistics.selectGroup')
+            }
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {groups?.map((group) => (

@@ -62,7 +62,15 @@ function QuestionRow({
           }
         >
           <SelectTrigger className="w-56">
-            <SelectValue placeholder={t('tasks.questionType')} />
+            <SelectValue placeholder={t('tasks.questionType')}>
+              {(value: 'FILL_BLANK' | 'MULTIPLE_CHOICE' | null) =>
+                value === 'MULTIPLE_CHOICE'
+                  ? t('tasks.multipleChoice')
+                  : value === 'FILL_BLANK'
+                    ? t('tasks.fillBlank')
+                    : t('tasks.questionType')
+              }
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="FILL_BLANK">{t('tasks.fillBlank')}</SelectItem>
@@ -161,7 +169,9 @@ export function NewTaskPage() {
         <Label htmlFor="groupId">{t('tasks.selectGroup')}</Label>
         <Select<string> onValueChange={(value) => setValue('groupId', value ?? '')}>
           <SelectTrigger id="groupId">
-            <SelectValue placeholder={t('tasks.selectGroup')} />
+            <SelectValue placeholder={t('tasks.selectGroup')}>
+              {(value: string | null) => groups?.find((group) => group.id === value)?.name ?? t('tasks.selectGroup')}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {groups?.map((group) => (
