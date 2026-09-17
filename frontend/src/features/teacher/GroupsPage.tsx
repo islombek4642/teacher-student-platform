@@ -29,6 +29,7 @@ export function GroupsPage() {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-10">#</TableHead>
             <TableHead>{t('groups.name')}</TableHead>
             <TableHead />
           </TableRow>
@@ -36,13 +37,14 @@ export function GroupsPage() {
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={2} className="text-center text-muted-foreground">
+              <TableCell colSpan={3} className="text-center text-muted-foreground">
                 {t('groups.loading')}
               </TableCell>
             </TableRow>
           ) : groups && groups.length > 0 ? (
-            groups.map((group) => (
+            groups.map((group, index) => (
               <TableRow key={group.id}>
+                <TableCell className="text-muted-foreground">{index + 1}</TableCell>
                 <TableCell>
                   {editingId === group.id ? (
                     <Input value={editingName} onChange={(e) => setEditingName(e.target.value)} />
@@ -92,7 +94,7 @@ export function GroupsPage() {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={2} className="text-center text-muted-foreground">
+              <TableCell colSpan={3} className="text-center text-muted-foreground">
                 {t('groups.empty')}
               </TableCell>
             </TableRow>

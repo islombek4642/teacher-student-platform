@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { PasswordReveal } from '@/components/shared/PasswordReveal';
+import { PersonAvatar } from '@/components/shared/PersonAvatar';
 import { toast } from '@/components/ui/toast';
 import { useDeleteTeacher, useResetTeacherPassword, useSetTeacherActive, useTeachers } from './api/teachers.api';
 import { CreateTeacherDialog } from './CreateTeacherDialog';
@@ -30,6 +31,7 @@ export function TeachersPage() {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-10" />
             <TableHead>{t('teachers.username')}</TableHead>
             <TableHead>{t('teachers.firstName')}</TableHead>
             <TableHead>{t('teachers.lastName')}</TableHead>
@@ -41,13 +43,16 @@ export function TeachersPage() {
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center text-muted-foreground">
+              <TableCell colSpan={7} className="text-center text-muted-foreground">
                 {t('teachers.loading')}
               </TableCell>
             </TableRow>
           ) : teachers && teachers.length > 0 ? (
             teachers.map((teacher) => (
               <TableRow key={teacher.id}>
+                <TableCell>
+                  <PersonAvatar firstName={teacher.firstName} lastName={teacher.lastName} />
+                </TableCell>
                 <TableCell>{teacher.username}</TableCell>
                 <TableCell>{teacher.firstName}</TableCell>
                 <TableCell>{teacher.lastName}</TableCell>
@@ -103,7 +108,7 @@ export function TeachersPage() {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={6} className="text-center text-muted-foreground">
+              <TableCell colSpan={7} className="text-center text-muted-foreground">
                 {t('teachers.empty')}
               </TableCell>
             </TableRow>

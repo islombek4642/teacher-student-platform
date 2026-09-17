@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { PasswordReveal } from '@/components/shared/PasswordReveal';
+import { PersonAvatar } from '@/components/shared/PersonAvatar';
 import { toast } from '@/components/ui/toast';
 import {
   useDeleteStudent,
@@ -54,6 +55,7 @@ export function GroupStudentsPage() {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-10" />
             <TableHead>{t('students.username')}</TableHead>
             <TableHead>{t('students.firstName')}</TableHead>
             <TableHead>{t('students.lastName')}</TableHead>
@@ -64,13 +66,16 @@ export function GroupStudentsPage() {
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={5} className="text-center text-muted-foreground">
+              <TableCell colSpan={6} className="text-center text-muted-foreground">
                 {t('students.loading')}
               </TableCell>
             </TableRow>
           ) : students && students.length > 0 ? (
             students.map((student) => (
               <TableRow key={student.id}>
+                <TableCell>
+                  <PersonAvatar firstName={student.firstName} lastName={student.lastName} />
+                </TableCell>
                 <TableCell>{student.username}</TableCell>
                 <TableCell>
                   {editingId === student.id ? (
@@ -148,7 +153,7 @@ export function GroupStudentsPage() {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={5} className="text-center text-muted-foreground">
+              <TableCell colSpan={6} className="text-center text-muted-foreground">
                 {t('students.empty')}
               </TableCell>
             </TableRow>
