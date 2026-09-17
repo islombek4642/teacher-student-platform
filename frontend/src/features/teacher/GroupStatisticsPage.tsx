@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Bar, BarChart, CartesianGrid, LabelList, XAxis } from 'recharts';
 import { Icon } from '@iconify/react';
@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useGroupOverview, useLeaderboard, useTaskStats } from './api/statistics.api';
+import { useGroupOverview, useLeaderboard, useTasksStats } from './api/statistics.api';
+import { useTasksForGroup } from './api/tasks.api';
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
@@ -23,13 +24,12 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
 export function GroupStatisticsPage() {
   const { t } = useTranslation();
   const { id: groupId } = useParams<{ id: string }>();
-  const [searchParams] = useSearchParams();
-  const taskId = searchParams.get('taskId') ?? undefined;
   const [leaderboardView, setLeaderboardView] = useState<'chart' | 'table'>('chart');
 
   const { data: overview } = useGroupOverview(groupId);
   const { data: leaderboard } = useLeaderboard(groupId);
-  const { data: taskStats } = useTaskStats(taskId);
+  const { data: tasks } = useTasksForGroup(groupId);
+  const taskStatsResults = useTasksStats(tasks?.map((task) => task.id) ?? []);
 
   const leaderboardChartConfig = {
     score: { label: t('statistics.totalScore'), color: 'var(--primary)' },
@@ -37,34 +37,6 @@ export function GroupStatisticsPage() {
 
   return (
     <div className="space-y-6">
-      {taskId && taskStats && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('statistics.taskStatistics')}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <StatCard label={t('statistics.submissionCount')} value={taskStats.submissionCount} />
-              <StatCard label={t('statistics.averageScore')} value={taskStats.averageScore.toFixed(1)} />
-            </div>
-            <div>
-              <p className="text-sm font-medium">{t('statistics.mostMissed')}</p>
-              {taskStats.mostMissedQuestions.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{t('statistics.noData')}</p>
-              ) : (
-                <ol className="ml-4 list-decimal text-sm">
-                  {taskStats.mostMissedQuestions.map((question) => (
-                    <li key={question.id}>
-                      {question.text} {t('statistics.missedByCount', { count: question.missCount })}
-                    </li>
-                  ))}
-                </ol>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {overview && (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <StatCard label={t('statistics.studentCount')} value={overview.studentCount} />
@@ -135,6 +107,47 @@ export function GroupStatisticsPage() {
           </CardContent>
         </Card>
       )}
+
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold">{t('statistics.taskStatistics')}</h2>
+        {tasks?.length === 0 && <p className="text-sm text-muted-foreground">{t('tasks.empty')}</p>}
+        {tasks?.map((task, index) => {
+          const stats = taskStatsResults[index]?.data;
+          return (
+            <Card key={task.id}>
+              <CardHeader>
+                <CardTitle className="text-base">{task.title}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {stats ? (
+                  <>
+                    <div className="grid grid-cols-2 gap-3">
+                      <StatCard label={t('statistics.submissionCount')} value={stats.submissionCount} />
+                      <StatCard label={t('statistics.averageScore')} value={stats.averageScore.toFixed(1)} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{t('statistics.mostMissed')}</p>
+                      {stats.mostMissedQuestions.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">{t('statistics.noData')}</p>
+                      ) : (
+                        <ol className="ml-4 list-decimal text-sm">
+                          {stats.mostMissedQuestions.map((question) => (
+                            <li key={question.id}>
+                              {question.text} {t('statistics.missedByCount', { count: question.missCount })}
+                            </li>
+                          ))}
+                        </ol>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">{t('tasks.loading')}</p>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
     </div>
   );
 }

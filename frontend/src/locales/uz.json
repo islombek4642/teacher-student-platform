@@ -83,7 +83,7 @@
     "delete": "O'chirish",
     "confirmDelete": "Bu topshiriqni o'chirmoqchimisiz?",
     "cannotDeleteHasSubmissions": "Javoblar topshirilgan topshiriqni o'chirib bo'lmaydi",
-    "statistics": "Statistika",
+    "view": "Ko'rish",
     "loading": "Yuklanmoqda...",
     "empty": "Bu guruhda hozircha topshiriqlar yo'q"
   },

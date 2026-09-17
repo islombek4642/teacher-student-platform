@@ -83,7 +83,7 @@
     "delete": "Delete",
     "confirmDelete": "Delete this task?",
     "cannotDeleteHasSubmissions": "A task with submissions can't be deleted",
-    "statistics": "Statistics",
+    "view": "View",
     "loading": "Loading...",
     "empty": "No tasks in this group yet"
   },

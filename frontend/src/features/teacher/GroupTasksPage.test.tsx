@@ -30,7 +30,7 @@ describe('GroupTasksPage', () => {
     expect(screen.getByText('tasks.empty')).toBeInTheDocument();
   });
 
-  it('links "new task" and "statistics" to the current group', async () => {
+  it('links "new task" to the current group', async () => {
     vi.mocked(useTasksForGroup).mockReturnValue({
       data: [{ id: 'task1', title: 'Present Simple', questions: [{ id: 'q1' }] }],
       isLoading: false,
@@ -43,10 +43,28 @@ describe('GroupTasksPage', () => {
       'href',
       '/teacher/groups/g1/tasks/new',
     );
-    expect(screen.getByRole('link', { name: 'tasks.statistics' })).toHaveAttribute(
-      'href',
-      '/teacher/groups/g1/statistics?taskId=task1',
-    );
+  });
+
+  it('opens the task view dialog with its questions', async () => {
+    vi.mocked(useTasksForGroup).mockReturnValue({
+      data: [
+        {
+          id: 'task1',
+          title: 'Present Simple',
+          description: null,
+          questions: [
+            { id: 'q1', type: 'MULTIPLE_CHOICE', text: 'She ___ to school.', options: ['go', 'goes'], correctAnswer: 'goes' },
+          ],
+        },
+      ],
+      isLoading: false,
+    } as unknown as ReturnType<typeof useTasksForGroup>);
+    vi.mocked(useDeleteTask).mockReturnValue({ mutate: vi.fn() } as unknown as ReturnType<typeof useDeleteTask>);
+
+    renderPage();
+    await userEvent.click(screen.getByRole('button', { name: 'tasks.view' }));
+
+    expect(await screen.findByText(/She ___ to school\./)).toBeInTheDocument();
   });
 
   it('deletes a task after confirmation', async () => {

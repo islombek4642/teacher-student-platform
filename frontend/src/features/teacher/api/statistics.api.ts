@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/api/client';
 import type { GroupOverview, LeaderboardEntry, TaskStats } from '@/api/types';
 
@@ -23,5 +23,14 @@ export function useTaskStats(taskId: string | undefined) {
     queryKey: ['tasks', taskId, 'statistics'],
     queryFn: async () => (await apiClient.get<TaskStats>(`/tasks/${taskId}/statistics`)).data,
     enabled: !!taskId,
+  });
+}
+
+export function useTasksStats(taskIds: string[]) {
+  return useQueries({
+    queries: taskIds.map((taskId) => ({
+      queryKey: ['tasks', taskId, 'statistics'],
+      queryFn: async () => (await apiClient.get<TaskStats>(`/tasks/${taskId}/statistics`)).data,
+    })),
   });
 }
