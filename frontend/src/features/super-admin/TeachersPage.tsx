@@ -56,7 +56,7 @@ export function TeachersPage() {
                   )}
                 </TableCell>
                 <TableCell>
-                  <Badge variant={teacher.isActive ? 'success' : 'secondary'}>
+                  <Badge variant={teacher.isActive ? 'default' : 'secondary'}>
                     {teacher.isActive ? t('teachers.active') : t('teachers.disabled')}
                   </Badge>
                 </TableCell>
