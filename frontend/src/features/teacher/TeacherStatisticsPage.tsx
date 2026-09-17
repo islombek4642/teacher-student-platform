@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScoreStamp } from '@/components/shared/ScoreStamp';
 import { useGroups } from './api/groups.api';
 import { useGroupOverview, useLeaderboard, useTaskStats } from './api/statistics.api';
 
@@ -97,21 +98,39 @@ export function TeacherStatisticsPage() {
           <CardHeader>
             <CardTitle>{t('statistics.leaderboard')}</CardTitle>
           </CardHeader>
-          <CardContent style={{ height: 300 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={leaderboard.map((entry) => ({
-                  name: `${entry.firstName} ${entry.lastName}`,
-                  score: entry.totalScore,
-                }))}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="score" name={t('statistics.totalScore')} fill="#2563eb" />
-              </BarChart>
-            </ResponsiveContainer>
+          <CardContent className="space-y-4">
+            <ul className="space-y-2">
+              {leaderboard.map((entry, index) => (
+                <li
+                  key={entry.studentId}
+                  className={`flex items-center gap-3 rounded-lg border p-2.5 ${index === 0 ? 'border-gold bg-gold/5' : ''}`}
+                >
+                  <span className="w-5 text-center text-sm font-bold tabular-nums text-muted-foreground">
+                    {index + 1}
+                  </span>
+                  <span className="flex-1 text-sm font-medium">
+                    {entry.firstName} {entry.lastName}
+                  </span>
+                  <ScoreStamp highlight={index === 0}>{entry.totalScore}</ScoreStamp>
+                </li>
+              ))}
+            </ul>
+            <div style={{ height: 260 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={leaderboard.map((entry) => ({
+                    name: `${entry.firstName} ${entry.lastName}`,
+                    score: entry.totalScore,
+                  }))}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                  <XAxis dataKey="name" stroke="var(--muted-foreground)" />
+                  <YAxis allowDecimals={false} stroke="var(--muted-foreground)" />
+                  <Tooltip />
+                  <Bar dataKey="score" name={t('statistics.totalScore')} fill="var(--primary)" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
       )}
