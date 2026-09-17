@@ -1,7 +1,8 @@
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGroups } from './api/groups.api';
 import { useGroupOverview, useLeaderboard, useTaskStats } from './api/statistics.api';
@@ -34,6 +35,10 @@ export function TeacherStatisticsPage() {
   const { data: overview } = useGroupOverview(selectedGroupId);
   const { data: leaderboard } = useLeaderboard(selectedGroupId);
   const { data: taskStats } = useTaskStats(taskId);
+
+  const leaderboardChartConfig = {
+    score: { label: t('statistics.totalScore'), color: 'var(--primary)' },
+  } satisfies ChartConfig;
 
   return (
     <div className="space-y-6">
@@ -97,21 +102,20 @@ export function TeacherStatisticsPage() {
           <CardHeader>
             <CardTitle>{t('statistics.leaderboard')}</CardTitle>
           </CardHeader>
-          <CardContent style={{ height: 300 }}>
-            <ResponsiveContainer width="100%" height="100%">
+          <CardContent>
+            <ChartContainer config={leaderboardChartConfig} className="h-[300px] w-full">
               <BarChart
                 data={leaderboard.map((entry) => ({
                   name: `${entry.firstName} ${entry.lastName}`,
                   score: entry.totalScore,
                 }))}
               >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="score" name={t('statistics.totalScore')} fill="#2563eb" />
+                <CartesianGrid vertical={false} />
+                <XAxis dataKey="name" tickLine={false} axisLine={false} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar dataKey="score" fill="var(--color-score)" radius={4} />
               </BarChart>
-            </ResponsiveContainer>
+            </ChartContainer>
           </CardContent>
         </Card>
       )}

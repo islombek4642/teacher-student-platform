@@ -6,11 +6,14 @@ import './i18n'
 import App from './App.tsx'
 import { queryClient } from './app/query-client'
 import { Toaster } from '@/components/ui/toast'
+import { TooltipProvider } from '@/components/ui/tooltip'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <App />
+      <TooltipProvider>
+        <App />
+      </TooltipProvider>
       <Toaster />
     </QueryClientProvider>
   </StrictMode>,

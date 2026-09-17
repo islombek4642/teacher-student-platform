@@ -1,7 +1,21 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useAuth } from '@/auth/useAuth';
 import type { Role } from '@/api/types';
@@ -9,61 +23,81 @@ import type { Role } from '@/api/types';
 interface NavLinkConfig {
   to: string;
   labelKey: string;
+  icon: string;
 }
 
 const NAV_LINKS_BY_ROLE: Record<Role, NavLinkConfig[]> = {
-  SUPER_ADMIN: [],
+  SUPER_ADMIN: [{ to: '/super-admin/teachers', labelKey: 'teachers.title', icon: 'lucide:graduation-cap' }],
   TEACHER: [
-    { to: '/teacher/groups', labelKey: 'groups.title' },
-    { to: '/teacher/tasks', labelKey: 'tasks.title' },
-    { to: '/teacher/statistics', labelKey: 'statistics.title' },
+    { to: '/teacher/groups', labelKey: 'groups.title', icon: 'lucide:users' },
+    { to: '/teacher/tasks', labelKey: 'tasks.title', icon: 'lucide:clipboard-list' },
+    { to: '/teacher/statistics', labelKey: 'statistics.title', icon: 'lucide:bar-chart-3' },
   ],
   STUDENT: [
-    { to: '/student/tasks', labelKey: 'studentTasks.title' },
-    { to: '/student/progress', labelKey: 'studentProgress.title' },
+    { to: '/student/tasks', labelKey: 'studentTasks.title', icon: 'lucide:list-checks' },
+    { to: '/student/progress', labelKey: 'studentProgress.title', icon: 'lucide:trending-up' },
   ],
 };
 
 export function AppLayout() {
   const { t } = useTranslation();
   const { username, payload, logout } = useAuth();
+  const location = useLocation();
   const navLinks = payload?.role ? NAV_LINKS_BY_ROLE[payload.role] : [];
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="flex items-center justify-between border-b px-4 py-3">
-        <div className="flex items-center gap-6">
-          <span className="font-semibold">{t('app.title')}</span>
+    <SidebarProvider>
+      <Sidebar collapsible="icon">
+        <SidebarHeader>
+          <div className="flex items-center gap-2 px-2 py-1.5 group-data-[collapsible=icon]:justify-center">
+            <Icon icon="lucide:graduation-cap" className="h-5 w-5 shrink-0 text-primary" />
+            <span className="truncate font-semibold group-data-[collapsible=icon]:hidden">{t('app.title')}</span>
+          </div>
+        </SidebarHeader>
+        <SidebarContent>
           {navLinks.length > 0 && (
-            <nav className="flex items-center gap-4">
-              {navLinks.map((link) => (
-                <NavLink
-                  key={link.to}
-                  to={link.to}
-                  className={({ isActive }) =>
-                    isActive
-                      ? 'text-sm font-semibold text-foreground'
-                      : 'text-sm text-muted-foreground hover:text-foreground'
-                  }
-                >
-                  {t(link.labelKey)}
-                </NavLink>
-              ))}
-            </nav>
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {navLinks.map((link) => (
+                    <SidebarMenuItem key={link.to}>
+                      <SidebarMenuButton
+                        isActive={location.pathname.startsWith(link.to)}
+                        tooltip={t(link.labelKey)}
+                        render={<Link to={link.to} />}
+                      >
+                        <Icon icon={link.icon} />
+                        <span>{t(link.labelKey)}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
           )}
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-muted-foreground">{username ?? payload?.sub}</span>
-          <LanguageSwitcher />
-          <Button variant="ghost" size="sm" onClick={logout}>
-            <Icon icon="lucide:log-out" className="mr-2 h-4 w-4" />
-            {t('nav.logout')}
-          </Button>
-        </div>
-      </header>
-      <main className="p-4">
-        <Outlet />
-      </main>
-    </div>
+        </SidebarContent>
+        <SidebarFooter>
+          <div className="flex items-center justify-between gap-2 px-1 group-data-[collapsible=icon]:flex-col">
+            <span className="truncate text-sm text-muted-foreground group-data-[collapsible=icon]:hidden">
+              {username ?? payload?.sub}
+            </span>
+            <div className="flex items-center gap-1">
+              <LanguageSwitcher />
+              <Button variant="ghost" size="icon-sm" onClick={logout} aria-label={t('nav.logout')}>
+                <Icon icon="lucide:log-out" />
+              </Button>
+            </div>
+          </div>
+        </SidebarFooter>
+      </Sidebar>
+      <SidebarInset>
+        <header className="flex items-center gap-2 border-b px-4 py-3">
+          <SidebarTrigger />
+        </header>
+        <main className="p-4">
+          <Outlet />
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

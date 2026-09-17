@@ -106,7 +106,7 @@ describe('AppLayout', () => {
     );
   });
 
-  it('renders no nav links for a SUPER_ADMIN user without crashing', () => {
+  it('renders the teachers nav link for a SUPER_ADMIN user', () => {
     vi.mocked(useAuth).mockReturnValue({
       token: 'tok',
       payload: { sub: 'u3', role: 'SUPER_ADMIN', profileId: 'p3' },
@@ -120,6 +120,9 @@ describe('AppLayout', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'teachers.title' })).toHaveAttribute(
+      'href',
+      '/super-admin/teachers',
+    );
   });
 });
