@@ -54,7 +54,9 @@ describe('AppLayout', () => {
     expect(screen.getByText('u1')).toBeInTheDocument();
   });
 
-  it('renders the teacher nav links for a TEACHER user', () => {
+  it('renders the groups nav link for a TEACHER user', () => {
+    // Tasks and Statistics are reached from inside a group (tabs on
+    // GroupLayout), not as separate top-level nav destinations.
     vi.mocked(useAuth).mockReturnValue({
       token: 'tok',
       payload: { sub: 'u1', role: 'TEACHER', profileId: 'p1' },
@@ -72,14 +74,8 @@ describe('AppLayout', () => {
       'href',
       '/teacher/groups',
     );
-    expect(screen.getByRole('link', { name: 'tasks.title' })).toHaveAttribute(
-      'href',
-      '/teacher/tasks',
-    );
-    expect(screen.getByRole('link', { name: 'statistics.title' })).toHaveAttribute(
-      'href',
-      '/teacher/statistics',
-    );
+    expect(screen.queryByRole('link', { name: 'tasks.title' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'statistics.title' })).not.toBeInTheDocument();
   });
 
   it('renders the student nav links for a STUDENT user', () => {

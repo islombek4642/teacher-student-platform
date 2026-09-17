@@ -28,11 +28,7 @@ interface NavLinkConfig {
 
 const NAV_LINKS_BY_ROLE: Record<Role, NavLinkConfig[]> = {
   SUPER_ADMIN: [{ to: '/super-admin/teachers', labelKey: 'teachers.title', icon: 'lucide:graduation-cap' }],
-  TEACHER: [
-    { to: '/teacher/groups', labelKey: 'groups.title', icon: 'lucide:users' },
-    { to: '/teacher/tasks', labelKey: 'tasks.title', icon: 'lucide:clipboard-list' },
-    { to: '/teacher/statistics', labelKey: 'statistics.title', icon: 'lucide:bar-chart-3' },
-  ],
+  TEACHER: [{ to: '/teacher/groups', labelKey: 'groups.title', icon: 'lucide:users' }],
   STUDENT: [
     { to: '/student/tasks', labelKey: 'studentTasks.title', icon: 'lucide:list-checks' },
     { to: '/student/progress', labelKey: 'studentProgress.title', icon: 'lucide:trending-up' },

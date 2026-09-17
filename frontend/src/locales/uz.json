@@ -65,7 +65,6 @@
     "title": "Topshiriqlar",
     "create": "Yangi topshiriq",
     "createSuccess": "Topshiriq muvaffaqiyatli yaratildi",
-    "selectGroup": "Guruhni tanlang",
     "taskTitle": "Sarlavha",
     "description": "Tavsif",
     "questions": "Savollar",
@@ -85,7 +84,7 @@
     "confirmDelete": "Bu topshiriqni o'chirmoqchimisiz?",
     "cannotDeleteHasSubmissions": "Javoblar topshirilgan topshiriqni o'chirib bo'lmaydi",
     "statistics": "Statistika",
-    "selectGroupPrompt": "Topshiriqlarni ko'rish uchun guruhni tanlang",
+    "loading": "Yuklanmoqda...",
     "empty": "Bu guruhda hozircha topshiriqlar yo'q"
   },
   "studentTasks": {
@@ -106,7 +105,6 @@
   },
   "statistics": {
     "title": "Statistika",
-    "selectGroup": "Guruhni tanlang",
     "studentCount": "O'quvchilar soni",
     "averageScore": "O'rtacha ball",
     "tasksCompleted": "Bajarilgan topshiriqlar",

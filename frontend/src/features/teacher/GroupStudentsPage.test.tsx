@@ -2,21 +2,19 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
-import { GroupDetailPage } from './GroupDetailPage';
-import { useGroup } from './api/groups.api';
+import { GroupStudentsPage } from './GroupStudentsPage';
 import { useDeleteStudent, useResetStudentPassword, useStudents, useUpdateStudent } from './api/students.api';
 
-vi.mock('./api/groups.api');
 vi.mock('./api/students.api');
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
-// Isolate GroupDetailPage from CreateStudentDialog's own implementation/hooks.
+// Isolate GroupStudentsPage from CreateStudentDialog's own implementation/hooks.
 vi.mock('./CreateStudentDialog', () => ({ CreateStudentDialog: () => null }));
 
 function renderPage() {
   return render(
-    <MemoryRouter initialEntries={['/teacher/groups/g1']}>
+    <MemoryRouter initialEntries={['/teacher/groups/g1/students']}>
       <Routes>
-        <Route path="/teacher/groups/:id" element={<GroupDetailPage />} />
+        <Route path="/teacher/groups/:id/students" element={<GroupStudentsPage />} />
       </Routes>
     </MemoryRouter>,
   );
@@ -24,9 +22,8 @@ function renderPage() {
 
 const student = { id: 's1', username: 'student.a', firstName: 'Anvar', lastName: 'Aliyev' };
 
-describe('GroupDetailPage', () => {
+describe('GroupStudentsPage', () => {
   it('renders the loading state', () => {
-    vi.mocked(useGroup).mockReturnValue(undefined);
     vi.mocked(useStudents).mockReturnValue({ data: undefined, isLoading: true } as unknown as ReturnType<
       typeof useStudents
     >);
@@ -42,7 +39,6 @@ describe('GroupDetailPage', () => {
   });
 
   it('renders the empty state', () => {
-    vi.mocked(useGroup).mockReturnValue(undefined);
     vi.mocked(useStudents).mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<typeof useStudents>);
     vi.mocked(useUpdateStudent).mockReturnValue({ mutate: vi.fn() } as unknown as ReturnType<typeof useUpdateStudent>);
     vi.mocked(useResetStudentPassword).mockReturnValue({ mutate: vi.fn() } as unknown as ReturnType<
@@ -57,7 +53,6 @@ describe('GroupDetailPage', () => {
 
   it('does not call the update mutation when saving a blank name', async () => {
     const mutate = vi.fn();
-    vi.mocked(useGroup).mockReturnValue(undefined);
     vi.mocked(useStudents).mockReturnValue({ data: [student], isLoading: false } as unknown as ReturnType<
       typeof useStudents
     >);
@@ -81,7 +76,6 @@ describe('GroupDetailPage', () => {
     // mutate deliberately never invokes its onSuccess callback, simulating an
     // in-flight / not-yet-resolved mutation.
     const mutate = vi.fn();
-    vi.mocked(useGroup).mockReturnValue(undefined);
     vi.mocked(useStudents).mockReturnValue({ data: [student], isLoading: false } as unknown as ReturnType<
       typeof useStudents
     >);

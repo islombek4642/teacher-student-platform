@@ -1,10 +1,8 @@
-import { useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useGroups } from './api/groups.api';
 import { useGroupOverview, useLeaderboard, useTaskStats } from './api/statistics.api';
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
@@ -18,22 +16,14 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
   );
 }
 
-export function TeacherStatisticsPage() {
+export function GroupStatisticsPage() {
   const { t } = useTranslation();
-  const { data: groups } = useGroups();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const { id: groupId } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const taskId = searchParams.get('taskId') ?? undefined;
-  const selectedGroupId = searchParams.get('groupId') ?? undefined;
 
-  const selectGroup = (groupId: string | undefined) => {
-    const next = new URLSearchParams(searchParams);
-    if (groupId) next.set('groupId', groupId);
-    else next.delete('groupId');
-    setSearchParams(next, { replace: true });
-  };
-
-  const { data: overview } = useGroupOverview(selectedGroupId);
-  const { data: leaderboard } = useLeaderboard(selectedGroupId);
+  const { data: overview } = useGroupOverview(groupId);
+  const { data: leaderboard } = useLeaderboard(groupId);
   const { data: taskStats } = useTaskStats(taskId);
 
   const leaderboardChartConfig = {
@@ -42,8 +32,6 @@ export function TeacherStatisticsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-semibold">{t('statistics.title')}</h1>
-
       {taskId && taskStats && (
         <Card>
           <CardHeader>
@@ -71,23 +59,6 @@ export function TeacherStatisticsPage() {
           </CardContent>
         </Card>
       )}
-
-      <Select<string> defaultValue={selectedGroupId} onValueChange={(value) => selectGroup(value ?? undefined)}>
-        <SelectTrigger className="w-64">
-          <SelectValue placeholder={t('statistics.selectGroup')}>
-            {(value: string | null) =>
-              groups?.find((group) => group.id === value)?.name ?? t('statistics.selectGroup')
-            }
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          {groups?.map((group) => (
-            <SelectItem key={group.id} value={group.id}>
-              {group.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
 
       {overview && (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
