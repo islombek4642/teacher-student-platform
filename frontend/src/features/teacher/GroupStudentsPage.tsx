@@ -46,7 +46,10 @@ export function GroupStudentsPage() {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <Button onClick={() => setDialogOpen(true)}>{t('students.create')}</Button>
+        <Button onClick={() => setDialogOpen(true)}>
+          <Icon icon="lucide:user-plus" />
+          {t('students.create')}
+        </Button>
       </div>
       <Table>
         <TableHeader>
@@ -93,6 +96,7 @@ export function GroupStudentsPage() {
                 <TableCell className="flex justify-end gap-1">
                   {editingId === student.id ? (
                     <Button size="sm" onClick={() => saveEdit(student.id)}>
+                      <Icon icon="lucide:check" />
                       {t('students.save')}
                     </Button>
                   ) : (
@@ -105,6 +109,7 @@ export function GroupStudentsPage() {
                         setEditingLastName(student.lastName);
                       }}
                     >
+                      <Icon icon="lucide:pencil" />
                       {t('students.edit')}
                     </Button>
                   )}

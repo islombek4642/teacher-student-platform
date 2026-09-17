@@ -46,6 +46,7 @@ export function TaskSubmissionPage() {
         <h1 className="text-xl font-semibold">{task.title}</h1>
         <SubmissionResult submission={submission} />
         <Button variant="outline" render={<Link to="/student/tasks" />}>
+          <Icon icon="lucide:arrow-left" />
           {t('studentTasks.backToList')}
         </Button>
       </div>

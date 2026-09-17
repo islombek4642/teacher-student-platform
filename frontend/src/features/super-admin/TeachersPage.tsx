@@ -22,7 +22,10 @@ export function TeachersPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">{t('teachers.title')}</h1>
-        <Button onClick={() => setDialogOpen(true)}>{t('teachers.create')}</Button>
+        <Button onClick={() => setDialogOpen(true)}>
+          <Icon icon="lucide:user-plus" />
+          {t('teachers.create')}
+        </Button>
       </div>
       <Table>
         <TableHeader>
@@ -62,6 +65,7 @@ export function TeachersPage() {
                 </TableCell>
                 <TableCell className="flex justify-end gap-1">
                   <Button variant="outline" size="sm" onClick={() => setActive({ id: teacher.id, isActive: !teacher.isActive })}>
+                    <Icon icon={teacher.isActive ? 'lucide:pause' : 'lucide:play'} />
                     {teacher.isActive ? t('teachers.disable') : t('teachers.enable')}
                   </Button>
                   <DropdownMenu>

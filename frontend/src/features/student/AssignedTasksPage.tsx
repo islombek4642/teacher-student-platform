@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,6 +31,7 @@ export function AssignedTasksPage() {
             </CardHeader>
             <CardContent>
               <Button size="sm" variant={task.mySubmission ? 'outline' : 'default'} render={<Link to={`/student/tasks/${task.id}`} />}>
+                <Icon icon={task.mySubmission ? 'lucide:eye' : 'lucide:play'} />
                 {task.mySubmission ? t('studentTasks.viewResult') : t('studentTasks.open')}
               </Button>
             </CardContent>

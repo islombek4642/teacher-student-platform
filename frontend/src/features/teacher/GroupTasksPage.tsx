@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDeleteTask, useTasksForGroup } from './api/tasks.api';
@@ -13,7 +14,10 @@ export function GroupTasksPage() {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <Button render={<Link to={`/teacher/groups/${groupId}/tasks/new`} />}>{t('tasks.create')}</Button>
+        <Button render={<Link to={`/teacher/groups/${groupId}/tasks/new`} />}>
+          <Icon icon="lucide:plus" />
+          {t('tasks.create')}
+        </Button>
       </div>
 
       {isLoading && <p className="text-muted-foreground">{t('tasks.loading')}</p>}
@@ -33,6 +37,7 @@ export function GroupTasksPage() {
                   size="sm"
                   render={<Link to={`/teacher/groups/${groupId}/statistics?taskId=${task.id}`} />}
                 >
+                  <Icon icon="lucide:bar-chart-3" />
                   {t('tasks.statistics')}
                 </Button>
                 <Button
@@ -42,6 +47,7 @@ export function GroupTasksPage() {
                     if (window.confirm(t('tasks.confirmDelete'))) remove(task.id);
                   }}
                 >
+                  <Icon icon="lucide:trash-2" />
                   {t('tasks.delete')}
                 </Button>
               </div>

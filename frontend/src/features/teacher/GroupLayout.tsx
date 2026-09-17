@@ -13,6 +13,12 @@ const TAB_LABEL_KEYS: Record<TabValue, string> = {
   statistics: 'statistics.title',
 };
 
+const TAB_ICONS: Record<TabValue, string> = {
+  students: 'lucide:users',
+  tasks: 'lucide:clipboard-list',
+  statistics: 'lucide:bar-chart-3',
+};
+
 export function GroupLayout() {
   const { t } = useTranslation();
   const { id: groupId } = useParams<{ id: string }>();
@@ -38,6 +44,7 @@ export function GroupLayout() {
         <TabsList>
           {TABS.map((tab) => (
             <TabsTrigger key={tab} value={tab}>
+              <Icon icon={TAB_ICONS[tab]} />
               {t(TAB_LABEL_KEYS[tab])}
             </TabsTrigger>
           ))}

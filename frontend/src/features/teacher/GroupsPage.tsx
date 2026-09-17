@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -20,7 +21,10 @@ export function GroupsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">{t('groups.title')}</h1>
-        <Button onClick={() => setDialogOpen(true)}>{t('groups.create')}</Button>
+        <Button onClick={() => setDialogOpen(true)}>
+          <Icon icon="lucide:plus" />
+          {t('groups.create')}
+        </Button>
       </div>
       <Table>
         <TableHeader>
@@ -57,6 +61,7 @@ export function GroupsPage() {
                         rename({ id: group.id, name: editingName }, { onSuccess: () => setEditingId(null) });
                       }}
                     >
+                      <Icon icon="lucide:check" />
                       {t('groups.rename')}
                     </Button>
                   ) : (
@@ -68,6 +73,7 @@ export function GroupsPage() {
                         setEditingName(group.name);
                       }}
                     >
+                      <Icon icon="lucide:pencil" />
                       {t('groups.rename')}
                     </Button>
                   )}
@@ -78,6 +84,7 @@ export function GroupsPage() {
                       if (window.confirm(t('groups.confirmDelete'))) remove(group.id);
                     }}
                   >
+                    <Icon icon="lucide:trash-2" />
                     {t('groups.delete')}
                   </Button>
                 </TableCell>

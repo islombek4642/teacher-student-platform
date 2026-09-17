@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
 import { setLanguage } from '@/i18n';
 
@@ -8,6 +9,7 @@ export function LanguageSwitcher() {
 
   return (
     <Button variant="ghost" size="sm" onClick={() => setLanguage(next)}>
+      <Icon icon="lucide:languages" />
       {next.toUpperCase()}
     </Button>
   );

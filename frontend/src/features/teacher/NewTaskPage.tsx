@@ -10,6 +10,7 @@ import {
   type UseFormSetValue,
 } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -78,6 +79,7 @@ function QuestionRow({
           </SelectContent>
         </Select>
         <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
+          <Icon icon="lucide:trash-2" />
           {t('tasks.delete')}
         </Button>
       </div>
@@ -105,6 +107,7 @@ function QuestionRow({
                   );
                 }}
               >
+                <Icon icon="lucide:trash-2" />
                 {t('tasks.delete')}
               </Button>
             </div>
@@ -118,6 +121,7 @@ function QuestionRow({
               setValue(`questions.${index}.options`, [...current, '']);
             }}
           >
+            <Icon icon="lucide:plus" />
             {t('tasks.addOption')}
           </Button>
           {(() => {
@@ -190,6 +194,7 @@ export function NewTaskPage() {
             size="sm"
             onClick={() => append({ type: 'FILL_BLANK', text: '', correctAnswer: '' })}
           >
+            <Icon icon="lucide:plus" />
             {t('tasks.addQuestion')}
           </Button>
         </div>
