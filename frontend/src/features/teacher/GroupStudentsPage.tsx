@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { PasswordReveal } from '@/components/shared/PasswordReveal';
 import { PersonAvatar } from '@/components/shared/PersonAvatar';
+import { PageHeader } from '@/components/shared/PageHeader';
 import { toast } from '@/components/ui/toast';
 import {
   useDeleteStudent,
@@ -46,12 +47,14 @@ export function GroupStudentsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button onClick={() => setDialogOpen(true)}>
-          <Icon icon="lucide:user-plus" />
-          {t('students.create')}
-        </Button>
-      </div>
+      <PageHeader
+        action={
+          <Button onClick={() => setDialogOpen(true)}>
+            <Icon icon="lucide:user-plus" />
+            {t('students.create')}
+          </Button>
+        }
+      />
       <Table>
         <TableHeader>
           <TableRow>

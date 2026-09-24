@@ -4,10 +4,22 @@ import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ERROR_CODES } from './common/constants/error-codes.constant';
 
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const corsOrigin = process.env.CORS_ORIGIN;
   app.enableCors({ origin: corsOrigin ? corsOrigin.split(',') : true });
+
+  const config = new DocumentBuilder()
+    .setTitle('Teacher-Student Platform API')
+    .setDescription('API documentation for the Teacher-Student Platform')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

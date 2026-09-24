@@ -141,10 +141,8 @@ describe('StudentsService', () => {
       expect(result.temporaryPassword).toMatch(/^\d{4}$/);
       expect(prisma.user.update).toHaveBeenCalledWith({
         where: { id: 'u1' },
-        data: { passwordHash: expect.any(String), currentPassword: expect.any(String) },
+        data: { passwordHash: expect.any(String) },
       });
-      const [[{ data }]] = (prisma.user.update as jest.Mock).mock.calls;
-      expect(decryptCredential(data.currentPassword)).toBe(result.temporaryPassword);
     });
   });
 });

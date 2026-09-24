@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { PasswordReveal } from '@/components/shared/PasswordReveal';
 import { PersonAvatar } from '@/components/shared/PersonAvatar';
+import { PageHeader } from '@/components/shared/PageHeader';
 import { toast } from '@/components/ui/toast';
 import { useDeleteTeacher, useResetTeacherPassword, useSetTeacherActive, useTeachers } from './api/teachers.api';
 import { CreateTeacherDialog } from './CreateTeacherDialog';
@@ -21,13 +22,15 @@ export function TeachersPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">{t('teachers.title')}</h1>
-        <Button onClick={() => setDialogOpen(true)}>
-          <Icon icon="lucide:user-plus" />
-          {t('teachers.create')}
-        </Button>
-      </div>
+      <PageHeader
+        title={t('teachers.title')}
+        action={
+          <Button onClick={() => setDialogOpen(true)}>
+            <Icon icon="lucide:user-plus" />
+            {t('teachers.create')}
+          </Button>
+        }
+      />
       <Table>
         <TableHeader>
           <TableRow>

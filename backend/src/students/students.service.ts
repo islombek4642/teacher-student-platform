@@ -27,7 +27,6 @@ export class StudentsService {
           data: {
             username: dto.username,
             passwordHash,
-            currentPassword: encryptCredential(temporaryPassword),
             role: Role.STUDENT,
           },
         });
@@ -77,7 +76,7 @@ export class StudentsService {
     const passwordHash = await hashPassword(temporaryPassword);
     await this.prisma.user.update({
       where: { id: student.userId },
-      data: { passwordHash, currentPassword: encryptCredential(temporaryPassword) },
+      data: { passwordHash },
     });
     return { temporaryPassword };
   }
@@ -101,14 +100,13 @@ export class StudentsService {
     await this.groupsService.findOneOwned(teacherProfileId, groupId);
     const students = await this.prisma.studentProfile.findMany({
       where: { groupId },
-      include: { user: { select: { username: true, isActive: true, currentPassword: true } } },
+      include: { user: { select: { username: true, isActive: true } } },
     });
     return students.map((s) => ({
       id: s.id,
       username: s.user.username,
       firstName: s.firstName,
       lastName: s.lastName,
-      temporaryPassword: s.user.currentPassword ? decryptCredential(s.user.currentPassword) : null,
     }));
   }
 }

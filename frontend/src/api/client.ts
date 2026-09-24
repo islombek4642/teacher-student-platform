@@ -1,4 +1,7 @@
 import axios from 'axios';
+import { toast } from '@/components/ui/toast';
+import { errorCodeToI18nKey, extractErrorCode } from '@/lib/error-codes';
+import i18n from '@/i18n';
 
 export const TOKEN_STORAGE_KEY = 'accessToken';
 
@@ -25,6 +28,9 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401 && hadToken) {
       localStorage.removeItem(TOKEN_STORAGE_KEY);
       window.location.href = '/login';
+    } else if (error.response?.status !== 401) {
+      const key = errorCodeToI18nKey(extractErrorCode(error));
+      toast.add({ type: 'error', description: i18n.t(key) });
     }
     return Promise.reject(error);
   },

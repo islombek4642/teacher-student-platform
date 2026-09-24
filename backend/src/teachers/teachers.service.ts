@@ -1,4 +1,5 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { ERROR_CODES } from '../common/constants/error-codes.constant';
@@ -20,7 +21,6 @@ export class TeachersService {
           data: {
             username: dto.username,
             passwordHash,
-            currentPassword: encryptCredential(temporaryPassword),
             role: Role.TEACHER,
           },
         });
@@ -45,18 +45,33 @@ export class TeachersService {
     }
   }
 
-  async findAll() {
-    const teachers = await this.prisma.teacherProfile.findMany({
-      include: { user: { select: { username: true, isActive: true, currentPassword: true } } },
-    });
-    return teachers.map((t) => ({
-      id: t.id,
-      username: t.user.username,
-      firstName: t.firstName,
-      lastName: t.lastName,
-      isActive: t.user.isActive,
-      temporaryPassword: t.user.currentPassword ? decryptCredential(t.user.currentPassword) : null,
-    }));
+  async findAll(query: PaginationQueryDto) {
+    const { page = 1, limit = 10 } = query;
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.teacherProfile.findMany({
+        skip,
+        take: limit,
+        include: { user: { select: { username: true, isActive: true } } },
+      }),
+      this.prisma.teacherProfile.count(),
+    ]);
+
+    return {
+      data: items.map((t) => ({
+        id: t.id,
+        username: t.user.username,
+        firstName: t.firstName,
+        lastName: t.lastName,
+        isActive: t.user.isActive,
+      })),
+      meta: {
+        total,
+        page,
+        lastPage: Math.ceil(total / limit),
+      },
+    };
   }
 
   async resetPassword(teacherProfileId: string) {
@@ -68,7 +83,7 @@ export class TeachersService {
     const passwordHash = await hashPassword(temporaryPassword);
     await this.prisma.user.update({
       where: { id: profile.userId },
-      data: { passwordHash, currentPassword: encryptCredential(temporaryPassword) },
+      data: { passwordHash },
     });
     return { temporaryPassword };
   }
