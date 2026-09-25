@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { PasswordReveal } from '@/components/shared/PasswordReveal';
 import { PersonAvatar } from '@/components/shared/PersonAvatar';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { toast } from '@/components/ui/toast';
@@ -14,7 +13,10 @@ import { CreateTeacherDialog } from './CreateTeacherDialog';
 
 export function TeachersPage() {
   const { t } = useTranslation();
-  const { data: teachers, isLoading } = useTeachers();
+  const [page, setPage] = useState(1);
+  const { data: response, isLoading } = useTeachers(page);
+  const teachers = response?.data;
+  const meta = response?.meta;
   const [dialogOpen, setDialogOpen] = useState(false);
   const { mutate: setActive } = useSetTeacherActive();
   const { mutate: resetPassword } = useResetTeacherPassword();
@@ -38,7 +40,6 @@ export function TeachersPage() {
             <TableHead>{t('teachers.username')}</TableHead>
             <TableHead>{t('teachers.firstName')}</TableHead>
             <TableHead>{t('teachers.lastName')}</TableHead>
-            <TableHead>{t('teachers.password')}</TableHead>
             <TableHead>{t('teachers.status')}</TableHead>
             <TableHead />
           </TableRow>
@@ -46,7 +47,7 @@ export function TeachersPage() {
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center text-muted-foreground">
+              <TableCell colSpan={6} className="text-center text-muted-foreground">
                 {t('teachers.loading')}
               </TableCell>
             </TableRow>
@@ -59,13 +60,6 @@ export function TeachersPage() {
                 <TableCell>{teacher.username}</TableCell>
                 <TableCell>{teacher.firstName}</TableCell>
                 <TableCell>{teacher.lastName}</TableCell>
-                <TableCell>
-                  {teacher.temporaryPassword ? (
-                    <PasswordReveal value={teacher.temporaryPassword} />
-                  ) : (
-                    <span className="text-muted-foreground">—</span>
-                  )}
-                </TableCell>
                 <TableCell>
                   <Badge variant={teacher.isActive ? 'default' : 'secondary'}>
                     {teacher.isActive ? t('teachers.active') : t('teachers.disabled')}
@@ -88,7 +82,10 @@ export function TeachersPage() {
                       <DropdownMenuItem
                         onClick={() =>
                           resetPassword(teacher.id, {
-                            onSuccess: () => toast.add({ type: 'success', description: t('teachers.resetSuccess') }),
+                            onSuccess: (data) => {
+                              toast.add({ type: 'success', description: t('teachers.resetSuccess') + ` Yangi parol: ${data.temporaryPassword} (Nusxalandi)` });
+                              navigator.clipboard.writeText(data.temporaryPassword).catch(() => {});
+                            }
                           })
                         }
                       >
@@ -111,13 +108,30 @@ export function TeachersPage() {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={7} className="text-center text-muted-foreground">
+              <TableCell colSpan={6} className="text-center text-muted-foreground">
                 {t('teachers.empty')}
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
+      
+      {meta && meta.lastPage > 1 && (
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">
+            Jami: {meta.total} ta
+          </span>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)}>
+              Oldingi
+            </Button>
+            <Button variant="outline" size="sm" disabled={page === meta.lastPage} onClick={() => setPage(page + 1)}>
+              Keyingi
+            </Button>
+          </div>
+        </div>
+      )}
+
       <CreateTeacherDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>
   );

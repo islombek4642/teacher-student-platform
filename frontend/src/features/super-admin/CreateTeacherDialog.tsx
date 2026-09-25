@@ -34,8 +34,9 @@ export function CreateTeacherDialog({
 
   const onSubmit = (data: FormValues) =>
     mutate(data, {
-      onSuccess: () => {
-        toast.add({ type: 'success', description: t('teachers.createSuccess') });
+      onSuccess: (result) => {
+        toast.add({ type: 'success', description: t('teachers.createSuccess') + ` Parol: ${result.temporaryPassword} (Nusxalandi)` });
+        navigator.clipboard.writeText(result.temporaryPassword).catch(() => {});
         reset();
         onOpenChange(false);
       },
