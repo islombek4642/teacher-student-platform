@@ -16,7 +16,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { Role, IeltsTaskType } from '@prisma/client';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { User } from '@prisma/client';
+import { JwtPayload } from '../auth/jwt-payload.interface';
 import { Response } from 'express';
 import { ApiTags, ApiConsumes, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 
@@ -46,14 +46,14 @@ export class IeltsController {
     },
   })
   async uploadTask(
-    @CurrentUser() user: User,
+    @CurrentUser() user: JwtPayload,
     @Body('title') title: string,
     @Body('type') type: IeltsTaskType,
     @UploadedFile() file: Express.Multer.File,
     @Body('groupId') groupId?: string,
   ) {
     const teacherProfile = await this.ieltsService['prisma'].teacherProfile.findUnique({
-      where: { userId: user.id },
+      where: { userId: user.sub },
     });
     return this.ieltsService.uploadTask(teacherProfile!.id, title, type, file, groupId);
   }
@@ -67,9 +67,9 @@ export class IeltsController {
   @Get('teacher')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.TEACHER)
-  async getTeacherTasks(@CurrentUser() user: User) {
+  async getTeacherTasks(@CurrentUser() user: JwtPayload) {
     const teacherProfile = await this.ieltsService['prisma'].teacherProfile.findUnique({
-      where: { userId: user.id },
+      where: { userId: user.sub },
     });
     return this.ieltsService.getTasksByTeacher(teacherProfile!.id);
   }
