@@ -150,5 +150,16 @@
     "ERR_STUDENT_HAS_SUBMISSIONS": "This student can't be deleted, they have submitted answers",
     "ERR_INTERNAL_ERROR": "Server error, please try again shortly",
     "UNKNOWN": "An unknown error occurred"
+  },
+  "ielts": {
+    "listening": "Listening",
+    "listeningDesc": "Listening tasks will be available here soon.",
+    "reading": "Reading",
+    "readingDesc": "Reading tasks will be available here soon.",
+    "writing": "Writing",
+    "writingDesc": "Writing tasks will be available here soon.",
+    "speaking": "Speaking",
+    "speakingDesc": "Speaking tasks will be available here soon.",
+    "comingSoon": "Coming Soon"
   }
 }

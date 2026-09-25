@@ -32,47 +32,7 @@ export interface Student {
   temporaryPassword: string | null;
 }
 
-export type QuestionType = 'MULTIPLE_CHOICE' | 'FILL_BLANK';
 
-export interface Question {
-  id: string;
-  type: QuestionType;
-  text: string;
-  options: string[] | null;
-  correctAnswer?: string;
-}
-
-export interface Task {
-  id: string;
-  subjectId: string;
-  groupId: string;
-  teacherId: string;
-  title: string;
-  description: string | null;
-  createdAt: string;
-  questions: Question[];
-  // Only present on the student-facing "assigned tasks" endpoint.
-  mySubmission?: { score: number; submittedAt: string | null } | null;
-}
-
-export interface Answer {
-  id: string;
-  questionId: string;
-  studentAnswer: string;
-  isCorrect: boolean;
-  questionText: string | null;
-  correctAnswer: string | null;
-}
-
-export interface Submission {
-  id: string;
-  taskId: string;
-  studentId: string;
-  status: 'IN_PROGRESS' | 'COMPLETED';
-  score: number;
-  submittedAt: string | null;
-  answers: Answer[];
-}
 
 export interface GroupOverview {
   studentCount: number;
@@ -87,17 +47,7 @@ export interface LeaderboardEntry {
   totalScore: number;
 }
 
-export interface TaskStats {
-  submissionCount: number;
-  averageScore: number;
-  mostMissedQuestions: { id: string; text: string; missCount: number }[];
-}
 
-export interface StudentProgress {
-  tasksCompleted: number;
-  averageScore: number;
-  lastActivityAt: string | null;
-}
 
 export interface ApiErrorBody {
   statusCode: number;

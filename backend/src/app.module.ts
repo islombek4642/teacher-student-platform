@@ -6,10 +6,6 @@ import { AuthModule } from './auth/auth.module';
 import { TeachersModule } from './teachers/teachers.module';
 import { GroupsModule } from './groups/groups.module';
 import { StudentsModule } from './students/students.module';
-import { TasksModule } from './tasks/tasks.module';
-import { SubmissionsModule } from './submissions/submissions.module';
-import { StatisticsModule } from './statistics/statistics.module';
-
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -18,9 +14,6 @@ import { StatisticsModule } from './statistics/statistics.module';
     TeachersModule,
     GroupsModule,
     StudentsModule,
-    TasksModule,
-    SubmissionsModule,
-    StatisticsModule,
   ],
   controllers: [AppController],
 })

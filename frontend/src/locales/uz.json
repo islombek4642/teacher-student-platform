@@ -150,5 +150,16 @@
     "ERR_STUDENT_HAS_SUBMISSIONS": "Bu o'quvchini o'chirib bo'lmaydi, uning topshirilgan javoblari bor",
     "ERR_INTERNAL_ERROR": "Server xatosi, birozdan keyin urinib ko'ring",
     "UNKNOWN": "Noma'lum xatolik yuz berdi"
+  },
+  "ielts": {
+    "listening": "Listening",
+    "listeningDesc": "Listening topshiriqlari tez kunda shu yerda paydo bo'ladi.",
+    "reading": "Reading",
+    "readingDesc": "Reading topshiriqlari tez kunda shu yerda paydo bo'ladi.",
+    "writing": "Writing",
+    "writingDesc": "Writing topshiriqlari tez kunda shu yerda paydo bo'ladi.",
+    "speaking": "Speaking",
+    "speakingDesc": "Speaking topshiriqlari tez kunda shu yerda paydo bo'ladi.",
+    "comingSoon": "Tez kunda"
   }
 }

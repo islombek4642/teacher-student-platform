@@ -28,10 +28,18 @@ interface NavLinkConfig {
 
 const NAV_LINKS_BY_ROLE: Record<Role, NavLinkConfig[]> = {
   SUPER_ADMIN: [{ to: '/super-admin/teachers', labelKey: 'teachers.title', icon: 'lucide:graduation-cap' }],
-  TEACHER: [{ to: '/teacher/groups', labelKey: 'groups.title', icon: 'lucide:users' }],
+  TEACHER: [
+    { to: '/teacher/groups', labelKey: 'groups.title', icon: 'lucide:users' },
+    { to: '/teacher/ielts/listening', labelKey: 'ielts.listening', icon: 'lucide:headphones' },
+    { to: '/teacher/ielts/reading', labelKey: 'ielts.reading', icon: 'lucide:book-open' },
+    { to: '/teacher/ielts/writing', labelKey: 'ielts.writing', icon: 'lucide:pen-tool' },
+    { to: '/teacher/ielts/speaking', labelKey: 'ielts.speaking', icon: 'lucide:mic' },
+  ],
   STUDENT: [
-    { to: '/student/tasks', labelKey: 'studentTasks.title', icon: 'lucide:list-checks' },
-    { to: '/student/progress', labelKey: 'studentProgress.title', icon: 'lucide:trending-up' },
+    { to: '/student/ielts/listening', labelKey: 'ielts.listening', icon: 'lucide:headphones' },
+    { to: '/student/ielts/reading', labelKey: 'ielts.reading', icon: 'lucide:book-open' },
+    { to: '/student/ielts/writing', labelKey: 'ielts.writing', icon: 'lucide:pen-tool' },
+    { to: '/student/ielts/speaking', labelKey: 'ielts.speaking', icon: 'lucide:mic' },
   ],
 };
 
