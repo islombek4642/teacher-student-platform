@@ -62,6 +62,7 @@
     "confirmDelete": "Bu o'quvchini o'chirmoqchimisiz?",
     "createSuccess": "O'quvchi muvaffaqiyatli yaratildi",
     "resetSuccess": "Parol muvaffaqiyatli yangilandi",
+    "newPasswordIs": "uchun yangi parol:",
     "loading": "Yuklanmoqda...",
     "empty": "Bu guruhda hozircha o'quvchilar yo'q"
   },

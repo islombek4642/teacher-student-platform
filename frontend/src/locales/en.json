@@ -62,6 +62,7 @@
     "confirmDelete": "Delete this student?",
     "createSuccess": "Student created successfully",
     "resetSuccess": "Password reset successfully",
+    "newPasswordIs": "'s new password is:",
     "loading": "Loading...",
     "empty": "No students in this group yet"
   },

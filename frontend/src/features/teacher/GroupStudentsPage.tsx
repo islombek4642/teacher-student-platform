@@ -30,6 +30,7 @@ export function GroupStudentsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingFirstName, setEditingFirstName] = useState('');
   const [editingLastName, setEditingLastName] = useState('');
+  const [resetResult, setResetResult] = useState<{ name: string; password: string } | null>(null);
 
   const saveEdit = (studentId: string) => {
     // Guard against blank names — a lesson from Task 16's GroupsPage rename
@@ -62,14 +63,13 @@ export function GroupStudentsPage() {
             <TableHead>{t('students.username')}</TableHead>
             <TableHead>{t('students.firstName')}</TableHead>
             <TableHead>{t('students.lastName')}</TableHead>
-            <TableHead>{t('students.password')}</TableHead>
             <TableHead />
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center text-muted-foreground">
+              <TableCell colSpan={5} className="text-center text-muted-foreground">
                 {t('students.loading')}
               </TableCell>
             </TableRow>
@@ -92,13 +92,6 @@ export function GroupStudentsPage() {
                     <Input value={editingLastName} onChange={(e) => setEditingLastName(e.target.value)} />
                   ) : (
                     student.lastName
-                  )}
-                </TableCell>
-                <TableCell>
-                  {student.temporaryPassword ? (
-                    <PasswordReveal value={student.temporaryPassword} />
-                  ) : (
-                    <span className="text-muted-foreground">—</span>
                   )}
                 </TableCell>
                 <TableCell className="flex justify-end gap-1">
@@ -133,7 +126,12 @@ export function GroupStudentsPage() {
                       <DropdownMenuItem
                         onClick={() =>
                           resetPassword(student.id, {
-                            onSuccess: () => toast.add({ type: 'success', description: t('students.resetSuccess') }),
+                            onSuccess: (data) => {
+                              setResetResult({
+                                name: `${student.firstName} ${student.lastName}`,
+                                password: data.temporaryPassword,
+                              });
+                            },
                           })
                         }
                       >
@@ -156,7 +154,7 @@ export function GroupStudentsPage() {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={6} className="text-center text-muted-foreground">
+              <TableCell colSpan={5} className="text-center text-muted-foreground">
                 {t('students.empty')}
               </TableCell>
             </TableRow>
@@ -164,6 +162,22 @@ export function GroupStudentsPage() {
         </TableBody>
       </Table>
       <CreateStudentDialog groupId={groupId!} open={dialogOpen} onOpenChange={setDialogOpen} />
+      {resetResult && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-lg bg-background p-6 shadow-lg">
+            <h3 className="mb-2 text-lg font-semibold">{t('students.resetSuccess')}</h3>
+            <p className="mb-4 text-sm text-muted-foreground">
+              {resetResult.name} {t('students.newPasswordIs')}
+            </p>
+            <div className="mb-6 flex items-center gap-2 rounded border bg-muted/50 p-3">
+              <code className="flex-1 text-center text-xl font-bold tracking-widest">{resetResult.password}</code>
+            </div>
+            <Button className="w-full" onClick={() => setResetResult(null)}>
+              {t('common.close')}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
