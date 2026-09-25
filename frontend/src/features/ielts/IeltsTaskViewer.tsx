@@ -25,6 +25,7 @@ export function IeltsTaskViewer({
         src={`${API_URL}/ielts/${taskId}/view`}
         className="h-full w-full border-none"
         title="IELTS Task"
+        allowFullScreen
       />
     </div>
   );
