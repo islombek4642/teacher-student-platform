@@ -35,7 +35,7 @@ export function CreateTeacherDialog({
   const onSubmit = (data: FormValues) =>
     mutate(data, {
       onSuccess: (result) => {
-        toast.add({ type: 'success', description: t('teachers.createSuccess') + ` Parol: ${result.temporaryPassword} (Nusxalandi)` });
+        toast.add({ type: 'success', description: t('teachers.createSuccess') + ' ' + t('teachers.newPasswordCopied', { password: result.temporaryPassword }) });
         navigator.clipboard.writeText(result.temporaryPassword).catch(() => {});
         reset();
         onOpenChange(false);

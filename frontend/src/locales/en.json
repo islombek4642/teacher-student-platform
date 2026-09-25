@@ -6,7 +6,9 @@
     "hide": "Hide",
     "copy": "Copy",
     "copied": "Copied to clipboard",
-    "moreActions": "More actions"
+    "moreActions": "More actions",
+    "prev": "Previous",
+    "next": "Next"
   },
   "auth": {
     "login": { "title": "Sign in", "username": "Username", "password": "Password", "submit": "Sign in" }
@@ -30,7 +32,9 @@
     "delete": "Delete",
     "loading": "Loading...",
     "empty": "No teachers yet",
-    "createSuccess": "Teacher created successfully"
+    "createSuccess": "Teacher created successfully",
+    "totalCount": "Total: {{count}}",
+    "newPasswordCopied": "New password: {{password}} (Copied)"
   },
   "groups": {
     "title": "Groups",

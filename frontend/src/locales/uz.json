@@ -6,7 +6,9 @@
     "hide": "Yashirish",
     "copy": "Nusxalash",
     "copied": "Nusxalandi",
-    "moreActions": "Qo'shimcha amallar"
+    "moreActions": "Qo'shimcha amallar",
+    "prev": "Oldingi",
+    "next": "Keyingi"
   },
   "auth": {
     "login": { "title": "Kirish", "username": "Foydalanuvchi nomi", "password": "Parol", "submit": "Kirish" }
@@ -30,7 +32,9 @@
     "delete": "O'chirish",
     "loading": "Yuklanmoqda...",
     "empty": "Hozircha o'qituvchilar yo'q",
-    "createSuccess": "O'qituvchi muvaffaqiyatli yaratildi"
+    "createSuccess": "O'qituvchi muvaffaqiyatli yaratildi",
+    "totalCount": "Jami: {{count}} ta",
+    "newPasswordCopied": "Yangi parol: {{password}} (Nusxalandi)"
   },
   "groups": {
     "title": "Guruhlar",

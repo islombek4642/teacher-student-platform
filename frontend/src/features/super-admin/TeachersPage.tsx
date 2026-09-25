@@ -83,7 +83,7 @@ export function TeachersPage() {
                         onClick={() =>
                           resetPassword(teacher.id, {
                             onSuccess: (data) => {
-                              toast.add({ type: 'success', description: t('teachers.resetSuccess') + ` Yangi parol: ${data.temporaryPassword} (Nusxalandi)` });
+                              toast.add({ type: 'success', description: t('teachers.resetSuccess') + ' ' + t('teachers.newPasswordCopied', { password: data.temporaryPassword }) });
                               navigator.clipboard.writeText(data.temporaryPassword).catch(() => {});
                             }
                           })
@@ -119,14 +119,14 @@ export function TeachersPage() {
       {meta && meta.lastPage > 1 && (
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">
-            Jami: {meta.total} ta
+            {t('teachers.totalCount', { count: meta.total })}
           </span>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)}>
-              Oldingi
+              {t('common.prev')}
             </Button>
             <Button variant="outline" size="sm" disabled={page === meta.lastPage} onClick={() => setPage(page + 1)}>
-              Keyingi
+              {t('common.next')}
             </Button>
           </div>
         </div>
