@@ -4,11 +4,7 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  await prisma.subject.upsert({
-    where: { code: 'ENGLISH' },
-    update: {},
-    create: { code: 'ENGLISH', name: 'English' },
-  });
+
 
   const username = process.env.SUPER_ADMIN_USERNAME ?? 'superadmin';
   const password = process.env.SUPER_ADMIN_PASSWORD ?? 'changeme';
