@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
-import { env } from '@/config/env';
+import { useEffect } from 'react';
+
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
 export function IeltsTaskViewer({ 
   taskId, 
@@ -21,7 +22,7 @@ export function IeltsTaskViewer({
   return (
     <div className="fixed inset-0 z-[100] bg-background">
       <iframe
-        src={`${env.API_URL}/ielts/${taskId}/view`}
+        src={`${API_URL}/ielts/${taskId}/view`}
         className="h-full w-full border-none"
         title="IELTS Task"
       />

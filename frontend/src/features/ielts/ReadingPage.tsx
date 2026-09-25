@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
 import { useTeacherTasks } from './api/ielts.api';

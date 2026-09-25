@@ -6,10 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { PasswordReveal } from '@/components/shared/PasswordReveal';
 import { PersonAvatar } from '@/components/shared/PersonAvatar';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { toast } from '@/components/ui/toast';
 import {
   useDeleteStudent,
   useResetStudentPassword,
