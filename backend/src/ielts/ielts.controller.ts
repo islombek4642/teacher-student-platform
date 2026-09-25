@@ -36,7 +36,7 @@ export class IeltsController {
       type: 'object',
       properties: {
         title: { type: 'string' },
-        groupId: { type: 'string' },
+        groupId: { type: 'string', nullable: true },
         type: { type: 'string', enum: ['LISTENING', 'READING', 'WRITING', 'SPEAKING'] },
         file: {
           type: 'string',
@@ -48,20 +48,30 @@ export class IeltsController {
   async uploadTask(
     @CurrentUser() user: User,
     @Body('title') title: string,
-    @Body('groupId') groupId: string,
     @Body('type') type: IeltsTaskType,
     @UploadedFile() file: Express.Multer.File,
+    @Body('groupId') groupId?: string,
   ) {
     const teacherProfile = await this.ieltsService['prisma'].teacherProfile.findUnique({
       where: { userId: user.id },
     });
-    return this.ieltsService.uploadTask(teacherProfile!.id, groupId, title, type, file);
+    return this.ieltsService.uploadTask(teacherProfile!.id, title, type, file, groupId);
   }
 
   @Get('group/:groupId')
   @UseGuards(JwtAuthGuard)
   async getTasksByGroup(@Param('groupId') groupId: string) {
     return this.ieltsService.getTasksByGroup(groupId);
+  }
+
+  @Get('teacher')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.TEACHER)
+  async getTeacherTasks(@CurrentUser() user: User) {
+    const teacherProfile = await this.ieltsService['prisma'].teacherProfile.findUnique({
+      where: { userId: user.id },
+    });
+    return this.ieltsService.getTasksByTeacher(teacherProfile!.id);
   }
 
   @Get(':id/view')

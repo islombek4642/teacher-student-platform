@@ -8,10 +8,10 @@ export class IeltsService {
 
   async uploadTask(
     teacherId: string,
-    groupId: string,
     title: string,
     type: IeltsTaskType,
     htmlFile: Express.Multer.File,
+    groupId?: string,
   ) {
     // Basic file validation
     if (!htmlFile || !htmlFile.buffer) {
@@ -56,6 +56,19 @@ export class IeltsService {
   async getTasksByGroup(groupId: string) {
     return this.prisma.ieltsTask.findMany({
       where: { groupId },
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getTasksByTeacher(teacherId: string) {
+    return this.prisma.ieltsTask.findMany({
+      where: { teacherId },
       select: {
         id: true,
         title: true,

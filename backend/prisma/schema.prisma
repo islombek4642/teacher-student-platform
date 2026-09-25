@@ -74,11 +74,11 @@ model IeltsTask {
   type        IeltsTaskType
   contentHtml String
   teacherId   String
-  groupId     String
+  groupId     String?
   createdAt   DateTime       @default(now())
 
   teacher     TeacherProfile @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  group       Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  group       Group?         @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   @@index([teacherId])
   @@index([groupId])
