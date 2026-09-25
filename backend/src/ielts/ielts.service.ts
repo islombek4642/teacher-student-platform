@@ -60,6 +60,15 @@ export class IeltsService {
     return task;
   }
 
+  async deleteTask(id: string, teacherId: string) {
+    const task = await this.prisma.ieltsTask.findUnique({ where: { id } });
+    if (!task || task.teacherId !== teacherId) {
+      throw new NotFoundException('ERR_TASK_NOT_FOUND');
+    }
+    await this.prisma.ieltsTask.delete({ where: { id } });
+    return { success: true };
+  }
+
   async getTasksByGroup(groupId: string) {
     return this.prisma.ieltsTask.findMany({
       where: { groupId },

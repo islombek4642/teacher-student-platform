@@ -4,7 +4,7 @@ import { PageHeader } from '@/components/shared/PageHeader';
 import { Card } from '@/components/ui/card';
 import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
-import { useTeacherTasks } from './api/ielts.api';
+import { useTeacherTasks, useDeleteIeltsTask } from './api/ielts.api';
 import { UploadIeltsDialog } from './UploadIeltsDialog';
 import { IeltsTaskViewer } from './IeltsTaskViewer';
 import {
@@ -21,8 +21,15 @@ export function ListeningPage() {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [viewingTaskId, setViewingTaskId] = useState<string | null>(null);
   const { data: tasks, isLoading } = useTeacherTasks();
+  const deleteMutation = useDeleteIeltsTask();
   
   const listeningTasks = tasks?.filter((t) => t.type === 'LISTENING') || [];
+
+  const handleDelete = (id: string) => {
+    if (window.confirm(t('common.confirmDelete') || 'Haqiqatan ham o`chirmoqchimisiz?')) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -55,8 +62,11 @@ export function ListeningPage() {
                 <TableRow key={task.id}>
                   <TableCell className="font-medium">{task.title}</TableCell>
                   <TableCell>{new Date(task.createdAt).toLocaleDateString()}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right space-x-2">
                     <Button variant="outline" size="sm" onClick={() => setViewingTaskId(task.id)}>{t('ielts.view')}</Button>
+                    <Button variant="destructive" size="sm" onClick={() => handleDelete(task.id)} disabled={deleteMutation.isPending}>
+                      <Icon icon="lucide:trash-2" className="h-4 w-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))

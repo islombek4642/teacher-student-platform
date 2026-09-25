@@ -8,6 +8,7 @@ import {
   Get,
   Param,
   Res,
+  Delete,
 } from '@nestjs/common';
 import { IeltsService } from './ielts.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -82,5 +83,15 @@ export class IeltsController {
     const task = await this.ieltsService.getTask(id);
     res.setHeader('Content-Type', 'text/html');
     res.send(task.contentHtml);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.TEACHER)
+  async deleteTask(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    const teacherProfile = await this.ieltsService['prisma'].teacherProfile.findUnique({
+      where: { userId: user.sub },
+    });
+    return this.ieltsService.deleteTask(id, teacherProfile!.id);
   }
 }
