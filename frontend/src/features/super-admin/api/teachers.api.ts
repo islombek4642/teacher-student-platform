@@ -5,7 +5,10 @@ import type { CreatedAccount, Teacher } from '@/api/types';
 export function useTeachers() {
   return useQuery({
     queryKey: ['teachers'],
-    queryFn: async () => (await apiClient.get<Teacher[]>('/teachers')).data,
+    queryFn: async () => {
+      const response = await apiClient.get<{ data: Teacher[]; meta: any }>('/teachers');
+      return response.data.data;
+    },
   });
 }
 
