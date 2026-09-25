@@ -32,6 +32,7 @@ model TeacherProfile {
   firstName String
   lastName  String
   groups    Group[]
+  ieltsTasks IeltsTask[]
   createdAt DateTime @default(now())
 }
 
@@ -54,8 +55,31 @@ model Group {
   teacherId String
   teacher   TeacherProfile   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   students  StudentProfile[]
+  ieltsTasks IeltsTask[]
   createdAt DateTime         @default(now())
 
   @@index([teacherId])
 }
 
+enum IeltsTaskType {
+  LISTENING
+  READING
+  WRITING
+  SPEAKING
+}
+
+model IeltsTask {
+  id          String         @id @default(uuid())
+  title       String
+  type        IeltsTaskType
+  contentHtml String
+  teacherId   String
+  groupId     String
+  createdAt   DateTime       @default(now())
+
+  teacher     TeacherProfile @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  group       Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([teacherId])
+  @@index([groupId])
+}

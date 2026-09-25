@@ -1,0 +1,76 @@
+import {
+  Controller,
+  Post,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  Body,
+  Get,
+  Param,
+  Res,
+} from '@nestjs/common';
+import { IeltsService } from './ielts.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { Role, IeltsTaskType } from '@prisma/client';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { User } from '@prisma/client';
+import { Response } from 'express';
+import { ApiTags, ApiConsumes, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+
+@ApiTags('ielts')
+@ApiBearerAuth()
+@Controller('ielts')
+export class IeltsController {
+  constructor(private readonly ieltsService: IeltsService) {}
+
+  @Post('upload')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.TEACHER)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string' },
+        groupId: { type: 'string' },
+        type: { type: 'string', enum: ['LISTENING', 'READING', 'WRITING', 'SPEAKING'] },
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  async uploadTask(
+    @CurrentUser() user: User,
+    @Body('title') title: string,
+    @Body('groupId') groupId: string,
+    @Body('type') type: IeltsTaskType,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    const teacherProfile = await this.ieltsService['prisma'].teacherProfile.findUnique({
+      where: { userId: user.id },
+    });
+    return this.ieltsService.uploadTask(teacherProfile!.id, groupId, title, type, file);
+  }
+
+  @Get('group/:groupId')
+  @UseGuards(JwtAuthGuard)
+  async getTasksByGroup(@Param('groupId') groupId: string) {
+    return this.ieltsService.getTasksByGroup(groupId);
+  }
+
+  @Get(':id/view')
+  // Public or guarded? If it's loaded in an iframe with the token, it should be guarded.
+  // But iframe src doesn't send Authorization headers easily.
+  // To keep it simple, we can make it public for now, or use a query token, or just rely on the fact that IDs are random UUIDs.
+  async viewTask(@Param('id') id: string, @Res() res: Response) {
+    const task = await this.ieltsService.getTask(id);
+    res.setHeader('Content-Type', 'text/html');
+    res.send(task.contentHtml);
+  }
+}
