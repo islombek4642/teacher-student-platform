@@ -83,13 +83,6 @@ export class StudentsService {
 
   async remove(teacherProfileId: string, studentProfileId: string) {
     const student = await this.findOneOwned(teacherProfileId, studentProfileId);
-    const submissionCount = await this.prisma.submission.count({ where: { studentId: studentProfileId } });
-    if (submissionCount > 0) {
-      throw new ConflictException({
-        errorCode: ERROR_CODES.STUDENT_HAS_SUBMISSIONS,
-        message: 'Student still has submissions',
-      });
-    }
     await this.prisma.$transaction([
       this.prisma.studentProfile.delete({ where: { id: studentProfileId } }),
       this.prisma.user.delete({ where: { id: student.userId } }),

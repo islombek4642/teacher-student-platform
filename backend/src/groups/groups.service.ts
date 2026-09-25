@@ -30,14 +30,11 @@ export class GroupsService {
 
   async remove(teacherProfileId: string, groupId: string) {
     await this.findOneOwned(teacherProfileId, groupId);
-    const [studentCount, taskCount] = await Promise.all([
-      this.prisma.studentProfile.count({ where: { groupId } }),
-      this.prisma.task.count({ where: { groupId } }),
-    ]);
-    if (studentCount > 0 || taskCount > 0) {
+    const studentCount = await this.prisma.studentProfile.count({ where: { groupId } });
+    if (studentCount > 0) {
       throw new ConflictException({
         errorCode: ERROR_CODES.GROUP_HAS_DEPENDENTS,
-        message: 'Group still has students or tasks',
+        message: 'Group still has students',
       });
     }
     await this.prisma.group.delete({ where: { id: groupId } });
