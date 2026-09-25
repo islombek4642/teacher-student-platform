@@ -57,6 +57,28 @@ export class IeltsService {
     if (!task) {
       throw new NotFoundException('ERR_TASK_NOT_FOUND');
     }
+
+    const exitButtonHtml = `<button onclick="if(confirm('Are you sure you want to exit?')) window.parent.postMessage({type: 'CLOSE_IELTS_TASK'}, '*')" style="display:inline-flex; align-items:center; justify-content:center; padding:8px 16px; border:none; border-radius:6px; background-color:#ef4444; color:white; font-family:inherit; font-weight:500; cursor:pointer; gap:8px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        Exit
+      </button>`;
+
+    // Dynamically replace any old 'Chiqish' buttons that might be in the database
+    task.contentHtml = task.contentHtml.replace(
+      /<button[^>]*onclick=["']window\.parent\.postMessage\(\{type:\s*'CLOSE_IELTS_TASK'\}[\s\S]*?<\/button>/gi,
+      exitButtonHtml,
+    );
+
+    // Also replace any a tags just in case
+    task.contentHtml = task.contentHtml.replace(
+      /<a\b[^>]*>([\s\S]*?)<\/a>/gi,
+      exitButtonHtml,
+    );
+
     return task;
   }
 
