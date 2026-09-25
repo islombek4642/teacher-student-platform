@@ -14,14 +14,17 @@ describe('useTeachers', () => {
   it('fetches the teacher list from the API', async () => {
     server.use(
       http.get('http://localhost:3000/teachers', () =>
-        HttpResponse.json([{ id: 't1', username: 'teacher.a', firstName: 'A', lastName: 'B', isActive: true }]),
+        HttpResponse.json({
+          data: [{ id: 't1', username: 'teacher.a', firstName: 'A', lastName: 'B', isActive: true }],
+          meta: { total: 1, page: 1, lastPage: 1 },
+        }),
       ),
     );
 
     const { result } = renderHook(() => useTeachers(), { wrapper });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toHaveLength(1);
-    expect(result.current.data?.[0].username).toBe('teacher.a');
+    expect(result.current.data?.data).toHaveLength(1);
+    expect(result.current.data?.data?.[0].username).toBe('teacher.a');
   });
 });
