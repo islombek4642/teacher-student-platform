@@ -8,7 +8,9 @@
     "copied": "Copied to clipboard",
     "moreActions": "More actions",
     "prev": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "loading": "Loading...",
+    "close": "Close"
   },
   "auth": {
     "login": { "title": "Sign in", "username": "Username", "password": "Password", "submit": "Sign in" }

@@ -8,7 +8,9 @@
     "copied": "Nusxalandi",
     "moreActions": "Qo'shimcha amallar",
     "prev": "Oldingi",
-    "next": "Keyingi"
+    "next": "Keyingi",
+    "loading": "Yuklanmoqda...",
+    "close": "Yopish"
   },
   "auth": {
     "login": { "title": "Kirish", "username": "Foydalanuvchi nomi", "password": "Parol", "submit": "Kirish" }
