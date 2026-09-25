@@ -77,7 +77,7 @@ export function AppLayout() {
             <span className="truncate text-sm text-muted-foreground group-data-[collapsible=icon]:hidden">
               {username ?? payload?.sub}
             </span>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-2">
               <LanguageSwitcher />
               <Button variant="ghost" size="icon-sm" onClick={logout} aria-label={t('nav.logout')}>
                 <Icon icon="lucide:log-out" />

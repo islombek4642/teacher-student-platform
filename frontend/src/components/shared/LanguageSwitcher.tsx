@@ -8,9 +8,9 @@ export function LanguageSwitcher() {
   const next = i18n.language === 'uz' ? 'en' : 'uz';
 
   return (
-    <Button variant="ghost" size="sm" onClick={() => setLanguage(next)}>
+    <Button variant="ghost" size="sm" onClick={() => setLanguage(next)} className="group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:px-0">
       <Icon icon="lucide:languages" />
-      {next.toUpperCase()}
+      <span className="group-data-[collapsible=icon]:hidden">{next.toUpperCase()}</span>
     </Button>
   );
 }
