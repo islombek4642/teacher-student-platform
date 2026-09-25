@@ -1,0 +1,115 @@
+root@ubuntu-8gb-nbg1-1:/opt# ls -ld /opt/700 /opt/77 /opt/chmod /opt/tatus
+drwxr-xr-x 2 root root 4096 Sep 24 18:51 /opt/700
+drwxr-xr-x 2 root root 4096 Sep 24 18:51 /opt/77
+drwxr-xr-x 2 root root 4096 Sep 24 18:51 /opt/chmod
+-rw-r--r-- 1 root root 2075 Sep 24 18:59 /opt/tatus
+root@ubuntu-8gb-nbg1-1:/opt# rm -rf /opt/700 /opt/77 /opt/chmod /opt/tatus
+root@ubuntu-8gb-nbg1-1:/opt# ls
+BilimBattle  BookSpace  containerd  mockbot  nginx-proxy  OlimpX  QuizBot  RentGo  taklifnoma  teacher-student-platform  testyechar
+root@ubuntu-8gb-nbg1-1:/opt# cd teacher-student-platform
+root@ubuntu-8gb-nbg1-1:/opt/teacher-student-platform# bash scripts/deploy.sh
+=== Teacher-Student Platform Deployment ===
+Project directory: /opt/teacher-student-platform
+
+[1/8] Pre-flight checks...
+[2/8] Creating backup...
+DB backup skipped (container not running yet)
+[3/8] Pulling latest code...
+No local changes to save
+From https://github.com/islombek4642/teacher-student-platform
+ * branch            master     -> FETCH_HEAD
+Already up to date.
+[4/8] Checking .env configuration...
+.env looks good.
+[5/8] Checking proxy_network...
+proxy_network already exists.
+[6/8] Rebuilding Docker containers...
+[+] Building 5.2s (23/33)                                                                                                                                                                                                                    
+ => [internal] load local bake definitions                                                                                                                                                                                              0.0s
+ => => reading from stdin 1.09kB                                                                                                                                                                                                        0.0s
+ => [web internal] load build definition from Dockerfile                                                                                                                                                                                0.0s
+ => => transferring dockerfile: 714B                                                                                                                                                                                                    0.0s
+ => [api internal] load build definition from Dockerfile                                                                                                                                                                                0.0s
+ => => transferring dockerfile: 1.26kB                                                                                                                                                                                                  0.0s
+ => [web internal] load metadata for docker.io/library/node:20-slim                                                                                                                                                                     0.6s
+ => [web internal] load metadata for docker.io/library/nginx:1.27-alpine                                                                                                                                                                0.6s
+ => [api internal] load .dockerignore                                                                                                                                                                                                   0.0s
+ => => transferring context: 114B                                                                                                                                                                                                       0.0s
+ => [web internal] load .dockerignore                                                                                                                                                                                                   0.0s
+ => => transferring context: 85B                                                                                                                                                                                                        0.0s
+ => [api deps 1/5] FROM docker.io/library/node:20-slim@sha256:2cf067cfed83d5ea958367df9f966191a942351a2df77d6f0193e162b5febfc0                                                                                                          0.0s
+ => => resolve docker.io/library/node:20-slim@sha256:2cf067cfed83d5ea958367df9f966191a942351a2df77d6f0193e162b5febfc0                                                                                                                   0.0s
+ => [web internal] load build context                                                                                                                                                                                                   0.0s
+ => => transferring context: 5.85kB                                                                                                                                                                                                     0.0s
+ => [web runtime 1/4] FROM docker.io/library/nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10                                                                                                  0.0s
+ => => resolve docker.io/library/nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10                                                                                                              0.0s
+ => [api internal] load build context                                                                                                                                                                                                   0.0s
+ => => transferring context: 5.23kB                                                                                                                                                                                                     0.0s
+ => CACHED [api deps 2/5] WORKDIR /app                                                                                                                                                                                                  0.0s
+ => CACHED [web build 3/6] COPY package.json package-lock.json ./                                                                                                                                                                       0.0s
+ => CACHED [web build 4/6] RUN npm ci                                                                                                                                                                                                   0.0s
+ => CACHED [web build 5/6] COPY . .                                                                                                                                                                                                     0.0s
+ => CANCELED [web build 6/6] RUN npm run build                                                                                                                                                                                          4.4s
+ => CACHED [api deps 3/5] RUN apt-get update && apt-get install -y --no-install-recommends     python3 make g++     && rm -rf /var/lib/apt/lists/*                                                                                      0.0s
+ => CACHED [api deps 4/5] COPY package.json package-lock.json ./                                                                                                                                                                        0.0s
+ => CACHED [api deps 5/5] RUN npm ci                                                                                                                                                                                                    0.0s
+ => CACHED [api build 1/5] WORKDIR /app                                                                                                                                                                                                 0.0s
+ => CACHED [api build 2/5] COPY . .                                                                                                                                                                                                     0.0s
+ => CACHED [api build 3/5] RUN npx prisma generate                                                                                                                                                                                      0.0s
+ => ERROR [api build 4/5] RUN npm run build                                                                                                                                                                                             4.2s
+------                                                                                                                                                                                                                                       
+ > [api build 4/5] RUN npm run build:                                                                                                                                                                                                        
+0.355                                                                                                                                                                                                                                        
+0.355 > backend@0.1.0 build                                                                                                                                                                                                                  
+0.355 > nest build                                                                                                                                                                                                                           
+0.355                                                                                                                                                                                                                                        
+4.118 src/auth/auth.controller.ts:2:39 - error TS2307: Cannot find module '@nestjs/swagger' or its corresponding type declarations.                                                                                                          
+4.118                                                                                                                                                                                                                                        
+4.118 2 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+4.118                                         ~~~~~~~~~~~~~~~~~
+4.118 src/auth/dto/login.dto.ts:2:29 - error TS2307: Cannot find module '@nestjs/swagger' or its corresponding type declarations.
+4.118 
+4.118 2 import { ApiProperty } from '@nestjs/swagger';
+4.118                               ~~~~~~~~~~~~~~~~~
+4.118 src/common/dto/pagination-query.dto.ts:1:37 - error TS2307: Cannot find module '@nestjs/swagger' or its corresponding type declarations.
+4.118 
+4.118 1 import { ApiPropertyOptional } from '@nestjs/swagger';
+4.118                                       ~~~~~~~~~~~~~~~~~
+4.118 src/main.ts:7:48 - error TS2307: Cannot find module '@nestjs/swagger' or its corresponding type declarations.
+4.118 
+4.118 7 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+4.118                                                  ~~~~~~~~~~~~~~~~~
+4.118 src/teachers/dto/create-teacher.dto.ts:2:29 - error TS2307: Cannot find module '@nestjs/swagger' or its corresponding type declarations.
+4.118 
+4.118 2 import { ApiProperty } from '@nestjs/swagger';
+4.118                               ~~~~~~~~~~~~~~~~~
+4.118 src/teachers/teachers.controller.ts:9:54 - error TS2307: Cannot find module '@nestjs/swagger' or its corresponding type declarations.
+4.118 
+4.118 9 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+4.118                                                        ~~~~~~~~~~~~~~~~~
+4.118 
+4.119 Found 6 error(s).
+4.119 
+------
+[+] up 0/2
+ ⠙ Image teacher-student-platform-api Building                                                                                                                                                                                           5.3s
+ ⠙ Image teacher-student-platform-web Building                                                                                                                                                                                           5.3s
+Dockerfile:20
+
+--------------------
+
+  18 |     COPY . .
+
+  19 |     RUN npx prisma generate
+
+  20 | >>> RUN npm run build
+
+  21 |     RUN npm run build:seed
+
+  22 |     
+
+--------------------
+
+target api: failed to solve: process "/bin/sh -c npm run build" did not complete successfully: exit code: 1
+
+root@ubuntu-8gb-nbg1-1:/opt/teacher-student-platform# 

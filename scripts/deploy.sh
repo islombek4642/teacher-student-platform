@@ -127,6 +127,9 @@ echo "Waiting for containers to initialize..."
 sleep 10
 sudo $COMPOSE ps
 
+echo -e "${YELLOW}Cleaning up old Docker images...${NC}"
+sudo docker image prune -f
+
 # Step 7: Database migrations + seed
 echo -e "${YELLOW}[7/8] Running database migrations...${NC}"
 sudo $COMPOSE exec -T api npx prisma migrate deploy || echo -e "${RED}Migration failed! Check logs.${NC}"
