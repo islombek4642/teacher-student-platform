@@ -15,7 +15,7 @@ export class IeltsService {
   ) {
     // Basic file validation
     if (!htmlFile || !htmlFile.buffer) {
-      throw new Error('Fayl topilmadi');
+      throw new Error('ERR_VALIDATION_FAILED');
     }
 
     let contentHtml = htmlFile.buffer.toString('utf-8');
@@ -48,7 +48,7 @@ export class IeltsService {
       where: { id },
     });
     if (!task) {
-      throw new NotFoundException('Topshiriq topilmadi');
+      throw new NotFoundException('ERR_TASK_NOT_FOUND');
     }
     return task;
   }

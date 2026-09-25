@@ -161,6 +161,17 @@
     "writingDesc": "Writing topshiriqlari tez kunda shu yerda paydo bo'ladi.",
     "speaking": "Speaking",
     "speakingDesc": "Speaking topshiriqlari tez kunda shu yerda paydo bo'ladi.",
-    "comingSoon": "Tez kunda"
+    "comingSoon": "Tez kunda",
+    "uploadTask": "Topshiriq yuklash",
+    "newTask": "Yangi {{type}} topshirig'i",
+    "taskName": "Topshiriq nomi",
+    "exampleTest": "Masalan: Test 1",
+    "htmlFile": "HTML fayl",
+    "upload": "Yuklash",
+    "uploadSuccess": "Topshiriq yuklandi",
+    "name": "Nomi",
+    "date": "Sana",
+    "view": "Ko'rish",
+    "emptyTasks": "Hali topshiriqlar yuklanmagan"
   }
 }

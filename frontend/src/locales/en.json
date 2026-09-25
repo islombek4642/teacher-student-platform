@@ -161,6 +161,17 @@
     "writingDesc": "Writing tasks will be available here soon.",
     "speaking": "Speaking",
     "speakingDesc": "Speaking tasks will be available here soon.",
-    "comingSoon": "Coming Soon"
+    "comingSoon": "Coming Soon",
+    "uploadTask": "Upload task",
+    "newTask": "New {{type}} task",
+    "taskName": "Task name",
+    "exampleTest": "E.g.: Test 1",
+    "htmlFile": "HTML file",
+    "upload": "Upload",
+    "uploadSuccess": "Task uploaded successfully",
+    "name": "Name",
+    "date": "Date",
+    "view": "View",
+    "emptyTasks": "No tasks uploaded yet"
   }
 }

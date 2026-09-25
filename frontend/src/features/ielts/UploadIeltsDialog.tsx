@@ -37,7 +37,7 @@ export function UploadIeltsDialog({
       { title, type, file },
       {
         onSuccess: () => {
-          toast.add({ type: 'success', description: 'Topshiriq yuklandi' });
+          toast.add({ type: 'success', description: t('ielts.uploadSuccess') });
           onOpenChange(false);
           setTitle('');
           setFile(null);
@@ -50,19 +50,19 @@ export function UploadIeltsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Yangi {type.toLowerCase()} topshirig'i</DialogTitle>
+          <DialogTitle>{t('ielts.newTask', { type: t(`ielts.${type.toLowerCase()}`) })}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>Topshiriq nomi</Label>
+            <Label>{t('ielts.taskName')}</Label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Masalan: Test 1"
+              placeholder={t('ielts.exampleTest')}
             />
           </div>
           <div className="space-y-2">
-            <Label>HTML fayl</Label>
+            <Label>{t('ielts.htmlFile')}</Label>
             <Input
               type="file"
               accept=".html"
@@ -72,10 +72,10 @@ export function UploadIeltsDialog({
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-            Yopish
+            {t('common.close')}
           </Button>
           <Button onClick={handleUpload} disabled={isPending || !title || !file}>
-            {isPending ? 'Yuklanmoqda...' : 'Yuklash'}
+            {isPending ? t('common.loading') || 'Loading...' : t('ielts.upload')}
           </Button>
         </DialogFooter>
       </DialogContent>
