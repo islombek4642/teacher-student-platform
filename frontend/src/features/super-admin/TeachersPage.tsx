@@ -157,6 +157,13 @@ export function TeachersPage() {
               </TableCell>
             </TableRow>
           )}
+          {teachers && teachers.length > 0 && teachers.length < 10 && (
+            Array.from({ length: 10 - teachers.length }).map((_, i) => (
+              <TableRow key={`empty-${i}`} className="h-[52px]">
+                <TableCell colSpan={7}></TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
       
