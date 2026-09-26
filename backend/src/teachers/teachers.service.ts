@@ -6,6 +6,7 @@ import { ERROR_CODES } from '../common/constants/error-codes.constant';
 import { generateFourDigitPassword, hashPassword } from '../auth/password.util';
 import { decryptCredential, encryptCredential } from '../common/crypto/credential-crypto.util';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
+import { parseExcelToJSON, generateExcelBuffer } from '../common/utils/excel.util';
 
 @Injectable()
 export class TeachersService {
@@ -110,5 +111,54 @@ export class TeachersService {
       this.prisma.teacherProfile.delete({ where: { id: teacherProfileId } }),
       this.prisma.user.delete({ where: { id: profile.userId } }),
     ]);
+  }
+
+  async importExcel(fileBuffer: Buffer) {
+    const data = parseExcelToJSON(fileBuffer);
+    const sheet = data[Object.keys(data)[0]];
+    if (!sheet) return { success: 0, results: [] };
+
+    const results = [];
+    let success = 0;
+    for (const row of sheet) {
+      const firstName = row['Ism'];
+      const lastName = row['Familiya'];
+      const username = row['Login'];
+      if (!firstName || !lastName || !username) continue;
+
+      const temporaryPassword = generateFourDigitPassword();
+      const passwordHash = await hashPassword(temporaryPassword);
+
+      try {
+        const { user } = await this.prisma.$transaction(async (tx) => {
+          const user = await tx.user.create({
+            data: { username: String(username), passwordHash, role: Role.TEACHER },
+          });
+          const profile = await tx.teacherProfile.create({
+            data: { userId: user.id, firstName: String(firstName), lastName: String(lastName) },
+          });
+          return { user, profile };
+        });
+        results.push({ username: user.username, temporaryPassword });
+        success++;
+      } catch (err) {
+        // Skip duplicate usernames
+      }
+    }
+    return { success, results };
+  }
+
+  async exportExcel() {
+    const teachers = await this.prisma.teacherProfile.findMany({
+      include: { user: { select: { username: true } } },
+    });
+    
+    const data = teachers.map(t => ({
+      Ism: t.firstName,
+      Familiya: t.lastName,
+      Login: t.user.username,
+    }));
+
+    return generateExcelBuffer({ 'Oqituvchilar': data });
   }
 }

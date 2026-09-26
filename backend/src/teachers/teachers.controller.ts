@@ -1,4 +1,6 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, UseGuards, UseInterceptors, UploadedFile, Res } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
 import { Role } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -21,6 +23,24 @@ export class TeachersController {
   @Post()
   create(@Body() dto: CreateTeacherDto) {
     return this.teachersService.create(dto);
+  }
+
+  @ApiOperation({ summary: 'Import teachers from Excel' })
+  @Post('import')
+  @UseInterceptors(FileInterceptor('file'))
+  importExcel(@UploadedFile() file: Express.Multer.File) {
+    return this.teachersService.importExcel(file.buffer);
+  }
+
+  @ApiOperation({ summary: 'Export teachers to Excel' })
+  @Get('export')
+  async exportExcel(@Res() res: Response) {
+    const buffer = await this.teachersService.exportExcel();
+    res.set({
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': 'attachment; filename="oqituvchilar.xlsx"',
+    });
+    res.send(buffer);
   }
 
   @ApiOperation({ summary: 'Get all teachers' })
