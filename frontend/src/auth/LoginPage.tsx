@@ -38,7 +38,7 @@ export function LoginPage() {
         </div>
         <div className="space-y-1">
           <Label htmlFor="password">{t('auth.login.password')}</Label>
-          <Input id="password" type="password" {...register('password')} />
+          <Input id="password" type="password" {...register('password')} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSubmit(onSubmit)(); } }} />
           {errors.password && <p className="text-sm text-destructive">{t(errors.password.message!)}</p>}
         </div>
         <Button type="submit" className="w-full" disabled={isPending}>
