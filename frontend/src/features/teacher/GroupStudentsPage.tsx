@@ -10,6 +10,7 @@ import { PasswordReveal } from '@/components/shared/PasswordReveal';
 import { PersonAvatar } from '@/components/shared/PersonAvatar';
 import { toast } from '@/components/ui/toast';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { Pagination } from '@/components/shared/Pagination';
 import { downloadBlob } from '@/utils/fileDownload';
 import { useImportSingleGroup, exportSingleGroup } from './api/groups.api';
 import {
@@ -23,7 +24,10 @@ import { CreateStudentDialog } from './CreateStudentDialog';
 export function GroupStudentsPage() {
   const { t } = useTranslation();
   const { id: groupId } = useParams<{ id: string }>();
-  const { data: students, isLoading } = useStudents(groupId!);
+  const [page, setPage] = useState(1);
+  const { data: response, isLoading } = useStudents(groupId!, page);
+  const students = response?.data;
+  const meta = response?.meta;
   const { mutate: update } = useUpdateStudent(groupId!);
   const { mutate: resetPassword } = useResetStudentPassword(groupId!);
   const { mutate: remove } = useDeleteStudent(groupId!);
@@ -201,6 +205,9 @@ export function GroupStudentsPage() {
           )}
         </TableBody>
       </Table>
+      {meta && meta.lastPage > 1 && (
+        <Pagination page={meta.page} totalPages={meta.lastPage} onPageChange={setPage} />
+      )}
       <CreateStudentDialog groupId={groupId!} open={dialogOpen} onOpenChange={setDialogOpen} />
       {resetResult && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">

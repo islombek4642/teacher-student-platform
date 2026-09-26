@@ -2,10 +2,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/api/client';
 import type { CreatedAccount, Student } from '@/api/types';
 
-export function useStudents(groupId: string) {
+export function useStudents(groupId: string, page: number = 1) {
   return useQuery({
-    queryKey: ['groups', groupId, 'students'],
-    queryFn: async () => (await apiClient.get<Student[]>(`/groups/${groupId}/students`)).data,
+    queryKey: ['groups', groupId, 'students', page],
+    queryFn: async () => (await apiClient.get<{ data: Student[]; meta: { total: number; page: number; lastPage: number } }>(`/groups/${groupId}/students?page=${page}&limit=10`)).data,
   });
 }
 

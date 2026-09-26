@@ -7,6 +7,7 @@ import { generateFourDigitPassword, hashPassword } from '../auth/password.util';
 import { decryptCredential, encryptCredential } from '../common/crypto/credential-crypto.util';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 
 @Injectable()
 export class StudentsService {
@@ -90,18 +91,37 @@ export class StudentsService {
     ]);
   }
 
-  async findAllInGroup(teacherProfileId: string, groupId: string) {
+  async findAllInGroup(teacherProfileId: string, groupId: string, query: PaginationQueryDto) {
     await this.groupsService.findOneOwned(teacherProfileId, groupId);
-    const students = await this.prisma.studentProfile.findMany({
-      where: { groupId },
-      include: { user: { select: { username: true, isActive: true, currentPassword: true } } },
-    });
-    return students.map((s) => ({
+    const { page = 1, limit = 10 } = query;
+    const skip = (page - 1) * limit;
+
+    const [students, total] = await Promise.all([
+      this.prisma.studentProfile.findMany({
+        where: { groupId },
+        include: { user: { select: { username: true, isActive: true, currentPassword: true } } },
+        skip,
+        take: Number(limit),
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.studentProfile.count({ where: { groupId } })
+    ]);
+
+    const data = students.map((s) => ({
       id: s.id,
       username: s.user.username,
       firstName: s.firstName,
       lastName: s.lastName,
       temporaryPassword: s.user.currentPassword ? decryptCredential(s.user.currentPassword) : null,
     }));
+
+    return {
+      data,
+      meta: {
+        total,
+        page: Number(page),
+        lastPage: Math.ceil(total / limit),
+      },
+    };
   }
 }

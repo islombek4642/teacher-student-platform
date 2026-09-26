@@ -7,6 +7,8 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtPayload } from '../auth/jwt-payload.interface';
 import { StudentsService } from './students.service';
 import { CreateStudentDto } from './dto/create-student.dto';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { Query } from '@nestjs/common';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.TEACHER)
@@ -20,8 +22,8 @@ export class StudentsController {
   }
 
   @Get()
-  findAll(@CurrentUser() user: JwtPayload, @Param('groupId') groupId: string) {
-    return this.studentsService.findAllInGroup(user.profileId!, groupId);
+  findAll(@CurrentUser() user: JwtPayload, @Param('groupId') groupId: string, @Query() query: PaginationQueryDto) {
+    return this.studentsService.findAllInGroup(user.profileId!, groupId, query);
   }
 
   @Delete(':id')
