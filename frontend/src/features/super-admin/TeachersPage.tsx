@@ -209,7 +209,7 @@ export function TeachersPage() {
                   remove({ id: teacherToDelete.id, force: teacherToDelete.forceReq }, {
                     onSuccess: () => setTeacherToDelete(null),
                     onError: (error: any) => {
-                      if (!teacherToDelete.forceReq && error?.response?.data?.message?.errorCode === 'TEACHER_HAS_GROUPS') {
+                      if (!teacherToDelete.forceReq && error?.response?.data?.errorCode === 'ERR_TEACHER_HAS_GROUPS') {
                         setTeacherToDelete({ id: teacherToDelete.id, forceReq: true });
                       } else {
                         setTeacherToDelete(null);
