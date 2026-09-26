@@ -64,7 +64,7 @@ export function GroupsPage() {
         </div>
       </div>
       <Table>
-        <TableHeader>
+        <TableHeader className="bg-muted/50 font-semibold">
           <TableRow>
             <TableHead className="w-10">#</TableHead>
             <TableHead>{t('groups.name')}</TableHead>
