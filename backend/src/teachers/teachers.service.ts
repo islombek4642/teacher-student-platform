@@ -119,10 +119,9 @@ export class TeachersService {
         }
       }
     }
-    await this.prisma.$transaction([
-      this.prisma.teacherProfile.delete({ where: { id: teacherProfileId } }),
-      this.prisma.user.delete({ where: { id: profile.userId } }),
-    ]);
+    
+    // Deleting the user will cascade delete TeacherProfile, Groups, and IeltsTasks.
+    await this.prisma.user.delete({ where: { id: profile.userId } });
   }
 
   async importExcel(fileBuffer: Buffer) {
