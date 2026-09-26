@@ -16,7 +16,8 @@
     "imported": "{{count}} ta muvaffaqiyatli import qilindi",
     "error": "Xatolik yuz berdi",
     "cancel": "Bekor qilish",
-    "warning": "Ogohlantirish"
+    "warning": "Ogohlantirish",
+    "confirmDelete": "Haqiqatan ham o'chirmoqchimisiz?"
   },
   "auth": {
     "login": { "title": "Kirish", "username": "Foydalanuvchi nomi", "password": "Parol", "submit": "Kirish" }
@@ -184,6 +185,7 @@
     "name": "Nomi",
     "date": "Sana",
     "view": "Ko'rish",
+    "confirmDelete": "Bu topshiriqni o'chirmoqchimisiz?",
     "emptyTasks": "Hali topshiriqlar yuklanmagan"
   }
 }

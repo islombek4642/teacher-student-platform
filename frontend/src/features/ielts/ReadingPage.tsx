@@ -30,7 +30,7 @@ export function ReadingPage() {
   const readingTasks = tasks?.filter((t) => t.type === 'READING') || [];
 
   const handleDelete = (id: string) => {
-    if (window.confirm(t('common.confirmDelete') || 'Haqiqatan ham o`chirmoqchimisiz?')) {
+    if (window.confirm(t('ielts.confirmDelete'))) {
       deleteMutation.mutate(id);
     }
   };
@@ -61,7 +61,7 @@ export function ReadingPage() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={3} className="text-center">{t('common.loading') || 'Loading...'}</TableCell>
+                <TableCell colSpan={3} className="text-center">{t('common.loading')}</TableCell>
               </TableRow>
             ) : readingTasks.length > 0 ? (
               readingTasks.map(task => (

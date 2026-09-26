@@ -75,7 +75,7 @@ export function UploadIeltsDialog({
             {t('common.close')}
           </Button>
           <Button onClick={handleUpload} disabled={isPending || !title || !file}>
-            {isPending ? t('common.loading') || 'Loading...' : t('ielts.upload')}
+            {isPending ? t('common.loading') : t('ielts.upload')}
           </Button>
         </DialogFooter>
       </DialogContent>

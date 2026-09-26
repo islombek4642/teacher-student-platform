@@ -16,7 +16,8 @@
     "imported": "Successfully imported {{count}} records",
     "error": "An error occurred",
     "cancel": "Cancel",
-    "warning": "Warning"
+    "warning": "Warning",
+    "confirmDelete": "Are you sure you want to delete this?"
   },
   "auth": {
     "login": { "title": "Sign in", "username": "Username", "password": "Password", "submit": "Sign in" }
@@ -184,6 +185,7 @@
     "name": "Name",
     "date": "Date",
     "view": "View",
+    "confirmDelete": "Are you sure you want to delete this task?",
     "emptyTasks": "No tasks uploaded yet"
   }
 }
