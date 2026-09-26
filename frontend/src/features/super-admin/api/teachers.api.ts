@@ -43,7 +43,7 @@ export function useDeleteTeacher() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, force }: { id: string; force?: boolean }) => 
-      apiClient.delete(`/teachers/${id}${force ? '?force=true' : ''}`),
+      apiClient.delete(`/teachers/${id}${force ? '?force=true' : ''}`, { headers: { 'x-suppress-toast': 'true' } }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['teachers'] }),
   });
 }

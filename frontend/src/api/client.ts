@@ -29,8 +29,10 @@ apiClient.interceptors.response.use(
       localStorage.removeItem(TOKEN_STORAGE_KEY);
       window.location.href = '/login';
     } else if (error.response?.status !== 401) {
-      const key = errorCodeToI18nKey(extractErrorCode(error));
-      toast.add({ type: 'error', description: i18n.t(key) });
+      if (error.config?.headers?.['x-suppress-toast'] !== 'true') {
+        const key = errorCodeToI18nKey(extractErrorCode(error));
+        toast.add({ type: 'error', description: i18n.t(key) });
+      }
     }
     return Promise.reject(error);
   },

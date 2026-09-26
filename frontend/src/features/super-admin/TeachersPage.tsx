@@ -213,6 +213,7 @@ export function TeachersPage() {
                         setTeacherToDelete({ id: teacherToDelete.id, forceReq: true });
                       } else {
                         setTeacherToDelete(null);
+                        toast.add({ type: 'error', description: t('common.error') });
                       }
                     }
                   });
