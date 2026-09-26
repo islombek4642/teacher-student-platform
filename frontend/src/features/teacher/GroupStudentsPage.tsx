@@ -10,7 +10,6 @@ import { PasswordReveal } from '@/components/shared/PasswordReveal';
 import { PersonAvatar } from '@/components/shared/PersonAvatar';
 import { toast } from '@/components/ui/toast';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { Pagination } from '@/components/shared/Pagination';
 import { downloadBlob } from '@/utils/fileDownload';
 import { useImportSingleGroup, exportSingleGroup } from './api/groups.api';
 import {
@@ -203,11 +202,32 @@ export function GroupStudentsPage() {
               </TableCell>
             </TableRow>
           )}
+          {students && students.length > 0 && students.length < 10 && (
+            Array.from({ length: 10 - students.length }).map((_, i) => (
+              <TableRow key={`empty-${i}`} className="h-[52px]">
+                <TableCell colSpan={6}></TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
+      
       {meta && meta.lastPage > 1 && (
-        <Pagination page={meta.page} totalPages={meta.lastPage} onPageChange={setPage} />
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">
+            {t('students.totalCount', { count: meta.total, defaultValue: `Jami: ${meta.total}` })}
+          </span>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)}>
+              {t('common.prev')}
+            </Button>
+            <Button variant="outline" size="sm" disabled={page === meta.lastPage} onClick={() => setPage(page + 1)}>
+              {t('common.next')}
+            </Button>
+          </div>
+        </div>
       )}
+
       <CreateStudentDialog groupId={groupId!} open={dialogOpen} onOpenChange={setDialogOpen} />
       {resetResult && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
