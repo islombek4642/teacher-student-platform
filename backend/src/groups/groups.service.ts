@@ -4,6 +4,7 @@ import { ERROR_CODES } from '../common/constants/error-codes.constant';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { parseExcelToJSON, generateExcelBuffer } from '../common/utils/excel.util';
 import { generateFourDigitPassword, hashPassword } from '../auth/password.util';
+import { encryptCredential } from '../common/crypto/credential-crypto.util';
 import { Role } from '@prisma/client';
 
 @Injectable()
