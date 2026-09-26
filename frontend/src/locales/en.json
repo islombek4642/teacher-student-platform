@@ -36,6 +36,7 @@
     "resetPassword": "Reset password",
     "resetSuccess": "Password reset successfully",
     "confirmDelete": "Permanently delete this teacher?",
+    "confirmDeleteForce": "Warning! This teacher has groups. All their groups and students will also be deleted. Are you sure?",
     "delete": "Delete",
     "loading": "Loading...",
     "empty": "No teachers yet",

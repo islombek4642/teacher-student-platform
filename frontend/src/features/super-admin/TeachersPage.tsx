@@ -139,7 +139,17 @@ export function TeachersPage() {
                       <DropdownMenuItem
                         variant="destructive"
                         onClick={() => {
-                          if (window.confirm(t('teachers.confirmDelete'))) remove(teacher.id);
+                          if (window.confirm(t('teachers.confirmDelete'))) {
+                            remove({ id: teacher.id }, {
+                              onError: (error: any) => {
+                                if (error?.response?.data?.errorCode === 'TEACHER_HAS_GROUPS') {
+                                  if (window.confirm(t('teachers.confirmDeleteForce'))) {
+                                    remove({ id: teacher.id, force: true });
+                                  }
+                                }
+                              }
+                            });
+                          }
                         }}
                       >
                         <Icon icon="lucide:trash-2" />

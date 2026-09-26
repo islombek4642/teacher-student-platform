@@ -42,7 +42,8 @@ export function useResetTeacherPassword() {
 export function useDeleteTeacher() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) => apiClient.delete(`/teachers/${id}`),
+    mutationFn: async ({ id, force }: { id: string; force?: boolean }) => 
+      apiClient.delete(`/teachers/${id}${force ? '?force=true' : ''}`),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['teachers'] }),
   });
 }

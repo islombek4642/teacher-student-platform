@@ -36,6 +36,7 @@
     "resetPassword": "Parolni tiklash",
     "resetSuccess": "Parol muvaffaqiyatli yangilandi",
     "confirmDelete": "Bu o'qituvchini butunlay o'chirmoqchimisiz?",
+    "confirmDeleteForce": "Diqqat! Bu o'qituvchining guruhlari va ularning ichidagi barcha o'quvchilar ham qo'shib o'chirib yuboriladi. Buni tasdiqlaysizmi?",
     "delete": "O'chirish",
     "loading": "Yuklanmoqda...",
     "empty": "Hozircha o'qituvchilar yo'q",

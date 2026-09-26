@@ -64,7 +64,7 @@ export class TeachersController {
   @ApiOperation({ summary: 'Remove a teacher' })
   @Delete(':id')
   @HttpCode(204)
-  remove(@Param('id') id: string) {
-    return this.teachersService.remove(id);
+  remove(@Param('id') id: string, @Query('force') force?: string) {
+    return this.teachersService.remove(id, force === 'true');
   }
 }

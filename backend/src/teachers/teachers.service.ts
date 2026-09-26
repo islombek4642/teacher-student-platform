@@ -100,14 +100,24 @@ export class TeachersService {
     return { id: profile.id, isActive: user.isActive };
   }
 
-  async remove(teacherProfileId: string) {
+  async remove(teacherProfileId: string, force: boolean = false) {
     const profile = await this.prisma.teacherProfile.findUnique({ where: { id: teacherProfileId } });
     if (!profile) {
       throw new NotFoundException({ errorCode: ERROR_CODES.TEACHER_NOT_FOUND, message: 'Teacher not found' });
     }
     const groupCount = await this.prisma.group.count({ where: { teacherId: teacherProfileId } });
     if (groupCount > 0) {
-      throw new ConflictException({ errorCode: ERROR_CODES.TEACHER_HAS_GROUPS, message: 'Teacher still has groups' });
+      if (!force) {
+        throw new ConflictException({ errorCode: ERROR_CODES.TEACHER_HAS_GROUPS, message: 'Teacher still has groups' });
+      } else {
+        const students = await this.prisma.studentProfile.findMany({
+          where: { group: { teacherId: teacherProfileId } }
+        });
+        const userIds = students.map(s => s.userId);
+        if (userIds.length > 0) {
+          await this.prisma.user.deleteMany({ where: { id: { in: userIds } } });
+        }
+      }
     }
     await this.prisma.$transaction([
       this.prisma.teacherProfile.delete({ where: { id: teacherProfileId } }),
