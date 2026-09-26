@@ -38,3 +38,46 @@ export function useDeleteGroup() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['groups'] }),
   });
 }
+
+export function useImportGroups() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      return (await apiClient.post<{ success: number; results: { group: string; username: string; temporaryPassword: string }[] }>('/groups/import', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })).data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+    },
+  });
+}
+
+export async function exportGroups() {
+  const response = await apiClient.get('/groups/export', { responseType: 'blob' });
+  return response.data;
+}
+
+export function useImportSingleGroup() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, file }: { id: string; file: File }) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      return (await apiClient.post<{ success: number; results: { username: string; temporaryPassword: string }[] }>(`/groups/${id}/import`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })).data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['students', variables.id] });
+    },
+  });
+}
+
+export async function exportSingleGroup(id: string) {
+  const response = await apiClient.get(`/groups/${id}/export`, { responseType: 'blob' });
+  return response.data;
+}

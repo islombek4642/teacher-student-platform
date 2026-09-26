@@ -46,3 +46,22 @@ export function useDeleteTeacher() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['teachers'] }),
   });
 }
+
+export function useImportTeachers() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      return (await apiClient.post<{ success: number; results: { username: string; temporaryPassword: string }[] }>('/teachers/import', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })).data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['teachers'] }),
+  });
+}
+
+export async function exportTeachers() {
+  const response = await apiClient.get('/teachers/export', { responseType: 'blob' });
+  return response.data;
+}
