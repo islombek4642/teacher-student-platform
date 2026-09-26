@@ -10,7 +10,11 @@
     "prev": "Previous",
     "next": "Next",
     "loading": "Loading...",
-    "close": "Close"
+    "close": "Close",
+    "import": "Import",
+    "export": "Export",
+    "imported": "Successfully imported {{count}} records",
+    "error": "An error occurred"
   },
   "auth": {
     "login": { "title": "Sign in", "username": "Username", "password": "Password", "submit": "Sign in" }
@@ -18,6 +22,7 @@
   "nav": { "logout": "Log out", "language": "Language" },
   "teachers": {
     "title": "Teachers",
+    "exportFilename": "teachers.xlsx",
     "create": "New teacher",
     "username": "Username",
     "firstName": "First name",
@@ -40,6 +45,7 @@
   },
   "groups": {
     "title": "Groups",
+    "exportFilename": "groups.xlsx",
     "backToList": "Back to groups",
     "create": "New group",
     "name": "Group name",
@@ -52,6 +58,7 @@
   },
   "students": {
     "title": "Students",
+    "exportFilename": "students.xlsx",
     "create": "New student",
     "username": "Username",
     "firstName": "First name",

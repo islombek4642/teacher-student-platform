@@ -29,7 +29,7 @@ export function TeachersPage() {
   const handleExport = async () => {
     try {
       const blob = await exportTeachers();
-      downloadBlob(blob, 'oqituvchilar.xlsx');
+      downloadBlob(blob, t('teachers.exportFilename', { defaultValue: 'teachers.xlsx' }));
     } catch (err) {
       toast.add({ type: 'error', description: t('common.error') });
     }
@@ -40,7 +40,7 @@ export function TeachersPage() {
     if (!file) return;
     importTeachers(file, {
       onSuccess: (data) => {
-        toast.add({ type: 'success', description: `${data.success} ${t('teachers.imported')}` });
+        toast.add({ type: 'success', description: t('common.imported', { count: data.success }) });
         if (fileInputRef.current) fileInputRef.current.value = '';
       },
       onError: () => toast.add({ type: 'error', description: t('common.error') })
@@ -74,7 +74,7 @@ export function TeachersPage() {
           <TableRow>
             <TableHead className="w-10" />
             <TableHead>{t('teachers.username')}</TableHead>
-            <TableHead>{t('teachers.password') || 'Password'}</TableHead>
+            <TableHead>{t('teachers.password')}</TableHead>
             <TableHead>{t('teachers.firstName')}</TableHead>
             <TableHead>{t('teachers.lastName')}</TableHead>
             <TableHead>{t('teachers.status')}</TableHead>

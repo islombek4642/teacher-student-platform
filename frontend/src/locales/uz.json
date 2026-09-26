@@ -10,7 +10,11 @@
     "prev": "Oldingi",
     "next": "Keyingi",
     "loading": "Yuklanmoqda...",
-    "close": "Yopish"
+    "close": "Yopish",
+    "import": "Import",
+    "export": "Export",
+    "imported": "{{count}} ta muvaffaqiyatli import qilindi",
+    "error": "Xatolik yuz berdi"
   },
   "auth": {
     "login": { "title": "Kirish", "username": "Foydalanuvchi nomi", "password": "Parol", "submit": "Kirish" }
@@ -18,6 +22,7 @@
   "nav": { "logout": "Chiqish", "language": "Til" },
   "teachers": {
     "title": "O'qituvchilar",
+    "exportFilename": "oqituvchilar.xlsx",
     "create": "Yangi o'qituvchi",
     "username": "Foydalanuvchi nomi",
     "firstName": "Ism",
@@ -40,6 +45,7 @@
   },
   "groups": {
     "title": "Guruhlar",
+    "exportFilename": "guruhlar.xlsx",
     "backToList": "Guruhlarga qaytish",
     "create": "Yangi guruh",
     "name": "Guruh nomi",
@@ -52,6 +58,7 @@
   },
   "students": {
     "title": "O'quvchilar",
+    "exportFilename": "oquvchilar.xlsx",
     "create": "Yangi o'quvchi",
     "username": "Foydalanuvchi nomi",
     "firstName": "Ism",

@@ -25,7 +25,7 @@ export function GroupsPage() {
   const handleExport = async () => {
     try {
       const blob = await exportGroups();
-      downloadBlob(blob, 'guruhlar.xlsx');
+      downloadBlob(blob, t('groups.exportFilename', { defaultValue: 'guruhlar.xlsx' }));
     } catch (err) {
       toast.add({ type: 'error', description: t('common.error') });
     }
@@ -36,7 +36,7 @@ export function GroupsPage() {
     if (!file) return;
     importGroups(file, {
       onSuccess: (data) => {
-        toast.add({ type: 'success', description: `${data.success} ${t('common.imported') || 'imported'}` });
+        toast.add({ type: 'success', description: t('common.imported', { count: data.success }) });
         if (fileInputRef.current) fileInputRef.current.value = '';
       },
       onError: () => toast.add({ type: 'error', description: t('common.error') })

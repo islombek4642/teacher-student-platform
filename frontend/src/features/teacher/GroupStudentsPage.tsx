@@ -49,7 +49,7 @@ export function GroupStudentsPage() {
     if (!groupId) return;
     try {
       const blob = await exportSingleGroup(groupId);
-      downloadBlob(blob, 'guruh_oquvchilar.xlsx');
+      downloadBlob(blob, t('students.exportFilename', { defaultValue: 'guruh_oquvchilar.xlsx' }));
     } catch (err) {
       toast.add({ type: 'error', description: t('common.error') });
     }
@@ -60,7 +60,7 @@ export function GroupStudentsPage() {
     if (!file || !groupId) return;
     importGroup({ id: groupId, file }, {
       onSuccess: (data) => {
-        toast.add({ type: 'success', description: `${data.success} ${t('common.imported') || 'imported'}` });
+        toast.add({ type: 'success', description: t('common.imported', { count: data.success }) });
         if (fileInputRef.current) fileInputRef.current.value = '';
       },
       onError: () => toast.add({ type: 'error', description: t('common.error') })
@@ -93,7 +93,7 @@ export function GroupStudentsPage() {
           <TableRow>
             <TableHead className="w-10" />
             <TableHead>{t('students.username')}</TableHead>
-            <TableHead>{t('students.password') || 'Password'}</TableHead>
+            <TableHead>{t('students.password')}</TableHead>
             <TableHead>{t('students.firstName')}</TableHead>
             <TableHead>{t('students.lastName')}</TableHead>
             <TableHead />
