@@ -1,5 +1,6 @@
-﻿import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/api/client';
+import { useAuth } from '@/auth/useAuth';
 
 export type IeltsTask = {
   id: string;
@@ -8,10 +9,29 @@ export type IeltsTask = {
   createdAt: string;
 };
 
-export function useTeacherTasks() {
+export function useIeltsTasks() {
+  const { payload } = useAuth();
+  const isTeacher = payload?.role === 'TEACHER' || payload?.role === 'SUPER_ADMIN';
+  const isStudent = payload?.role === 'STUDENT';
+
   return useQuery({
-    queryKey: ['ielts-tasks', 'teacher'],
-    queryFn: async () => (await apiClient.get<IeltsTask[]>('/ielts/teacher')).data,
+    queryKey: ['ielts-tasks', isTeacher ? 'teacher' : 'student'],
+    queryFn: async () => {
+      const endpoint = isTeacher ? '/ielts/teacher' : '/ielts/student';
+      return (await apiClient.get<IeltsTask[]>(endpoint)).data;
+    },
+    enabled: !!payload?.role && (isTeacher || isStudent),
+  });
+}
+
+export function useTeacherTasks() {
+  return useIeltsTasks();
+}
+
+export function useStudentTasks() {
+  return useQuery({
+    queryKey: ['ielts-tasks', 'student'],
+    queryFn: async () => (await apiClient.get<IeltsTask[]>('/ielts/student')).data,
   });
 }
 

@@ -110,4 +110,47 @@ export class IeltsService {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  async getTasksByStudent(userId: string) {
+    const student = await this.prisma.studentProfile.findUnique({
+      where: { userId },
+      include: {
+        group: true,
+      },
+    });
+
+    if (!student) {
+      return [];
+    }
+
+    return this.prisma.ieltsTask.findMany({
+      where: {
+        OR: [
+          { groupId: student.groupId },
+          ...(student.group?.teacherId
+            ? [{ teacherId: student.group.teacherId, groupId: null }]
+            : []),
+        ],
+      },
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getAllTasks() {
+    return this.prisma.ieltsTask.findMany({
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 }

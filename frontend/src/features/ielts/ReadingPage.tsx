@@ -4,9 +4,10 @@ import { PageHeader } from '@/components/shared/PageHeader';
 import { Card } from '@/components/ui/card';
 import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
-import { useTeacherTasks, useDeleteIeltsTask } from './api/ielts.api';
+import { useIeltsTasks, useDeleteIeltsTask } from './api/ielts.api';
 import { UploadIeltsDialog } from './UploadIeltsDialog';
 import { IeltsTaskViewer } from './IeltsTaskViewer';
+import { useAuth } from '@/auth/useAuth';
 import {
   Table,
   TableBody,
@@ -18,9 +19,12 @@ import {
 
 export function ReadingPage() {
   const { t } = useTranslation();
+  const { payload } = useAuth();
+  const isTeacher = payload?.role === 'TEACHER' || payload?.role === 'SUPER_ADMIN';
+
   const [uploadOpen, setUploadOpen] = useState(false);
   const [viewingTaskId, setViewingTaskId] = useState<string | null>(null);
-  const { data: tasks, isLoading } = useTeacherTasks();
+  const { data: tasks, isLoading } = useIeltsTasks();
   const deleteMutation = useDeleteIeltsTask();
   
   const readingTasks = tasks?.filter((t) => t.type === 'READING') || [];
@@ -36,10 +40,12 @@ export function ReadingPage() {
       <PageHeader 
         title={t('ielts.reading')} 
         action={
-          <Button onClick={() => setUploadOpen(true)}>
-            <Icon icon="lucide:upload" className="mr-2" />
-            {t('ielts.uploadTask')}
-          </Button>
+          isTeacher ? (
+            <Button onClick={() => setUploadOpen(true)}>
+              <Icon icon="lucide:upload" className="mr-2" />
+              {t('ielts.uploadTask')}
+            </Button>
+          ) : undefined
         }
       />
       
@@ -64,9 +70,11 @@ export function ReadingPage() {
                   <TableCell>{new Date(task.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell className="text-right space-x-2">
                     <Button variant="outline" size="sm" onClick={() => setViewingTaskId(task.id)}>{t('ielts.view')}</Button>
-                    <Button variant="destructive" size="sm" onClick={() => handleDelete(task.id)} disabled={deleteMutation.isPending}>
-                      <Icon icon="lucide:trash-2" className="h-4 w-4" />
-                    </Button>
+                    {isTeacher && (
+                      <Button variant="destructive" size="sm" onClick={() => handleDelete(task.id)} disabled={deleteMutation.isPending}>
+                        <Icon icon="lucide:trash-2" className="h-4 w-4" />
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))
@@ -82,11 +90,13 @@ export function ReadingPage() {
         </Table>
       </Card>
 
-      <UploadIeltsDialog 
-        open={uploadOpen} 
-        onOpenChange={setUploadOpen} 
-        type="READING" 
-      />
+      {isTeacher && (
+        <UploadIeltsDialog 
+          open={uploadOpen} 
+          onOpenChange={setUploadOpen} 
+          type="READING" 
+        />
+      )}
       {viewingTaskId && (
         <IeltsTaskViewer 
           taskId={viewingTaskId} 

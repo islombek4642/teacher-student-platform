@@ -67,12 +67,25 @@ export class IeltsController {
 
   @Get('teacher')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.TEACHER)
+  @Roles(Role.TEACHER, Role.SUPER_ADMIN)
   async getTeacherTasks(@CurrentUser() user: JwtPayload) {
+    if (user.role === Role.SUPER_ADMIN) {
+      return this.ieltsService.getAllTasks();
+    }
     const teacherProfile = await this.ieltsService['prisma'].teacherProfile.findUnique({
       where: { userId: user.sub },
     });
-    return this.ieltsService.getTasksByTeacher(teacherProfile!.id);
+    if (!teacherProfile) {
+      return [];
+    }
+    return this.ieltsService.getTasksByTeacher(teacherProfile.id);
+  }
+
+  @Get('student')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.STUDENT)
+  async getStudentTasks(@CurrentUser() user: JwtPayload) {
+    return this.ieltsService.getTasksByStudent(user.sub);
   }
 
   @Get(':id/view')
