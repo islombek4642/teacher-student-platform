@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useDeleteGroup, useGroups, useRenameGroup } from './api/groups.api';
+import { toast } from '@/components/ui/toast';
+import { downloadBlob } from '@/utils/fileDownload';
+import { useDeleteGroup, useGroups, useRenameGroup, useImportGroups, exportGroups } from './api/groups.api';
 import { CreateGroupDialog } from './CreateGroupDialog';
 
 export function GroupsPage() {
@@ -13,18 +15,53 @@ export function GroupsPage() {
   const { data: groups, isLoading } = useGroups();
   const { mutate: rename } = useRenameGroup();
   const { mutate: remove } = useDeleteGroup();
+  const { mutate: importGroups, isPending: isImporting } = useImportGroups();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
 
+  const handleExport = async () => {
+    try {
+      const blob = await exportGroups();
+      downloadBlob(blob, 'guruhlar.xlsx');
+    } catch (err) {
+      toast.add({ type: 'error', description: t('common.error') });
+    }
+  };
+
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    importGroups(file, {
+      onSuccess: (data) => {
+        toast.add({ type: 'success', description: `${data.success} ${t('common.imported') || 'imported'}` });
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      },
+      onError: () => toast.add({ type: 'error', description: t('common.error') })
+    });
+  };
+
   return (
     <div className="space-y-4">
+      <input type="file" ref={fileInputRef} className="hidden" accept=".xlsx" onChange={handleImport} />
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">{t('groups.title')}</h1>
-        <Button onClick={() => setDialogOpen(true)}>
-          <Icon icon="lucide:plus" />
-          {t('groups.create')}
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleExport}>
+            <Icon icon="lucide:download" />
+            {t('common.export')}
+          </Button>
+          <Button variant="outline" disabled={isImporting} onClick={() => fileInputRef.current?.click()}>
+            <Icon icon="lucide:upload" />
+            {t('common.import')}
+          </Button>
+          <Button onClick={() => setDialogOpen(true)}>
+            <Icon icon="lucide:plus" />
+            {t('groups.create')}
+          </Button>
+        </div>
       </div>
       <Table>
         <TableHeader>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { PersonAvatar } from '@/components/shared/PersonAvatar';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { toast } from '@/components/ui/toast';
-import { useDeleteTeacher, useResetTeacherPassword, useSetTeacherActive, useTeachers } from './api/teachers.api';
+import { downloadBlob } from '@/utils/fileDownload';
+import { useDeleteTeacher, useResetTeacherPassword, useSetTeacherActive, useTeachers, useImportTeachers, exportTeachers } from './api/teachers.api';
 import { CreateTeacherDialog } from './CreateTeacherDialog';
 
 export function TeachersPage() {
@@ -21,16 +22,50 @@ export function TeachersPage() {
   const { mutate: setActive } = useSetTeacherActive();
   const { mutate: resetPassword } = useResetTeacherPassword();
   const { mutate: remove } = useDeleteTeacher();
+  const { mutate: importTeachers, isPending: isImporting } = useImportTeachers();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleExport = async () => {
+    try {
+      const blob = await exportTeachers();
+      downloadBlob(blob, 'oqituvchilar.xlsx');
+    } catch (err) {
+      toast.add({ type: 'error', description: t('common.error') });
+    }
+  };
+
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    importTeachers(file, {
+      onSuccess: (data) => {
+        toast.add({ type: 'success', description: `${data.success} ${t('teachers.imported')}` });
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      },
+      onError: () => toast.add({ type: 'error', description: t('common.error') })
+    });
+  };
 
   return (
     <div className="space-y-4">
+      <input type="file" ref={fileInputRef} className="hidden" accept=".xlsx" onChange={handleImport} />
       <PageHeader
         title={t('teachers.title')}
         action={
-          <Button onClick={() => setDialogOpen(true)}>
-            <Icon icon="lucide:user-plus" />
-            {t('teachers.create')}
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleExport}>
+              <Icon icon="lucide:download" />
+              {t('common.export')}
+            </Button>
+            <Button variant="outline" disabled={isImporting} onClick={() => fileInputRef.current?.click()}>
+              <Icon icon="lucide:upload" />
+              {t('common.import')}
+            </Button>
+            <Button onClick={() => setDialogOpen(true)}>
+              <Icon icon="lucide:user-plus" />
+              {t('teachers.create')}
+            </Button>
+          </div>
         }
       />
       <Table>

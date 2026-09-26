@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Icon } from '@iconify/react';
@@ -7,7 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { PersonAvatar } from '@/components/shared/PersonAvatar';
+import { toast } from '@/components/ui/toast';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { downloadBlob } from '@/utils/fileDownload';
+import { useImportSingleGroup, exportSingleGroup } from './api/groups.api';
 import {
   useDeleteStudent,
   useResetStudentPassword,
@@ -30,28 +33,58 @@ export function GroupStudentsPage() {
   const [editingLastName, setEditingLastName] = useState('');
   const [resetResult, setResetResult] = useState<{ name: string; password: string } | null>(null);
 
+  const { mutate: importGroup, isPending: isImporting } = useImportSingleGroup();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const saveEdit = (studentId: string) => {
-    // Guard against blank names — a lesson from Task 16's GroupsPage rename
-    // flow, where submitting an empty value produced an invalid record.
     if (!editingFirstName.trim() || !editingLastName.trim()) return;
     update(
       { id: studentId, firstName: editingFirstName, lastName: editingLastName },
-      // Defer exiting edit mode until the mutation actually succeeds, rather
-      // than optimistically closing it right after calling update() — see
-      // Task 16's review for the bug this avoids (edit UI closing over a
-      // failed update, hiding the fact that nothing was saved).
       { onSuccess: () => setEditingId(null) },
     );
   };
 
+  const handleExport = async () => {
+    if (!groupId) return;
+    try {
+      const blob = await exportSingleGroup(groupId);
+      downloadBlob(blob, 'guruh_oquvchilar.xlsx');
+    } catch (err) {
+      toast.add({ type: 'error', description: t('common.error') });
+    }
+  };
+
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !groupId) return;
+    importGroup({ id: groupId, file }, {
+      onSuccess: (data) => {
+        toast.add({ type: 'success', description: `${data.success} ${t('common.imported') || 'imported'}` });
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      },
+      onError: () => toast.add({ type: 'error', description: t('common.error') })
+    });
+  };
+
   return (
     <div className="space-y-4">
+      <input type="file" ref={fileInputRef} className="hidden" accept=".xlsx" onChange={handleImport} />
       <PageHeader
         action={
-          <Button onClick={() => setDialogOpen(true)}>
-            <Icon icon="lucide:user-plus" />
-            {t('students.create')}
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleExport}>
+              <Icon icon="lucide:download" />
+              {t('common.export')}
+            </Button>
+            <Button variant="outline" disabled={isImporting} onClick={() => fileInputRef.current?.click()}>
+              <Icon icon="lucide:upload" />
+              {t('common.import')}
+            </Button>
+            <Button onClick={() => setDialogOpen(true)}>
+              <Icon icon="lucide:user-plus" />
+              {t('students.create')}
+            </Button>
+          </div>
         }
       />
       <Table>
