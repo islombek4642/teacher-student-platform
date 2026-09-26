@@ -6,6 +6,7 @@ import { parseExcelToJSON, generateExcelBuffer } from '../common/utils/excel.uti
 import { generateFourDigitPassword, hashPassword } from '../auth/password.util';
 import { encryptCredential } from '../common/crypto/credential-crypto.util';
 import { Role } from '@prisma/client';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 
 @Injectable()
 export class GroupsService {
@@ -15,8 +16,28 @@ export class GroupsService {
     return this.prisma.group.create({ data: { name: dto.name, teacherId: teacherProfileId } });
   }
 
-  findAllForTeacher(teacherProfileId: string) {
-    return this.prisma.group.findMany({ where: { teacherId: teacherProfileId } });
+  async findAllForTeacher(teacherProfileId: string, query: PaginationQueryDto) {
+    const { page = 1, limit = 10 } = query;
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.prisma.group.findMany({ 
+        where: { teacherId: teacherProfileId },
+        skip,
+        take: Number(limit),
+        orderBy: { createdAt: 'desc' }
+      }),
+      this.prisma.group.count({ where: { teacherId: teacherProfileId } })
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page: Number(page),
+        lastPage: Math.ceil(total / limit),
+      },
+    };
   }
 
   async findOneOwned(teacherProfileId: string, groupId: string) {

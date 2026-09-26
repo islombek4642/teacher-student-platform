@@ -22,7 +22,7 @@ const TAB_ICONS: Record<TabValue, string> = {
 export function GroupLayout() {
   const { t } = useTranslation();
   const { id: groupId } = useParams<{ id: string }>();
-  const group = useGroup(groupId!);
+  const { data: group } = useGroup(groupId!);
   const location = useLocation();
   const navigate = useNavigate();
 

@@ -12,7 +12,10 @@ import { CreateGroupDialog } from './CreateGroupDialog';
 
 export function GroupsPage() {
   const { t } = useTranslation();
-  const { data: groups, isLoading } = useGroups();
+  const [page, setPage] = useState(1);
+  const { data: response, isLoading } = useGroups(page);
+  const groups = response?.data;
+  const meta = response?.meta;
   const { mutate: rename } = useRenameGroup();
   const { mutate: remove } = useDeleteGroup();
   const { mutate: importGroups, isPending: isImporting } = useImportGroups();
@@ -81,7 +84,7 @@ export function GroupsPage() {
           ) : groups && groups.length > 0 ? (
             groups.map((group, index) => (
               <TableRow key={group.id}>
-                <TableCell className="text-muted-foreground">{index + 1}</TableCell>
+                <TableCell className="text-muted-foreground">{(page - 1) * 10 + index + 1}</TableCell>
                 <TableCell>
                   {editingId === group.id ? (
                     <Input value={editingName} onChange={(e) => setEditingName(e.target.value)} />
@@ -136,8 +139,32 @@ export function GroupsPage() {
               </TableCell>
             </TableRow>
           )}
+          {groups && groups.length > 0 && groups.length < 10 && (
+            Array.from({ length: 10 - groups.length }).map((_, i) => (
+              <TableRow key={`empty-${i}`} className="h-[52px]">
+                <TableCell colSpan={3}></TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
+
+      {meta && meta.lastPage > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <span className="text-sm text-muted-foreground">
+            {t('groups.totalCount', { count: meta.total, defaultValue: `Jami: ${meta.total}` })}
+          </span>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)}>
+              {t('common.prev')}
+            </Button>
+            <Button variant="outline" size="sm" disabled={page === meta.lastPage} onClick={() => setPage(page + 1)}>
+              {t('common.next')}
+            </Button>
+          </div>
+        </div>
+      )}
+
       <CreateGroupDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>
   );

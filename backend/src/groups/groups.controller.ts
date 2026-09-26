@@ -10,6 +10,8 @@ import { JwtPayload } from '../auth/jwt-payload.interface';
 import { GroupsService } from './groups.service';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { Query } from '@nestjs/common';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.TEACHER)
@@ -23,8 +25,13 @@ export class GroupsController {
   }
 
   @Get()
-  findAll(@CurrentUser() user: JwtPayload) {
-    return this.groupsService.findAllForTeacher(user.profileId!);
+  findAll(@CurrentUser() user: JwtPayload, @Query() query: PaginationQueryDto) {
+    return this.groupsService.findAllForTeacher(user.profileId!, query);
+  }
+
+  @Get(':id')
+  findOne(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    return this.groupsService.findOneOwned(user.profileId!, id);
   }
 
   @Post('import')

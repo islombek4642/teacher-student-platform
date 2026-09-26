@@ -2,16 +2,18 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/api/client';
 import type { Group } from '@/api/types';
 
-export function useGroups() {
+export function useGroups(page: number = 1) {
   return useQuery({
-    queryKey: ['groups'],
-    queryFn: async () => (await apiClient.get<Group[]>('/groups')).data,
+    queryKey: ['groups', page],
+    queryFn: async () => (await apiClient.get<{ data: Group[]; meta: { total: number; page: number; lastPage: number } }>(`/groups?page=${page}&limit=10`)).data,
   });
 }
 
 export function useGroup(groupId: string) {
-  const { data: groups } = useGroups();
-  return groups?.find((g) => g.id === groupId);
+  return useQuery({
+    queryKey: ['groups', groupId],
+    queryFn: async () => (await apiClient.get<Group>(`/groups/${groupId}`)).data,
+  });
 }
 
 export function useCreateGroup() {
