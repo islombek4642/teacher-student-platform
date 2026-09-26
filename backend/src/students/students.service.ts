@@ -102,7 +102,7 @@ export class StudentsService {
         include: { user: { select: { username: true, isActive: true, currentPassword: true } } },
         skip,
         take: Number(limit),
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: 'asc' },
       }),
       this.prisma.studentProfile.count({ where: { groupId } })
     ]);

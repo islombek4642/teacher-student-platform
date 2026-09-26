@@ -25,7 +25,7 @@ export class GroupsService {
         where: { teacherId: teacherProfileId },
         skip,
         take: Number(limit),
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: 'asc' }
       }),
       this.prisma.group.count({ where: { teacherId: teacherProfileId } })
     ]);
