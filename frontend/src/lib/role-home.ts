@@ -3,7 +3,7 @@ import type { Role } from '@/api/types';
 const HOME_BY_ROLE: Record<Role, string> = {
   SUPER_ADMIN: '/super-admin/teachers',
   TEACHER: '/teacher/groups',
-  STUDENT: '/student/tasks',
+  STUDENT: '/student/ielts/listening',
 };
 
 export function roleHome(role: Role): string {
