@@ -14,7 +14,9 @@
     "import": "Import",
     "export": "Export",
     "imported": "{{count}} ta muvaffaqiyatli import qilindi",
-    "error": "Xatolik yuz berdi"
+    "error": "Xatolik yuz berdi",
+    "cancel": "Bekor qilish",
+    "warning": "Ogohlantirish"
   },
   "auth": {
     "login": { "title": "Kirish", "username": "Foydalanuvchi nomi", "password": "Parol", "submit": "Kirish" }

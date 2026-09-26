@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PasswordReveal } from '@/components/shared/PasswordReveal';
 import { PersonAvatar } from '@/components/shared/PersonAvatar';
 import { PageHeader } from '@/components/shared/PageHeader';
@@ -20,6 +21,7 @@ export function TeachersPage() {
   const teachers = response?.data;
   const meta = response?.meta;
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [teacherToDelete, setTeacherToDelete] = useState<{ id: string, forceReq: boolean } | null>(null);
   const { mutate: setActive } = useSetTeacherActive();
   const { mutate: resetPassword } = useResetTeacherPassword();
   const { mutate: remove } = useDeleteTeacher();
@@ -139,17 +141,7 @@ export function TeachersPage() {
                       <DropdownMenuItem
                         variant="destructive"
                         onClick={() => {
-                          if (window.confirm(t('teachers.confirmDelete'))) {
-                            remove({ id: teacher.id }, {
-                              onError: (error: any) => {
-                                if (error?.response?.data?.errorCode === 'TEACHER_HAS_GROUPS') {
-                                  if (window.confirm(t('teachers.confirmDeleteForce'))) {
-                                    remove({ id: teacher.id, force: true });
-                                  }
-                                }
-                              }
-                            });
-                          }
+                          setTeacherToDelete({ id: teacher.id, forceReq: false });
                         }}
                       >
                         <Icon icon="lucide:trash-2" />
@@ -194,6 +186,44 @@ export function TeachersPage() {
       )}
 
       <CreateTeacherDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!teacherToDelete} onOpenChange={(open) => !open && setTeacherToDelete(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {teacherToDelete?.forceReq ? t('teachers.confirmDeleteForce') : t('teachers.confirmDelete')}
+            </DialogTitle>
+            <DialogDescription>
+              {teacherToDelete?.forceReq ? t('common.warning') : ''}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTeacherToDelete(null)}>
+              {t('common.cancel')}
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={() => {
+                if (teacherToDelete) {
+                  remove({ id: teacherToDelete.id, force: teacherToDelete.forceReq }, {
+                    onSuccess: () => setTeacherToDelete(null),
+                    onError: (error: any) => {
+                      if (!teacherToDelete.forceReq && error?.response?.data?.message?.errorCode === 'TEACHER_HAS_GROUPS') {
+                        setTeacherToDelete({ id: teacherToDelete.id, forceReq: true });
+                      } else {
+                        setTeacherToDelete(null);
+                      }
+                    }
+                  });
+                }
+              }}
+            >
+              {t('teachers.delete')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
