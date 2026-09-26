@@ -1,4 +1,6 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, UseGuards, UseInterceptors, UploadedFile, Res } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
 import { Role } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -23,6 +25,38 @@ export class GroupsController {
   @Get()
   findAll(@CurrentUser() user: JwtPayload) {
     return this.groupsService.findAllForTeacher(user.profileId!);
+  }
+
+  @Post('import')
+  @UseInterceptors(FileInterceptor('file'))
+  importGroupsExcel(@CurrentUser() user: JwtPayload, @UploadedFile() file: Express.Multer.File) {
+    return this.groupsService.importGroupsExcel(user.profileId!, file.buffer);
+  }
+
+  @Get('export')
+  async exportGroupsExcel(@CurrentUser() user: JwtPayload, @Res() res: Response) {
+    const buffer = await this.groupsService.exportGroupsExcel(user.profileId!);
+    res.set({
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': 'attachment; filename="guruhlar.xlsx"',
+    });
+    res.send(buffer);
+  }
+
+  @Post(':id/import')
+  @UseInterceptors(FileInterceptor('file'))
+  importSingleGroupExcel(@CurrentUser() user: JwtPayload, @Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
+    return this.groupsService.importSingleGroupExcel(user.profileId!, id, file.buffer);
+  }
+
+  @Get(':id/export')
+  async exportSingleGroupExcel(@CurrentUser() user: JwtPayload, @Param('id') id: string, @Res() res: Response) {
+    const buffer = await this.groupsService.exportSingleGroupExcel(user.profileId!, id);
+    res.set({
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': `attachment; filename="guruh_oquvchilar.xlsx"`,
+    });
+    res.send(buffer);
   }
 
   @Patch(':id')
