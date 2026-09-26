@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { PasswordReveal } from '@/components/shared/PasswordReveal';
 import { PersonAvatar } from '@/components/shared/PersonAvatar';
 import { toast } from '@/components/ui/toast';
 import { PageHeader } from '@/components/shared/PageHeader';
@@ -92,6 +93,7 @@ export function GroupStudentsPage() {
           <TableRow>
             <TableHead className="w-10" />
             <TableHead>{t('students.username')}</TableHead>
+            <TableHead>{t('students.password') || 'Password'}</TableHead>
             <TableHead>{t('students.firstName')}</TableHead>
             <TableHead>{t('students.lastName')}</TableHead>
             <TableHead />
@@ -100,7 +102,7 @@ export function GroupStudentsPage() {
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={5} className="text-center text-muted-foreground">
+              <TableCell colSpan={6} className="text-center text-muted-foreground">
                 {t('students.loading')}
               </TableCell>
             </TableRow>
@@ -111,6 +113,13 @@ export function GroupStudentsPage() {
                   <PersonAvatar firstName={student.firstName} lastName={student.lastName} />
                 </TableCell>
                 <TableCell>{student.username}</TableCell>
+                <TableCell>
+                  {student.temporaryPassword ? (
+                    <PasswordReveal value={student.temporaryPassword} />
+                  ) : (
+                    <span className="text-muted-foreground">-</span>
+                  )}
+                </TableCell>
                 <TableCell>
                   {editingId === student.id ? (
                     <Input value={editingFirstName} onChange={(e) => setEditingFirstName(e.target.value)} />
@@ -185,7 +194,7 @@ export function GroupStudentsPage() {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={5} className="text-center text-muted-foreground">
+              <TableCell colSpan={6} className="text-center text-muted-foreground">
                 {t('students.empty')}
               </TableCell>
             </TableRow>

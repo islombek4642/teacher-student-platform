@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { PasswordReveal } from '@/components/shared/PasswordReveal';
 import { PersonAvatar } from '@/components/shared/PersonAvatar';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { toast } from '@/components/ui/toast';
@@ -73,6 +74,7 @@ export function TeachersPage() {
           <TableRow>
             <TableHead className="w-10" />
             <TableHead>{t('teachers.username')}</TableHead>
+            <TableHead>{t('teachers.password') || 'Password'}</TableHead>
             <TableHead>{t('teachers.firstName')}</TableHead>
             <TableHead>{t('teachers.lastName')}</TableHead>
             <TableHead>{t('teachers.status')}</TableHead>
@@ -82,7 +84,7 @@ export function TeachersPage() {
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center text-muted-foreground">
+              <TableCell colSpan={7} className="text-center text-muted-foreground">
                 {t('teachers.loading')}
               </TableCell>
             </TableRow>
@@ -93,6 +95,13 @@ export function TeachersPage() {
                   <PersonAvatar firstName={teacher.firstName} lastName={teacher.lastName} />
                 </TableCell>
                 <TableCell>{teacher.username}</TableCell>
+                <TableCell>
+                  {teacher.temporaryPassword ? (
+                    <PasswordReveal value={teacher.temporaryPassword} />
+                  ) : (
+                    <span className="text-muted-foreground">-</span>
+                  )}
+                </TableCell>
                 <TableCell>{teacher.firstName}</TableCell>
                 <TableCell>{teacher.lastName}</TableCell>
                 <TableCell>
@@ -143,7 +152,7 @@ export function TeachersPage() {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={6} className="text-center text-muted-foreground">
+              <TableCell colSpan={7} className="text-center text-muted-foreground">
                 {t('teachers.empty')}
               </TableCell>
             </TableRow>

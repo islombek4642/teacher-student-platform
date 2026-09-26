@@ -22,6 +22,7 @@ export class TeachersService {
           data: {
             username: dto.username,
             passwordHash,
+            currentPassword: encryptCredential(temporaryPassword),
             role: Role.TEACHER,
           },
         });
@@ -54,7 +55,7 @@ export class TeachersService {
       this.prisma.teacherProfile.findMany({
         skip,
         take: limit,
-        include: { user: { select: { username: true, isActive: true } } },
+        include: { user: { select: { username: true, isActive: true, currentPassword: true } } },
       }),
       this.prisma.teacherProfile.count(),
     ]);
@@ -66,6 +67,7 @@ export class TeachersService {
         firstName: t.firstName,
         lastName: t.lastName,
         isActive: t.user.isActive,
+        temporaryPassword: t.user.currentPassword ? decryptCredential(t.user.currentPassword) : null,
       })),
       meta: {
         total,
@@ -84,7 +86,7 @@ export class TeachersService {
     const passwordHash = await hashPassword(temporaryPassword);
     await this.prisma.user.update({
       where: { id: profile.userId },
-      data: { passwordHash },
+      data: { passwordHash, currentPassword: encryptCredential(temporaryPassword) },
     });
     return { temporaryPassword };
   }
@@ -132,7 +134,7 @@ export class TeachersService {
       try {
         const { user } = await this.prisma.$transaction(async (tx) => {
           const user = await tx.user.create({
-            data: { username: String(username), passwordHash, role: Role.TEACHER },
+            data: { username: String(username), passwordHash, currentPassword: encryptCredential(temporaryPassword), role: Role.TEACHER },
           });
           const profile = await tx.teacherProfile.create({
             data: { userId: user.id, firstName: String(firstName), lastName: String(lastName) },

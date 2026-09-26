@@ -18,6 +18,7 @@ model User {
   id             String          @id @default(uuid())
   username       String          @unique
   passwordHash   String
+  currentPassword String?
   role           Role
   isActive       Boolean         @default(true)
   createdAt      DateTime        @default(now())

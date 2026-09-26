@@ -72,7 +72,7 @@ export class GroupsService {
         try {
           const { user } = await this.prisma.$transaction(async (tx) => {
             const user = await tx.user.create({
-              data: { username: String(username), passwordHash, role: Role.STUDENT },
+              data: { username: String(username), passwordHash, currentPassword: encryptCredential(temporaryPassword), role: Role.STUDENT },
             });
             await tx.studentProfile.create({
               data: { userId: user.id, groupId: group.id, firstName: String(firstName), lastName: String(lastName) },
@@ -132,7 +132,7 @@ export class GroupsService {
       try {
         const { user } = await this.prisma.$transaction(async (tx) => {
           const user = await tx.user.create({
-            data: { username: String(username), passwordHash, role: Role.STUDENT },
+            data: { username: String(username), passwordHash, currentPassword: encryptCredential(temporaryPassword), role: Role.STUDENT },
           });
           await tx.studentProfile.create({
             data: { userId: user.id, groupId: group.id, firstName: String(firstName), lastName: String(lastName) },
