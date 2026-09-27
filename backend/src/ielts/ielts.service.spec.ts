@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { IeltsService, detectIeltsTaskType } from './ielts.service';
+import { IeltsService, detectIeltsTaskType, extractTaskTitle } from './ielts.service';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { IeltsTaskType } from '@prisma/client';
 import { BadRequestException } from '@nestjs/common';
@@ -55,6 +55,23 @@ describe('IeltsService', () => {
     it('should return UNKNOWN when neither audio nor reading markers exist', () => {
       const html = '<html><body>Generic content without markers</body></html>';
       expect(detectIeltsTaskType(html)).toBe('UNKNOWN');
+    });
+  });
+
+  describe('extractTaskTitle', () => {
+    it('should extract reading passage title with test number', () => {
+      const html = '<html><body><p class="passage-title">Wood: a valuable resource</p></body></html>';
+      expect(extractTaskTitle(html, '01_Reading.html')).toBe('Test 1: Wood: a valuable resource');
+    });
+
+    it('should extract listening centered title with test number', () => {
+      const html = '<html><body><p class="centered-title">Poppy Reserve in Sandcastle</p></body></html>';
+      expect(extractTaskTitle(html, '02_Listening.html')).toBe('Test 2: Poppy Reserve in Sandcastle');
+    });
+
+    it('should fallback to filename if no custom title is found', () => {
+      const html = '<html><head><title>IELTS CDI Practice</title></head><body>No special classes</body></html>';
+      expect(extractTaskTitle(html, 'Practice_Test_9.html')).toBe('Practice Test 9');
     });
   });
 

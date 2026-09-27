@@ -19,7 +19,8 @@
     "delete": "O'chirish",
     "confirm": "Tasdiqlash",
     "warning": "Ogohlantirish",
-    "confirmDelete": "Haqiqatan ham o'chirmoqchimisiz?"
+    "confirmDelete": "Haqiqatan ham o'chirmoqchimisiz?",
+    "totalCount": "Jami: {{count}} ta"
   },
   "auth": {
     "login": { "title": "Kirish", "username": "Foydalanuvchi nomi", "password": "Parol", "submit": "Kirish" }

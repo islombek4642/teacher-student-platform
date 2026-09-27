@@ -47,6 +47,40 @@ export function detectIeltsTaskType(contentHtml: string): IeltsTaskType | 'UNKNO
   return 'UNKNOWN';
 }
 
+export function extractTaskTitle(contentHtml: string, filename?: string): string {
+  // 1. Reading passage title
+  const passageTitleMatch = contentHtml.match(/class=["']passage-title["'][^>]*>([^<]+)<\/p>/i);
+  if (passageTitleMatch && passageTitleMatch[1]?.trim()) {
+    const title = passageTitleMatch[1].trim();
+    const testNum = filename ? filename.match(/^0*(\d+)/)?.[1] : null;
+    return testNum ? `Test ${testNum}: ${title}` : title;
+  }
+
+  // 2. Listening centered title
+  const centeredTitleMatch = contentHtml.match(/class=["']centered-title["'][^>]*>([^<]+)<\/p>/i);
+  if (centeredTitleMatch && centeredTitleMatch[1]?.trim()) {
+    const title = centeredTitleMatch[1].trim();
+    const testNum = filename ? filename.match(/^0*(\d+)/)?.[1] : null;
+    return testNum ? `Test ${testNum}: ${title}` : title;
+  }
+
+  // 3. Fallback to <title> tag if not generic
+  const titleTag = contentHtml.match(/<title>([^<]*)<\/title>/i)?.[1]?.trim();
+  if (titleTag && !/^ielts\s+cdi/i.test(titleTag)) {
+    return titleTag;
+  }
+
+  // 4. Fallback to clean filename
+  if (filename) {
+    return filename
+      .replace(/\.html?$/i, '')
+      .replace(/[_-]/g, ' ')
+      .trim();
+  }
+
+  return 'New Task';
+}
+
 @Injectable()
 export class IeltsService {
   constructor(private prisma: PrismaService) {}
@@ -63,6 +97,12 @@ export class IeltsService {
         errorCode: ERROR_CODES.VALIDATION_FAILED,
         message: 'File is required',
       });
+    }
+
+    let contentHtml = htmlFile.buffer.toString('utf-8');
+
+    if (!title || !title.trim()) {
+      title = extractTaskTitle(contentHtml, htmlFile.originalname);
     }
 
     let teacherId = user.profileId;
@@ -83,8 +123,6 @@ export class IeltsService {
       }
       teacherId = anyTeacher.id;
     }
-
-    let contentHtml = htmlFile.buffer.toString('utf-8');
 
     const detectedType = detectIeltsTaskType(contentHtml);
     if (

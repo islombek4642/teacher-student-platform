@@ -35,6 +35,40 @@ export function detectIeltsTaskType(contentHtml: string): 'LISTENING' | 'READING
   return 'UNKNOWN';
 }
 
+export function extractTaskTitle(contentHtml: string, filename?: string): string {
+  // 1. Reading passage title
+  const passageTitleMatch = contentHtml.match(/class=["']passage-title["'][^>]*>([^<]+)<\/p>/i);
+  if (passageTitleMatch && passageTitleMatch[1]?.trim()) {
+    const title = passageTitleMatch[1].trim();
+    const testNum = filename ? filename.match(/^0*(\d+)/)?.[1] : null;
+    return testNum ? `Test ${testNum}: ${title}` : title;
+  }
+
+  // 2. Listening centered title
+  const centeredTitleMatch = contentHtml.match(/class=["']centered-title["'][^>]*>([^<]+)<\/p>/i);
+  if (centeredTitleMatch && centeredTitleMatch[1]?.trim()) {
+    const title = centeredTitleMatch[1].trim();
+    const testNum = filename ? filename.match(/^0*(\d+)/)?.[1] : null;
+    return testNum ? `Test ${testNum}: ${title}` : title;
+  }
+
+  // 3. Fallback to <title> tag if not generic
+  const titleTag = contentHtml.match(/<title>([^<]*)<\/title>/i)?.[1]?.trim();
+  if (titleTag && !/^ielts\s+cdi/i.test(titleTag)) {
+    return titleTag;
+  }
+
+  // 4. Fallback to clean filename
+  if (filename) {
+    return filename
+      .replace(/\.html?$/i, '')
+      .replace(/[_-]/g, ' ')
+      .trim();
+  }
+
+  return '';
+}
+
 export function UploadIeltsDialog({
   open,
   onOpenChange,
@@ -102,13 +136,10 @@ export function UploadIeltsDialog({
 
       setFile(selectedFile);
 
-      // Auto-fill title if empty
-      if (!title.trim()) {
-        const cleanName = selectedFile.name
-          .replace(/\.html?$/i, '')
-          .replace(/[_-]/g, ' ')
-          .trim();
-        setTitle(cleanName);
+      // Auto-extract and populate title
+      const extractedTitle = extractTaskTitle(text, selectedFile.name);
+      if (extractedTitle) {
+        setTitle(extractedTitle);
       }
     } catch {
       setFile(selectedFile);

@@ -29,7 +29,14 @@ export function ListeningPage() {
   const { data: tasks, isLoading } = useIeltsTasks();
   const deleteMutation = useDeleteIeltsTask();
   
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
+
   const listeningTasks = tasks?.filter((t) => t.type === 'LISTENING') || [];
+  const totalTasks = listeningTasks.length;
+  const totalPages = Math.max(1, Math.ceil(totalTasks / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const paginatedTasks = listeningTasks.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   const handleConfirmDelete = () => {
     if (taskToDelete) {
@@ -67,8 +74,8 @@ export function ListeningPage() {
               <TableRow>
                 <TableCell colSpan={3} className="text-center">{t('common.loading')}</TableCell>
               </TableRow>
-            ) : listeningTasks.length > 0 ? (
-              listeningTasks.map(task => (
+            ) : paginatedTasks.length > 0 ? (
+              paginatedTasks.map(task => (
                 <TableRow key={task.id}>
                   <TableCell className="font-medium">{task.title}</TableCell>
                   <TableCell>{new Date(task.createdAt).toLocaleDateString()}</TableCell>
@@ -93,6 +100,32 @@ export function ListeningPage() {
           </TableBody>
         </Table>
       </Card>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">
+            {t('common.totalCount', { count: totalTasks, defaultValue: `Jami: ${totalTasks} ta` })} ({safePage} / {totalPages})
+          </span>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={safePage === 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              {t('common.prev')}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={safePage === totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            >
+              {t('common.next')}
+            </Button>
+          </div>
+        </div>
+      )}
 
       {isTeacher && (
         <UploadIeltsDialog 
