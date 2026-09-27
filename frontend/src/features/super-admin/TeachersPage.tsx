@@ -13,6 +13,7 @@ import { toast } from '@/components/ui/toast';
 import { downloadBlob } from '@/utils/fileDownload';
 import { useDeleteTeacher, useResetTeacherPassword, useSetTeacherActive, useTeachers, useImportTeachers, exportTeachers } from './api/teachers.api';
 import { CreateTeacherDialog } from './CreateTeacherDialog';
+import { usePaginationKeyboard } from '@/hooks/usePaginationKeyboard';
 
 export function TeachersPage() {
   const { t } = useTranslation();
@@ -22,6 +23,13 @@ export function TeachersPage() {
   const meta = response?.meta;
   const [dialogOpen, setDialogOpen] = useState(false);
   const [teacherToDelete, setTeacherToDelete] = useState<{ id: string, forceReq: boolean } | null>(null);
+
+  usePaginationKeyboard({
+    page,
+    totalPages: meta?.lastPage ?? 1,
+    setPage,
+    enabled: !dialogOpen && !teacherToDelete,
+  });
   const { mutate: setActive } = useSetTeacherActive();
   const { mutate: resetPassword } = useResetTeacherPassword();
   const { mutate: remove } = useDeleteTeacher();

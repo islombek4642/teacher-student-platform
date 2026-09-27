@@ -10,6 +10,7 @@ import { downloadBlob } from '@/utils/fileDownload';
 import { useDeleteGroup, useGroups, useRenameGroup, useImportGroups, exportGroups } from './api/groups.api';
 import { CreateGroupDialog } from './CreateGroupDialog';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+import { usePaginationKeyboard } from '@/hooks/usePaginationKeyboard';
 
 export function GroupsPage() {
   const { t } = useTranslation();
@@ -17,13 +18,19 @@ export function GroupsPage() {
   const { data: response, isLoading } = useGroups(page);
   const groups = response?.data;
   const meta = response?.meta;
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState<string | null>(null);
   const { mutate: rename } = useRenameGroup();
   const { mutate: remove, isPending: isRemoving } = useDeleteGroup();
   const { mutate: importGroups, isPending: isImporting } = useImportGroups();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [groupToDelete, setGroupToDelete] = useState<string | null>(null);
+  usePaginationKeyboard({
+    page,
+    totalPages: meta?.lastPage ?? 1,
+    setPage,
+    enabled: !dialogOpen && !groupToDelete,
+  });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
 

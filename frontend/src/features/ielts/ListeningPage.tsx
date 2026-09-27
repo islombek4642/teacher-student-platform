@@ -9,6 +9,7 @@ import { IeltsTaskViewer } from './IeltsTaskViewer';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { toast } from '@/components/ui/toast';
 import { useAuth } from '@/auth/useAuth';
+import { usePaginationKeyboard } from '@/hooks/usePaginationKeyboard';
 import {
   Table,
   TableBody,
@@ -37,6 +38,13 @@ export function ListeningPage() {
   const totalPages = Math.max(1, Math.ceil(totalTasks / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
   const paginatedTasks = listeningTasks.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  usePaginationKeyboard({
+    page: safePage,
+    totalPages,
+    setPage,
+    enabled: !taskToDelete && !uploadOpen && !viewingTaskId,
+  });
 
   useEffect(() => {
     if (page > totalPages) {

@@ -21,6 +21,7 @@ import {
 } from './api/students.api';
 import { CreateStudentDialog } from './CreateStudentDialog';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+import { usePaginationKeyboard } from '@/hooks/usePaginationKeyboard';
 
 export function GroupStudentsPage() {
   const { t } = useTranslation();
@@ -29,12 +30,18 @@ export function GroupStudentsPage() {
   const { data: response, isLoading } = useStudents(groupId!, page);
   const students = response?.data;
   const meta = response?.meta;
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState<string | null>(null);
   const { mutate: update } = useUpdateStudent(groupId!);
   const { mutate: resetPassword } = useResetStudentPassword(groupId!);
   const { mutate: remove, isPending: isRemoving } = useDeleteStudent(groupId!);
 
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [studentToDelete, setStudentToDelete] = useState<string | null>(null);
+  usePaginationKeyboard({
+    page,
+    totalPages: meta?.lastPage ?? 1,
+    setPage,
+    enabled: !dialogOpen && !studentToDelete,
+  });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingFirstName, setEditingFirstName] = useState('');
   const [editingLastName, setEditingLastName] = useState('');
