@@ -7,6 +7,7 @@ import { generateFourDigitPassword, hashPassword } from '../auth/password.util';
 import { encryptCredential } from '../common/crypto/credential-crypto.util';
 import { Role } from '@prisma/client';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { EXCEL_COLUMNS } from '../common/constants/excel.constant';
 
 @Injectable()
 export class GroupsService {
@@ -124,9 +125,9 @@ export class GroupsService {
     const sheetsData: Record<string, any[]> = {};
     for (const group of groups) {
       sheetsData[group.name] = group.students.map(s => ({
-        Ism: s.firstName,
-        Familiya: s.lastName,
-        Login: s.user.username,
+        [EXCEL_COLUMNS.FIRST_NAME]: s.firstName,
+        [EXCEL_COLUMNS.LAST_NAME]: s.lastName,
+        [EXCEL_COLUMNS.LOGIN]: s.user.username,
       }));
     }
 
@@ -143,9 +144,9 @@ export class GroupsService {
     let success = 0;
 
     for (const row of sheet) {
-      const firstName = row['Ism'];
-      const lastName = row['Familiya'];
-      const username = row['Login'];
+      const firstName = row[EXCEL_COLUMNS.FIRST_NAME];
+      const lastName = row[EXCEL_COLUMNS.LAST_NAME];
+      const username = row[EXCEL_COLUMNS.LOGIN];
       if (!firstName || !lastName || !username) continue;
 
       const temporaryPassword = generateFourDigitPassword();
@@ -178,9 +179,9 @@ export class GroupsService {
     });
 
     const data = students.map(s => ({
-      Ism: s.firstName,
-      Familiya: s.lastName,
-      Login: s.user.username,
+      [EXCEL_COLUMNS.FIRST_NAME]: s.firstName,
+      [EXCEL_COLUMNS.LAST_NAME]: s.lastName,
+      [EXCEL_COLUMNS.LOGIN]: s.user.username,
     }));
 
     return generateExcelBuffer({ [group.name]: data });

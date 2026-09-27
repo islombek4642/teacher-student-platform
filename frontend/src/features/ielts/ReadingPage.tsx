@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useIeltsTasks, useDeleteIeltsTask } from './api/ielts.api';
 import { UploadIeltsDialog } from './UploadIeltsDialog';
 import { IeltsTaskViewer } from './IeltsTaskViewer';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useAuth } from '@/auth/useAuth';
 import {
   Table,
@@ -24,14 +25,17 @@ export function ReadingPage() {
 
   const [uploadOpen, setUploadOpen] = useState(false);
   const [viewingTaskId, setViewingTaskId] = useState<string | null>(null);
+  const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
   const { data: tasks, isLoading } = useIeltsTasks();
   const deleteMutation = useDeleteIeltsTask();
   
   const readingTasks = tasks?.filter((t) => t.type === 'READING') || [];
 
-  const handleDelete = (id: string) => {
-    if (window.confirm(t('ielts.confirmDelete'))) {
-      deleteMutation.mutate(id);
+  const handleConfirmDelete = () => {
+    if (taskToDelete) {
+      deleteMutation.mutate(taskToDelete, {
+        onSuccess: () => setTaskToDelete(null),
+      });
     }
   };
 
@@ -71,7 +75,7 @@ export function ReadingPage() {
                   <TableCell className="text-right space-x-2">
                     <Button variant="outline" size="sm" onClick={() => setViewingTaskId(task.id)}>{t('ielts.view')}</Button>
                     {isTeacher && (
-                      <Button variant="destructive" size="sm" onClick={() => handleDelete(task.id)} disabled={deleteMutation.isPending}>
+                      <Button variant="destructive" size="sm" onClick={() => setTaskToDelete(task.id)} disabled={deleteMutation.isPending}>
                         <Icon icon="lucide:trash-2" className="h-4 w-4" />
                       </Button>
                     )}
@@ -103,6 +107,18 @@ export function ReadingPage() {
           onClose={() => setViewingTaskId(null)} 
         />
       )}
+
+      <ConfirmDialog
+        open={!!taskToDelete}
+        onOpenChange={(open) => !open && setTaskToDelete(null)}
+        title={t('common.confirmDelete')}
+        description={t('ielts.confirmDelete')}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
+        variant="destructive"
+        isLoading={deleteMutation.isPending}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }

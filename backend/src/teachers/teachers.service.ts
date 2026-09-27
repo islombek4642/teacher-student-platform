@@ -7,6 +7,7 @@ import { generateFourDigitPassword, hashPassword } from '../auth/password.util';
 import { decryptCredential, encryptCredential } from '../common/crypto/credential-crypto.util';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { parseExcelToJSON, generateExcelBuffer } from '../common/utils/excel.util';
+import { EXCEL_COLUMNS, EXCEL_SHEETS } from '../common/constants/excel.constant';
 
 @Injectable()
 export class TeachersService {
@@ -132,9 +133,9 @@ export class TeachersService {
     const results = [];
     let success = 0;
     for (const row of sheet) {
-      const firstName = row['Ism'];
-      const lastName = row['Familiya'];
-      const username = row['Login'];
+      const firstName = row[EXCEL_COLUMNS.FIRST_NAME];
+      const lastName = row[EXCEL_COLUMNS.LAST_NAME];
+      const username = row[EXCEL_COLUMNS.LOGIN];
       if (!firstName || !lastName || !username) continue;
 
       const temporaryPassword = generateFourDigitPassword();
@@ -165,11 +166,11 @@ export class TeachersService {
     });
     
     const data = teachers.map(t => ({
-      Ism: t.firstName,
-      Familiya: t.lastName,
-      Login: t.user.username,
+      [EXCEL_COLUMNS.FIRST_NAME]: t.firstName,
+      [EXCEL_COLUMNS.LAST_NAME]: t.lastName,
+      [EXCEL_COLUMNS.LOGIN]: t.user.username,
     }));
 
-    return generateExcelBuffer({ 'Oqituvchilar': data });
+    return generateExcelBuffer({ [EXCEL_SHEETS.TEACHERS]: data });
   }
 }

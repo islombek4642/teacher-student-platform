@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, UseGuards, UseInterceptors, UploadedFile, Res } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, UseGuards, UseInterceptors, UploadedFile, Res } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { Role } from '@prisma/client';
@@ -12,6 +12,9 @@ import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { Query } from '@nestjs/common';
+import { EXCEL_FILENAMES } from '../common/constants/excel.constant';
+import { UPLOAD_LIMITS } from '../common/constants/upload.constant';
+import { ERROR_CODES } from '../common/constants/error-codes.constant';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.TEACHER)
@@ -35,8 +38,14 @@ export class GroupsController {
   }
 
   @Post('import')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: UPLOAD_LIMITS.EXCEL_FILE_SIZE } }))
   importGroupsExcel(@CurrentUser() user: JwtPayload, @UploadedFile() file: Express.Multer.File) {
+    if (!file || !file.buffer) {
+      throw new BadRequestException({
+        errorCode: ERROR_CODES.VALIDATION_FAILED,
+        message: 'File is required',
+      });
+    }
     return this.groupsService.importGroupsExcel(user.profileId!, file.buffer);
   }
 
@@ -45,14 +54,20 @@ export class GroupsController {
     const buffer = await this.groupsService.exportGroupsExcel(user.profileId!);
     res.set({
       'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'Content-Disposition': 'attachment; filename="guruhlar.xlsx"',
+      'Content-Disposition': `attachment; filename="${EXCEL_FILENAMES.GROUPS}"`,
     });
     res.send(buffer);
   }
 
   @Post(':id/import')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: UPLOAD_LIMITS.EXCEL_FILE_SIZE } }))
   importSingleGroupExcel(@CurrentUser() user: JwtPayload, @Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
+    if (!file || !file.buffer) {
+      throw new BadRequestException({
+        errorCode: ERROR_CODES.VALIDATION_FAILED,
+        message: 'File is required',
+      });
+    }
     return this.groupsService.importSingleGroupExcel(user.profileId!, id, file.buffer);
   }
 
@@ -61,7 +76,7 @@ export class GroupsController {
     const buffer = await this.groupsService.exportSingleGroupExcel(user.profileId!, id);
     res.set({
       'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'Content-Disposition': `attachment; filename="guruh_oquvchilar.xlsx"`,
+      'Content-Disposition': `attachment; filename="${EXCEL_FILENAMES.GROUP_STUDENTS}"`,
     });
     res.send(buffer);
   }

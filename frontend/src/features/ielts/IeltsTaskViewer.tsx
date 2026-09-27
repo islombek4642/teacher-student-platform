@@ -1,14 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from '@/components/ui/dialog';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
@@ -38,7 +30,7 @@ export function IeltsTaskViewer({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-background">
+    <div className="fixed inset-0 z-[40] bg-background">
       <iframe
         src={`${API_URL}/ielts/${taskId}/view`}
         className="h-full w-full border-none"
@@ -46,22 +38,17 @@ export function IeltsTaskViewer({
         allowFullScreen
       />
 
-      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('ielts.exitTitle')}</DialogTitle>
-            <DialogDescription>{t('ielts.confirmExit')}</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmOpen(false)}>
-              {t('common.cancel')}
-            </Button>
-            <Button variant="destructive" onClick={handleConfirmExit}>
-              {t('ielts.exit')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={t('ielts.exitTitle')}
+        description={t('ielts.confirmExit')}
+        confirmText={t('ielts.exit')}
+        cancelText={t('common.cancel')}
+        variant="destructive"
+        icon="lucide:log-out"
+        onConfirm={handleConfirmExit}
+      />
     </div>
   );
 }

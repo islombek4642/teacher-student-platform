@@ -19,6 +19,7 @@ import {
   useUpdateStudent,
 } from './api/students.api';
 import { CreateStudentDialog } from './CreateStudentDialog';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 
 export function GroupStudentsPage() {
   const { t } = useTranslation();
@@ -29,9 +30,10 @@ export function GroupStudentsPage() {
   const meta = response?.meta;
   const { mutate: update } = useUpdateStudent(groupId!);
   const { mutate: resetPassword } = useResetStudentPassword(groupId!);
-  const { mutate: remove } = useDeleteStudent(groupId!);
+  const { mutate: remove, isPending: isRemoving } = useDeleteStudent(groupId!);
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingFirstName, setEditingFirstName] = useState('');
   const [editingLastName, setEditingLastName] = useState('');
@@ -183,9 +185,7 @@ export function GroupStudentsPage() {
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         variant="destructive"
-                        onClick={() => {
-                          if (window.confirm(t('students.confirmDelete'))) remove(student.id);
-                        }}
+                        onClick={() => setStudentToDelete(student.id)}
                       >
                         <Icon icon="lucide:trash-2" />
                         {t('students.delete')}
@@ -229,6 +229,23 @@ export function GroupStudentsPage() {
       )}
 
       <CreateStudentDialog groupId={groupId!} open={dialogOpen} onOpenChange={setDialogOpen} />
+      <ConfirmDialog
+        open={!!studentToDelete}
+        onOpenChange={(open) => !open && setStudentToDelete(null)}
+        title={t('common.confirmDelete')}
+        description={t('students.confirmDelete')}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
+        variant="destructive"
+        isLoading={isRemoving}
+        onConfirm={() => {
+          if (studentToDelete) {
+            remove(studentToDelete, {
+              onSuccess: () => setStudentToDelete(null),
+            });
+          }
+        }}
+      />
       {resetResult && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-sm rounded-lg bg-background p-6 shadow-lg">

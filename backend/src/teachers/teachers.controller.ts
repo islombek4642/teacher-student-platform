@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, UseGuards, UseInterceptors, UploadedFile, Res } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, UseGuards, UseInterceptors, UploadedFile, Res } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { Role } from '@prisma/client';
@@ -10,6 +10,9 @@ import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { EXCEL_FILENAMES } from '../common/constants/excel.constant';
+import { UPLOAD_LIMITS } from '../common/constants/upload.constant';
+import { ERROR_CODES } from '../common/constants/error-codes.constant';
 
 @ApiTags('Teachers')
 @ApiBearerAuth()
@@ -27,8 +30,14 @@ export class TeachersController {
 
   @ApiOperation({ summary: 'Import teachers from Excel' })
   @Post('import')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: UPLOAD_LIMITS.EXCEL_FILE_SIZE } }))
   importExcel(@UploadedFile() file: Express.Multer.File) {
+    if (!file || !file.buffer) {
+      throw new BadRequestException({
+        errorCode: ERROR_CODES.VALIDATION_FAILED,
+        message: 'File is required',
+      });
+    }
     return this.teachersService.importExcel(file.buffer);
   }
 
@@ -38,7 +47,7 @@ export class TeachersController {
     const buffer = await this.teachersService.exportExcel();
     res.set({
       'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'Content-Disposition': 'attachment; filename="oqituvchilar.xlsx"',
+      'Content-Disposition': `attachment; filename="${EXCEL_FILENAMES.TEACHERS}"`,
     });
     res.send(buffer);
   }

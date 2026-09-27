@@ -29,8 +29,8 @@ export class IeltsController {
 
   @Post('upload')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.TEACHER)
-  @UseInterceptors(FileInterceptor('file'))
+  @Roles(Role.TEACHER, Role.SUPER_ADMIN)
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 10 * 1024 * 1024 } }))
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -53,10 +53,7 @@ export class IeltsController {
     @UploadedFile() file: Express.Multer.File,
     @Body('groupId') groupId?: string,
   ) {
-    const teacherProfile = await this.ieltsService['prisma'].teacherProfile.findUnique({
-      where: { userId: user.sub },
-    });
-    return this.ieltsService.uploadTask(teacherProfile!.id, title, type, file, groupId);
+    return this.ieltsService.uploadTask(user, title, type, file, groupId);
   }
 
   @Get('group/:groupId')
@@ -72,13 +69,7 @@ export class IeltsController {
     if (user.role === Role.SUPER_ADMIN) {
       return this.ieltsService.getAllTasks();
     }
-    const teacherProfile = await this.ieltsService['prisma'].teacherProfile.findUnique({
-      where: { userId: user.sub },
-    });
-    if (!teacherProfile) {
-      return [];
-    }
-    return this.ieltsService.getTasksByTeacher(teacherProfile.id);
+    return this.ieltsService.getTasksForTeacherUser(user.sub);
   }
 
   @Get('student')
@@ -89,9 +80,6 @@ export class IeltsController {
   }
 
   @Get(':id/view')
-  // Public or guarded? If it's loaded in an iframe with the token, it should be guarded.
-  // But iframe src doesn't send Authorization headers easily.
-  // To keep it simple, we can make it public for now, or use a query token, or just rely on the fact that IDs are random UUIDs.
   async viewTask(@Param('id') id: string, @Res() res: Response) {
     const task = await this.ieltsService.getTask(id);
     res.setHeader('Content-Type', 'text/html');
@@ -100,11 +88,8 @@ export class IeltsController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.TEACHER)
+  @Roles(Role.TEACHER, Role.SUPER_ADMIN)
   async deleteTask(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-    const teacherProfile = await this.ieltsService['prisma'].teacherProfile.findUnique({
-      where: { userId: user.sub },
-    });
-    return this.ieltsService.deleteTask(id, teacherProfile!.id);
+    return this.ieltsService.deleteTask(id, user);
   }
 }

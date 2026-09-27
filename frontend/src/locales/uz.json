@@ -16,6 +16,8 @@
     "imported": "{{count}} ta muvaffaqiyatli import qilindi",
     "error": "Xatolik yuz berdi",
     "cancel": "Bekor qilish",
+    "delete": "O'chirish",
+    "confirm": "Tasdiqlash",
     "warning": "Ogohlantirish",
     "confirmDelete": "Haqiqatan ham o'chirmoqchimisiz?"
   },

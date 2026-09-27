@@ -9,6 +9,7 @@ import { toast } from '@/components/ui/toast';
 import { downloadBlob } from '@/utils/fileDownload';
 import { useDeleteGroup, useGroups, useRenameGroup, useImportGroups, exportGroups } from './api/groups.api';
 import { CreateGroupDialog } from './CreateGroupDialog';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 
 export function GroupsPage() {
   const { t } = useTranslation();
@@ -17,11 +18,12 @@ export function GroupsPage() {
   const groups = response?.data;
   const meta = response?.meta;
   const { mutate: rename } = useRenameGroup();
-  const { mutate: remove } = useDeleteGroup();
+  const { mutate: remove, isPending: isRemoving } = useDeleteGroup();
   const { mutate: importGroups, isPending: isImporting } = useImportGroups();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
 
@@ -122,9 +124,7 @@ export function GroupsPage() {
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => {
-                      if (window.confirm(t('groups.confirmDelete'))) remove(group.id);
-                    }}
+                    onClick={() => setGroupToDelete(group.id)}
                   >
                     <Icon icon="lucide:trash-2" />
                     {t('groups.delete')}
@@ -166,6 +166,24 @@ export function GroupsPage() {
       )}
 
       <CreateGroupDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+
+      <ConfirmDialog
+        open={!!groupToDelete}
+        onOpenChange={(open) => !open && setGroupToDelete(null)}
+        title={t('common.confirmDelete')}
+        description={t('groups.confirmDelete')}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
+        variant="destructive"
+        isLoading={isRemoving}
+        onConfirm={() => {
+          if (groupToDelete) {
+            remove(groupToDelete, {
+              onSuccess: () => setGroupToDelete(null),
+            });
+          }
+        }}
+      />
     </div>
   );
 }
