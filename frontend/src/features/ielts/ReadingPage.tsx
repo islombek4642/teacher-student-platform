@@ -8,6 +8,7 @@ import { useIeltsTasks, useDeleteIeltsTask } from './api/ielts.api';
 import { UploadIeltsDialog } from './UploadIeltsDialog';
 import { IeltsTaskViewer } from './IeltsTaskViewer';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+import { toast } from '@/components/ui/toast';
 import { useAuth } from '@/auth/useAuth';
 import {
   Table,
@@ -41,7 +42,20 @@ export function ReadingPage() {
   const handleConfirmDelete = () => {
     if (taskToDelete) {
       deleteMutation.mutate(taskToDelete, {
-        onSuccess: () => setTaskToDelete(null),
+        onSuccess: () => {
+          setTaskToDelete(null);
+          toast.add({
+            type: 'success',
+            description: t('ielts.deleteSuccess'),
+          });
+        },
+        onError: (err: any) => {
+          const message = err?.response?.data?.message || err?.message || t('common.error');
+          toast.add({
+            type: 'error',
+            description: message,
+          });
+        },
       });
     }
   };

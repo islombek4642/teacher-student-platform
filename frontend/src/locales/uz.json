@@ -20,7 +20,8 @@
     "confirm": "Tasdiqlash",
     "warning": "Ogohlantirish",
     "confirmDelete": "Haqiqatan ham o'chirmoqchimisiz?",
-    "totalCount": "Jami: {{count}} ta"
+    "totalCount": "Jami: {{count}} ta",
+    "deleting": "O'chirilmoqda..."
   },
   "auth": {
     "login": { "title": "Kirish", "username": "Foydalanuvchi nomi", "password": "Parol", "submit": "Kirish" }
@@ -201,6 +202,7 @@
     "exit": "Chiqish",
     "emptyTasks": "Hali topshiriqlar yuklanmagan",
     "typeMismatch": "Noto'g'ri fayl turi! Siz {{expected}} bo'limida {{detected}} faylini tanladingiz.",
-    "pleaseUploadExpected": "Iltimos, haqiqiy {{expected}} topshiriq faylini tanlang."
+    "pleaseUploadExpected": "Iltimos, haqiqiy {{expected}} topshiriq faylini tanlang.",
+    "deleteSuccess": "Topshiriq muvaffaqiyatli o'chirildi"
   }
 }

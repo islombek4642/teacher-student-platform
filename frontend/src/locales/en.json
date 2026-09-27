@@ -20,7 +20,8 @@
     "confirm": "Confirm",
     "warning": "Warning",
     "confirmDelete": "Are you sure you want to delete this?",
-    "totalCount": "Total: {{count}}"
+    "totalCount": "Total: {{count}}",
+    "deleting": "Deleting..."
   },
   "auth": {
     "login": { "title": "Sign in", "username": "Username", "password": "Password", "submit": "Sign in" }
@@ -201,6 +202,7 @@
     "exit": "Exit",
     "emptyTasks": "No tasks uploaded yet",
     "typeMismatch": "File type mismatch! You selected a {{detected}} file in the {{expected}} section.",
-    "pleaseUploadExpected": "Please upload a valid {{expected}} task file."
+    "pleaseUploadExpected": "Please upload a valid {{expected}} task file.",
+    "deleteSuccess": "Task deleted successfully"
   }
 }

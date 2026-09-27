@@ -20,6 +20,7 @@ export interface ConfirmDialogProps {
   variant?: 'destructive' | 'default';
   icon?: string;
   isLoading?: boolean;
+  loadingText?: string;
   onConfirm: () => void;
 }
 
@@ -33,6 +34,7 @@ export function ConfirmDialog({
   variant = 'destructive',
   icon = 'lucide:alert-triangle',
   isLoading = false,
+  loadingText,
   onConfirm,
 }: ConfirmDialogProps) {
   const { t } = useTranslation();
@@ -69,7 +71,7 @@ export function ConfirmDialog({
             disabled={isLoading}
           >
             {isLoading
-              ? t('common.loading')
+              ? (loadingText ?? (variant === 'destructive' ? t('common.deleting') : t('common.loading')))
               : (confirmText ?? (variant === 'destructive' ? t('common.delete') : t('common.confirm')))}
           </Button>
         </DialogFooter>
