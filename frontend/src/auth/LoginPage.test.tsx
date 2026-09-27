@@ -6,7 +6,13 @@ import { LoginPage } from './LoginPage';
 import { useLogin } from './useLogin';
 
 vi.mock('./useLogin');
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
+vi.mock('react-i18next', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-i18next')>();
+  return {
+    ...actual,
+    useTranslation: () => ({ t: (key: string) => key }),
+  };
+});
 
 describe('LoginPage', () => {
   it('shows a validation error when submitted empty', async () => {

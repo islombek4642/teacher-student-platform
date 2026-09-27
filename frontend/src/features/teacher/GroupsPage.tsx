@@ -77,24 +77,24 @@ export function GroupsPage() {
       </div>
       <Table>
         <TableHeader className="bg-muted/50 font-semibold">
-          <TableRow>
-            <TableHead className="w-10">#</TableHead>
+          <TableRow className="h-[44px]">
+            <TableHead className="w-12 text-center">#</TableHead>
             <TableHead>{t('groups.name')}</TableHead>
-            <TableHead />
+            <TableHead className="w-48 text-right" />
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
-            <TableRow>
+            <TableRow className="h-[52px]">
               <TableCell colSpan={3} className="text-center text-muted-foreground">
                 {t('groups.loading')}
               </TableCell>
             </TableRow>
           ) : groups && groups.length > 0 ? (
             groups.map((group, index) => (
-              <TableRow key={group.id}>
-                <TableCell className="text-muted-foreground">{(page - 1) * 10 + index + 1}</TableCell>
-                <TableCell>
+              <TableRow key={group.id} className="h-[52px]">
+                <TableCell className="w-12 text-center text-muted-foreground">{(page - 1) * 10 + index + 1}</TableCell>
+                <TableCell className="font-medium">
                   {editingId === group.id ? (
                     <Input value={editingName} onChange={(e) => setEditingName(e.target.value)} />
                   ) : (
@@ -103,53 +103,57 @@ export function GroupsPage() {
                     </Link>
                   )}
                 </TableCell>
-                <TableCell className="flex gap-2">
-                  {editingId === group.id ? (
+                <TableCell className="w-48 text-right">
+                  <div className="flex justify-end gap-2">
+                    {editingId === group.id ? (
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          if (!editingName.trim()) return;
+                          rename({ id: group.id, name: editingName }, { onSuccess: () => setEditingId(null) });
+                        }}
+                      >
+                        <Icon icon="lucide:check" />
+                        {t('groups.rename')}
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setEditingId(group.id);
+                          setEditingName(group.name);
+                        }}
+                      >
+                        <Icon icon="lucide:pencil" />
+                        {t('groups.rename')}
+                      </Button>
+                    )}
                     <Button
+                      variant="destructive"
                       size="sm"
-                      onClick={() => {
-                        if (!editingName.trim()) return;
-                        rename({ id: group.id, name: editingName }, { onSuccess: () => setEditingId(null) });
-                      }}
+                      onClick={() => setGroupToDelete(group.id)}
                     >
-                      <Icon icon="lucide:check" />
-                      {t('groups.rename')}
+                      <Icon icon="lucide:trash-2" />
+                      {t('groups.delete')}
                     </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setEditingId(group.id);
-                        setEditingName(group.name);
-                      }}
-                    >
-                      <Icon icon="lucide:pencil" />
-                      {t('groups.rename')}
-                    </Button>
-                  )}
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => setGroupToDelete(group.id)}
-                  >
-                    <Icon icon="lucide:trash-2" />
-                    {t('groups.delete')}
-                  </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))
           ) : (
-            <TableRow>
-              <TableCell colSpan={3} className="text-center text-muted-foreground">
+            <TableRow className="h-[200px]">
+              <TableCell colSpan={3} className="text-center text-muted-foreground py-8">
                 {t('groups.empty')}
               </TableCell>
             </TableRow>
           )}
           {groups && groups.length > 0 && groups.length < 10 && (
             Array.from({ length: 10 - groups.length }).map((_, i) => (
-              <TableRow key={`empty-${i}`} className="h-[52px]">
-                <TableCell colSpan={3}></TableCell>
+              <TableRow key={`empty-${i}`} className="h-[52px] pointer-events-none select-none">
+                <TableCell className="w-12 text-center text-muted-foreground">&nbsp;</TableCell>
+                <TableCell>&nbsp;</TableCell>
+                <TableCell className="w-48 text-right">&nbsp;</TableCell>
               </TableRow>
             ))
           )}

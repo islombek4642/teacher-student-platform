@@ -36,7 +36,7 @@ export function CreateTeacherDialog({
     mutate(data, {
       onSuccess: (result) => {
         toast.add({ type: 'success', description: t('teachers.createSuccess') + ' ' + t('teachers.newPasswordCopied', { password: result.temporaryPassword }) });
-        navigator.clipboard.writeText(result.temporaryPassword).catch(() => {});
+        navigator.clipboard?.writeText?.(result.temporaryPassword)?.catch(() => {});
         reset();
         onOpenChange(false);
       },

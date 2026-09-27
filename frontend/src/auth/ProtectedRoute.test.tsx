@@ -11,7 +11,7 @@ function renderWithRoute(initialPath: string) {
     <MemoryRouter initialEntries={[initialPath]}>
       <Routes>
         <Route path="/login" element={<div>login page</div>} />
-        <Route path="/student/tasks" element={<div>student home</div>} />
+        <Route path="/student/ielts/listening" element={<div>student home</div>} />
         <Route element={<ProtectedRoute allowedRoles={['TEACHER']} />}>
           <Route path="/teacher/groups" element={<div>teacher groups</div>} />
         </Route>

@@ -81,96 +81,109 @@ export function TeachersPage() {
       />
       <Table>
         <TableHeader className="bg-muted/50 font-semibold">
-          <TableRow>
-            <TableHead className="w-10" />
+          <TableRow className="h-[44px]">
+            <TableHead className="w-12 text-center">#</TableHead>
+            <TableHead className="w-12" />
             <TableHead>{t('teachers.firstName')}</TableHead>
             <TableHead>{t('teachers.lastName')}</TableHead>
             <TableHead>{t('teachers.username')}</TableHead>
-            <TableHead>{t('teachers.password')}</TableHead>
-            <TableHead>{t('teachers.status')}</TableHead>
-            <TableHead />
+            <TableHead className="w-36">{t('teachers.password')}</TableHead>
+            <TableHead className="w-28">{t('teachers.status')}</TableHead>
+            <TableHead className="w-44 text-right" />
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
-            <TableRow>
-              <TableCell colSpan={7} className="text-center text-muted-foreground">
+            <TableRow className="h-[200px]">
+              <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                 {t('teachers.loading')}
               </TableCell>
             </TableRow>
           ) : teachers && teachers.length > 0 ? (
-            teachers.map((teacher) => (
-              <TableRow key={teacher.id}>
-                <TableCell>
+            teachers.map((teacher, index) => (
+              <TableRow key={teacher.id} className="h-[52px]">
+                <TableCell className="w-12 text-center font-mono text-xs text-muted-foreground">
+                  {(page - 1) * 10 + index + 1}
+                </TableCell>
+                <TableCell className="w-12">
                   <PersonAvatar firstName={teacher.firstName} lastName={teacher.lastName} />
                 </TableCell>
                 <TableCell>{teacher.firstName}</TableCell>
                 <TableCell>{teacher.lastName}</TableCell>
                 <TableCell>{teacher.username}</TableCell>
-                <TableCell>
+                <TableCell className="w-36">
                   {teacher.temporaryPassword ? (
                     <PasswordReveal value={teacher.temporaryPassword} />
                   ) : (
                     <span className="text-muted-foreground">-</span>
                   )}
                 </TableCell>
-                <TableCell>
+                <TableCell className="w-28">
                   <Badge variant={teacher.isActive ? 'default' : 'secondary'}>
                     {teacher.isActive ? t('teachers.active') : t('teachers.disabled')}
                   </Badge>
                 </TableCell>
-                <TableCell className="flex justify-end gap-1">
-                  <Button variant="outline" size="sm" onClick={() => setActive({ id: teacher.id, isActive: !teacher.isActive })}>
-                    <Icon icon={teacher.isActive ? 'lucide:pause' : 'lucide:play'} />
-                    {teacher.isActive ? t('teachers.disable') : t('teachers.enable')}
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger
-                      render={
-                        <Button variant="ghost" size="icon-sm" aria-label={t('common.moreActions')}>
-                          <Icon icon="lucide:more-vertical" />
-                        </Button>
-                      }
-                    />
-                    <DropdownMenuContent>
-                      <DropdownMenuItem
-                        onClick={() =>
-                          resetPassword(teacher.id, {
-                            onSuccess: (data) => {
-                              toast.add({ type: 'success', description: t('teachers.resetSuccess') + ' ' + t('teachers.newPasswordCopied', { password: data.temporaryPassword }) });
-                              navigator.clipboard.writeText(data.temporaryPassword).catch(() => {});
-                            }
-                          })
+                <TableCell className="w-44 text-right">
+                  <div className="flex justify-end gap-1">
+                    <Button variant="outline" size="sm" onClick={() => setActive({ id: teacher.id, isActive: !teacher.isActive })}>
+                      <Icon icon={teacher.isActive ? 'lucide:pause' : 'lucide:play'} />
+                      {teacher.isActive ? t('teachers.disable') : t('teachers.enable')}
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        render={
+                          <Button variant="ghost" size="icon-sm" aria-label={t('common.moreActions')}>
+                            <Icon icon="lucide:more-vertical" />
+                          </Button>
                         }
-                      >
-                        <Icon icon="lucide:key-round" />
-                        {t('teachers.resetPassword')}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        variant="destructive"
-                        onClick={() => {
-                          setTeacherToDelete({ id: teacher.id, forceReq: false });
-                        }}
-                      >
-                        <Icon icon="lucide:trash-2" />
-                        {t('teachers.delete')}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                      />
+                      <DropdownMenuContent>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            resetPassword(teacher.id, {
+                              onSuccess: (data) => {
+                                toast.add({ type: 'success', description: t('teachers.resetSuccess') + ' ' + t('teachers.newPasswordCopied', { password: data.temporaryPassword }) });
+                                navigator.clipboard?.writeText?.(data.temporaryPassword)?.catch(() => {});
+                              }
+                            })
+                          }
+                        >
+                          <Icon icon="lucide:key-round" />
+                          {t('teachers.resetPassword')}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => {
+                            setTeacherToDelete({ id: teacher.id, forceReq: false });
+                          }}
+                        >
+                          <Icon icon="lucide:trash-2" />
+                          {t('teachers.delete')}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </TableCell>
               </TableRow>
             ))
           ) : (
-            <TableRow>
-              <TableCell colSpan={7} className="text-center text-muted-foreground">
+            <TableRow className="h-[200px]">
+              <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                 {t('teachers.empty')}
               </TableCell>
             </TableRow>
           )}
           {teachers && teachers.length > 0 && teachers.length < 10 && (
             Array.from({ length: 10 - teachers.length }).map((_, i) => (
-              <TableRow key={`empty-${i}`} className="h-[52px]">
-                <TableCell colSpan={7}></TableCell>
+              <TableRow key={`empty-${i}`} className="h-[52px] pointer-events-none select-none">
+                <TableCell className="w-12 text-center text-muted-foreground">&nbsp;</TableCell>
+                <TableCell className="w-12">&nbsp;</TableCell>
+                <TableCell>&nbsp;</TableCell>
+                <TableCell>&nbsp;</TableCell>
+                <TableCell>&nbsp;</TableCell>
+                <TableCell className="w-36">&nbsp;</TableCell>
+                <TableCell className="w-28">&nbsp;</TableCell>
+                <TableCell className="w-44 text-right">&nbsp;</TableCell>
               </TableRow>
             ))
           )}
@@ -178,9 +191,9 @@ export function TeachersPage() {
       </Table>
       
       {meta && meta.lastPage > 1 && (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mt-4">
           <span className="text-sm text-muted-foreground">
-            {t('teachers.totalCount', { count: meta.total })}
+            {t('teachers.totalCount', { count: meta.total, defaultValue: `Jami: ${meta.total}` })}
           </span>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)}>

@@ -27,7 +27,7 @@ export function GroupStudentsPage() {
   const { t } = useTranslation();
   const { id: groupId } = useParams<{ id: string }>();
   const [page, setPage] = useState(1);
-  const { data: response, isLoading } = useStudents(groupId!, page);
+  const { data: response, isLoading } = useStudents(groupId!, page, 10);
   const students = response?.data;
   const meta = response?.meta;
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -123,26 +123,30 @@ export function GroupStudentsPage() {
       {portalTarget ? createPortal(actionButtons, portalTarget) : <PageHeader action={actionButtons} />}
       <Table>
         <TableHeader className="bg-muted/50 font-semibold">
-          <TableRow>
-            <TableHead className="w-10" />
+          <TableRow className="h-[44px]">
+            <TableHead className="w-12 text-center">#</TableHead>
+            <TableHead className="w-12" />
             <TableHead>{t('students.firstName')}</TableHead>
             <TableHead>{t('students.lastName')}</TableHead>
             <TableHead>{t('students.username')}</TableHead>
-            <TableHead>{t('students.password')}</TableHead>
-            <TableHead />
+            <TableHead className="w-36">{t('students.password')}</TableHead>
+            <TableHead className="w-36 text-right" />
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
-            <TableRow>
-              <TableCell colSpan={6} className="text-center text-muted-foreground">
+            <TableRow className="h-[200px]">
+              <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                 {t('students.loading')}
               </TableCell>
             </TableRow>
           ) : students && students.length > 0 ? (
-            students.map((student) => (
-              <TableRow key={student.id}>
-                <TableCell>
+            students.map((student, index) => (
+              <TableRow key={student.id} className="h-[52px]">
+                <TableCell className="w-12 text-center font-mono text-xs text-muted-foreground">
+                  {(page - 1) * 10 + index + 1}
+                </TableCell>
+                <TableCell className="w-12">
                   <PersonAvatar firstName={student.firstName} lastName={student.lastName} />
                 </TableCell>
                 <TableCell>
@@ -160,80 +164,88 @@ export function GroupStudentsPage() {
                   )}
                 </TableCell>
                 <TableCell>{student.username}</TableCell>
-                <TableCell>
+                <TableCell className="w-36">
                   {student.temporaryPassword ? (
                     <PasswordReveal value={student.temporaryPassword} />
                   ) : (
                     <span className="text-muted-foreground">-</span>
                   )}
                 </TableCell>
-                <TableCell className="flex justify-end gap-1">
-                  {editingId === student.id ? (
-                    <Button size="sm" onClick={() => saveEdit(student.id)}>
-                      <Icon icon="lucide:check" />
-                      {t('students.save')}
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setEditingId(student.id);
-                        setEditingFirstName(student.firstName);
-                        setEditingLastName(student.lastName);
-                      }}
-                    >
-                      <Icon icon="lucide:pencil" />
-                      {t('students.edit')}
-                    </Button>
-                  )}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger
-                      render={
-                        <Button variant="ghost" size="icon-sm" aria-label={t('common.moreActions')}>
-                          <Icon icon="lucide:more-vertical" />
-                        </Button>
-                      }
-                    />
-                    <DropdownMenuContent>
-                      <DropdownMenuItem
-                        onClick={() =>
-                          resetPassword(student.id, {
-                            onSuccess: (data) => {
-                              setResetResult({
-                                name: `${student.firstName} ${student.lastName}`,
-                                password: data.temporaryPassword,
-                              });
-                            },
-                          })
+                <TableCell className="w-36 text-right">
+                  <div className="flex justify-end gap-1">
+                    {editingId === student.id ? (
+                      <Button size="sm" onClick={() => saveEdit(student.id)}>
+                        <Icon icon="lucide:check" />
+                        {t('students.save')}
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setEditingId(student.id);
+                          setEditingFirstName(student.firstName);
+                          setEditingLastName(student.lastName);
+                        }}
+                      >
+                        <Icon icon="lucide:pencil" />
+                        {t('students.edit')}
+                      </Button>
+                    )}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        render={
+                          <Button variant="ghost" size="icon-sm" aria-label={t('common.moreActions')}>
+                            <Icon icon="lucide:more-vertical" />
+                          </Button>
                         }
-                      >
-                        <Icon icon="lucide:key-round" />
-                        {t('students.resetPassword')}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        variant="destructive"
-                        onClick={() => setStudentToDelete(student.id)}
-                      >
-                        <Icon icon="lucide:trash-2" />
-                        {t('students.delete')}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                      />
+                      <DropdownMenuContent>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            resetPassword(student.id, {
+                              onSuccess: (data) => {
+                                setResetResult({
+                                  name: `${student.firstName} ${student.lastName}`,
+                                  password: data.temporaryPassword,
+                                });
+                              },
+                            })
+                          }
+                        >
+                          <Icon icon="lucide:key-round" />
+                          {t('students.resetPassword')}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => setStudentToDelete(student.id)}
+                        >
+                          <Icon icon="lucide:trash-2" />
+                          {t('students.delete')}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </TableCell>
               </TableRow>
             ))
           ) : (
-            <TableRow>
-              <TableCell colSpan={6} className="text-center text-muted-foreground">
+            <TableRow className="h-[200px]">
+              <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                 {t('students.empty')}
               </TableCell>
             </TableRow>
           )}
-          {students && students.length > 0 && students.length < 15 && (
-            Array.from({ length: 15 - students.length }).map((_, i) => (
-              <TableRow key={`empty-${i}`} className="h-[52px]">
-                <TableCell colSpan={6}></TableCell>
+          {students && students.length > 0 && students.length < 10 && (
+            Array.from({ length: 10 - students.length }).map((_, i) => (
+              <TableRow key={`empty-${i}`} className="h-[52px] pointer-events-none select-none">
+                <TableCell className="w-12 text-center text-muted-foreground">&nbsp;</TableCell>
+                <TableCell className="w-12">&nbsp;</TableCell>
+                <TableCell>&nbsp;</TableCell>
+                <TableCell>&nbsp;</TableCell>
+                <TableCell>&nbsp;</TableCell>
+                <TableCell className="w-36">&nbsp;</TableCell>
+                <TableCell className="w-36 text-right">&nbsp;</TableCell>
               </TableRow>
             ))
           )}
@@ -241,7 +253,7 @@ export function GroupStudentsPage() {
       </Table>
       
       {meta && meta.lastPage > 1 && (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mt-4">
           <span className="text-sm text-muted-foreground">
             {t('students.totalCount', { count: meta.total, defaultValue: `Jami: ${meta.total}` })}
           </span>

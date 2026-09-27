@@ -5,7 +5,7 @@ describe('roleHome', () => {
   it.each([
     ['SUPER_ADMIN', '/super-admin/teachers'],
     ['TEACHER', '/teacher/groups'],
-    ['STUDENT', '/student/tasks'],
+    ['STUDENT', '/student/ielts/listening'],
   ] as const)('maps %s to %s', (role, expected) => {
     expect(roleHome(role)).toBe(expected);
   });

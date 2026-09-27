@@ -89,29 +89,29 @@ export function ListeningPage() {
       
       <Table>
         <TableHeader className="bg-muted/50 font-semibold">
-          <TableRow>
-            <TableHead className="w-10">#</TableHead>
+          <TableRow className="h-[44px]">
+            <TableHead className="w-12 text-center">#</TableHead>
             <TableHead>{t('ielts.name')}</TableHead>
-            <TableHead>{t('ielts.date')}</TableHead>
-            <TableHead />
+            <TableHead className="w-36">{t('ielts.date')}</TableHead>
+            <TableHead className="w-40 text-right" />
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
-            <TableRow>
+            <TableRow className="h-[52px]">
               <TableCell colSpan={4} className="text-center text-muted-foreground">
                 {t('common.loading')}
               </TableCell>
             </TableRow>
           ) : paginatedTasks.length > 0 ? (
             paginatedTasks.map((task, index) => (
-              <TableRow key={task.id}>
-                <TableCell className="text-muted-foreground">
+              <TableRow key={task.id} className="h-[52px]">
+                <TableCell className="w-12 text-center text-muted-foreground">
                   {(safePage - 1) * PAGE_SIZE + index + 1}
                 </TableCell>
-                <TableCell className="font-medium">{task.title}</TableCell>
-                <TableCell>{new Date(task.createdAt).toLocaleDateString()}</TableCell>
-                <TableCell className="text-right space-x-2">
+                <TableCell className="font-medium truncate">{task.title}</TableCell>
+                <TableCell className="w-36 text-muted-foreground">{new Date(task.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell className="w-40 text-right space-x-2">
                   <Button variant="outline" size="sm" onClick={() => setViewingTaskId(task.id)}>
                     {t('ielts.view')}
                   </Button>
@@ -129,7 +129,7 @@ export function ListeningPage() {
               </TableRow>
             ))
           ) : (
-            <TableRow>
+            <TableRow className="h-[200px]">
               <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
                 <Icon icon="lucide:headphones" className="mx-auto mb-2 h-8 w-8 opacity-50" />
                 {t('ielts.emptyTasks')}
@@ -138,8 +138,11 @@ export function ListeningPage() {
           )}
           {paginatedTasks.length > 0 && paginatedTasks.length < PAGE_SIZE && (
             Array.from({ length: PAGE_SIZE - paginatedTasks.length }).map((_, i) => (
-              <TableRow key={`empty-${i}`} className="h-[52px]">
-                <TableCell colSpan={4}></TableCell>
+              <TableRow key={`empty-${i}`} className="h-[52px] pointer-events-none select-none">
+                <TableCell className="w-12 text-center text-muted-foreground">&nbsp;</TableCell>
+                <TableCell>&nbsp;</TableCell>
+                <TableCell className="w-36">&nbsp;</TableCell>
+                <TableCell className="w-40 text-right">&nbsp;</TableCell>
               </TableRow>
             ))
           )}
