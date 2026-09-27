@@ -95,10 +95,10 @@ export function GroupStudentsPage() {
         <TableHeader className="bg-muted/50 font-semibold">
           <TableRow>
             <TableHead className="w-10" />
-            <TableHead>{t('students.username')}</TableHead>
-            <TableHead>{t('students.password')}</TableHead>
             <TableHead>{t('students.firstName')}</TableHead>
             <TableHead>{t('students.lastName')}</TableHead>
+            <TableHead>{t('students.username')}</TableHead>
+            <TableHead>{t('students.password')}</TableHead>
             <TableHead />
           </TableRow>
         </TableHeader>
@@ -115,14 +115,6 @@ export function GroupStudentsPage() {
                 <TableCell>
                   <PersonAvatar firstName={student.firstName} lastName={student.lastName} />
                 </TableCell>
-                <TableCell>{student.username}</TableCell>
-                <TableCell>
-                  {student.temporaryPassword ? (
-                    <PasswordReveal value={student.temporaryPassword} />
-                  ) : (
-                    <span className="text-muted-foreground">-</span>
-                  )}
-                </TableCell>
                 <TableCell>
                   {editingId === student.id ? (
                     <Input value={editingFirstName} onChange={(e) => setEditingFirstName(e.target.value)} />
@@ -135,6 +127,14 @@ export function GroupStudentsPage() {
                     <Input value={editingLastName} onChange={(e) => setEditingLastName(e.target.value)} />
                   ) : (
                     student.lastName
+                  )}
+                </TableCell>
+                <TableCell>{student.username}</TableCell>
+                <TableCell>
+                  {student.temporaryPassword ? (
+                    <PasswordReveal value={student.temporaryPassword} />
+                  ) : (
+                    <span className="text-muted-foreground">-</span>
                   )}
                 </TableCell>
                 <TableCell className="flex justify-end gap-1">

@@ -55,11 +55,6 @@ export function CreateTeacherDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
           <div className="space-y-1">
-            <Label htmlFor="username">{t('teachers.username')}</Label>
-            <Input id="username" {...register('username')} />
-            {errors.username && <p className="text-sm text-destructive">{t(errors.username.message!)}</p>}
-          </div>
-          <div className="space-y-1">
             <Label htmlFor="firstName">{t('teachers.firstName')}</Label>
             <Input id="firstName" {...register('firstName')} />
             {errors.firstName && <p className="text-sm text-destructive">{t(errors.firstName.message!)}</p>}
@@ -68,6 +63,11 @@ export function CreateTeacherDialog({
             <Label htmlFor="lastName">{t('teachers.lastName')}</Label>
             <Input id="lastName" {...register('lastName')} />
             {errors.lastName && <p className="text-sm text-destructive">{t(errors.lastName.message!)}</p>}
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="username">{t('teachers.username')}</Label>
+            <Input id="username" {...register('username')} />
+            {errors.username && <p className="text-sm text-destructive">{t(errors.username.message!)}</p>}
           </div>
           <Button type="submit" disabled={isPending}>
             {t('teachers.create')}

@@ -6,7 +6,10 @@ import { CreateTeacherDialog } from './CreateTeacherDialog';
 import { useCreateTeacher } from './api/teachers.api';
 
 vi.mock('./api/teachers.api');
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (key: string) => key }),
+  initReactI18next: { type: '3rdParty', init: () => {} },
+}));
 
 // Stateful wrapper so we can drive `open` the way TeachersPage really does:
 // closing the dialog (X button) must flow back through `onOpenChange` into

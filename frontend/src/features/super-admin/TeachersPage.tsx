@@ -75,10 +75,10 @@ export function TeachersPage() {
         <TableHeader className="bg-muted/50 font-semibold">
           <TableRow>
             <TableHead className="w-10" />
-            <TableHead>{t('teachers.username')}</TableHead>
-            <TableHead>{t('teachers.password')}</TableHead>
             <TableHead>{t('teachers.firstName')}</TableHead>
             <TableHead>{t('teachers.lastName')}</TableHead>
+            <TableHead>{t('teachers.username')}</TableHead>
+            <TableHead>{t('teachers.password')}</TableHead>
             <TableHead>{t('teachers.status')}</TableHead>
             <TableHead />
           </TableRow>
@@ -96,6 +96,8 @@ export function TeachersPage() {
                 <TableCell>
                   <PersonAvatar firstName={teacher.firstName} lastName={teacher.lastName} />
                 </TableCell>
+                <TableCell>{teacher.firstName}</TableCell>
+                <TableCell>{teacher.lastName}</TableCell>
                 <TableCell>{teacher.username}</TableCell>
                 <TableCell>
                   {teacher.temporaryPassword ? (
@@ -104,8 +106,6 @@ export function TeachersPage() {
                     <span className="text-muted-foreground">-</span>
                   )}
                 </TableCell>
-                <TableCell>{teacher.firstName}</TableCell>
-                <TableCell>{teacher.lastName}</TableCell>
                 <TableCell>
                   <Badge variant={teacher.isActive ? 'default' : 'secondary'}>
                     {teacher.isActive ? t('teachers.active') : t('teachers.disabled')}
