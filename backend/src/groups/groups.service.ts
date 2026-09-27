@@ -124,11 +124,19 @@ export class GroupsService {
 
     const sheetsData: Record<string, any[]> = {};
     for (const group of groups) {
-      sheetsData[group.name] = group.students.map(s => ({
-        [EXCEL_COLUMNS.FIRST_NAME]: s.firstName,
-        [EXCEL_COLUMNS.LAST_NAME]: s.lastName,
-        [EXCEL_COLUMNS.LOGIN]: s.user.username,
-      }));
+      sheetsData[group.name] = group.students.length > 0
+        ? group.students.map(s => ({
+            [EXCEL_COLUMNS.FIRST_NAME]: s.firstName,
+            [EXCEL_COLUMNS.LAST_NAME]: s.lastName,
+            [EXCEL_COLUMNS.LOGIN]: s.user.username,
+          }))
+        : [
+            {
+              [EXCEL_COLUMNS.FIRST_NAME]: 'Ali',
+              [EXCEL_COLUMNS.LAST_NAME]: 'Valiyev',
+              [EXCEL_COLUMNS.LOGIN]: 'student_ali',
+            },
+          ];
     }
 
     return generateExcelBuffer(sheetsData);
@@ -178,11 +186,24 @@ export class GroupsService {
       include: { user: { select: { username: true } } },
     });
 
-    const data = students.map(s => ({
-      [EXCEL_COLUMNS.FIRST_NAME]: s.firstName,
-      [EXCEL_COLUMNS.LAST_NAME]: s.lastName,
-      [EXCEL_COLUMNS.LOGIN]: s.user.username,
-    }));
+    const data = students.length > 0
+      ? students.map(s => ({
+          [EXCEL_COLUMNS.FIRST_NAME]: s.firstName,
+          [EXCEL_COLUMNS.LAST_NAME]: s.lastName,
+          [EXCEL_COLUMNS.LOGIN]: s.user.username,
+        }))
+      : [
+          {
+            [EXCEL_COLUMNS.FIRST_NAME]: 'Ali',
+            [EXCEL_COLUMNS.LAST_NAME]: 'Valiyev',
+            [EXCEL_COLUMNS.LOGIN]: 'student_ali',
+          },
+          {
+            [EXCEL_COLUMNS.FIRST_NAME]: 'Salim',
+            [EXCEL_COLUMNS.LAST_NAME]: 'Karimov',
+            [EXCEL_COLUMNS.LOGIN]: 'student_salim',
+          },
+        ];
 
     return generateExcelBuffer({ [group.name]: data });
   }

@@ -59,11 +59,23 @@ export function GroupStudentsPage() {
     );
   };
 
+  const hasStudents = (meta?.total ?? 0) > 0;
+
   const handleExport = async () => {
     if (!groupId) return;
     try {
       const blob = await exportSingleGroup(groupId);
-      downloadBlob(blob, t('students.exportFilename', { defaultValue: 'guruh_oquvchilar.xlsx' }));
+      if (!hasStudents) {
+        downloadBlob(blob, t('students.sampleFilename', { defaultValue: 'namuna_oquvchilar.xlsx' }));
+        toast.add({
+          type: 'info',
+          description: t('students.sampleDownloadedNotice', {
+            defaultValue: "Guruh bo'sh bo'lgani sababli namuna fayl yuklab berildi",
+          }),
+        });
+      } else {
+        downloadBlob(blob, t('students.exportFilename', { defaultValue: 'guruh_oquvchilar.xlsx' }));
+      }
     } catch (err) {
       toast.add({ type: 'error', description: t('common.error') });
     }
@@ -84,8 +96,8 @@ export function GroupStudentsPage() {
   const actionButtons = (
     <div className="flex gap-2">
       <Button variant="outline" onClick={handleExport}>
-        <Icon icon="lucide:download" />
-        {t('common.export')}
+        <Icon icon={hasStudents ? 'lucide:download' : 'lucide:file-spreadsheet'} />
+        {hasStudents ? t('common.export') : t('students.downloadSample', { defaultValue: 'Namuna yuklash' })}
       </Button>
       <Button variant="outline" disabled={isImporting} onClick={() => fileInputRef.current?.click()}>
         <Icon icon="lucide:upload" />

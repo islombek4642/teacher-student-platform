@@ -79,7 +79,10 @@
     "resetSuccess": "Parol muvaffaqiyatli yangilandi",
     "newPasswordIs": "uchun yangi parol:",
     "loading": "Yuklanmoqda...",
-    "empty": "Bu guruhda hozircha o'quvchilar yo'q"
+    "empty": "Bu guruhda hozircha o'quvchilar yo'q",
+    "downloadSample": "Namuna yuklash",
+    "sampleFilename": "namuna_oquvchilar.xlsx",
+    "sampleDownloadedNotice": "Guruh bo'sh bo'lgani sababli namuna fayl yuklab berildi"
   },
   "tasks": {
     "title": "Topshiriqlar",

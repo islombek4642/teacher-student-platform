@@ -79,7 +79,10 @@
     "resetSuccess": "Password reset successfully",
     "newPasswordIs": "'s new password is:",
     "loading": "Loading...",
-    "empty": "No students in this group yet"
+    "empty": "No students in this group yet",
+    "downloadSample": "Download Template",
+    "sampleFilename": "students_template.xlsx",
+    "sampleDownloadedNotice": "The group is empty, so a template file was downloaded"
   },
   "tasks": {
     "title": "Tasks",

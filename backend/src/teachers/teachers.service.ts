@@ -165,11 +165,19 @@ export class TeachersService {
       include: { user: { select: { username: true } } },
     });
     
-    const data = teachers.map(t => ({
-      [EXCEL_COLUMNS.FIRST_NAME]: t.firstName,
-      [EXCEL_COLUMNS.LAST_NAME]: t.lastName,
-      [EXCEL_COLUMNS.LOGIN]: t.user.username,
-    }));
+    const data = teachers.length > 0
+      ? teachers.map(t => ({
+          [EXCEL_COLUMNS.FIRST_NAME]: t.firstName,
+          [EXCEL_COLUMNS.LAST_NAME]: t.lastName,
+          [EXCEL_COLUMNS.LOGIN]: t.user.username,
+        }))
+      : [
+          {
+            [EXCEL_COLUMNS.FIRST_NAME]: 'Anvar',
+            [EXCEL_COLUMNS.LAST_NAME]: 'Aliyev',
+            [EXCEL_COLUMNS.LOGIN]: 'teacher_anvar',
+          },
+        ];
 
     return generateExcelBuffer({ [EXCEL_SHEETS.TEACHERS]: data });
   }
