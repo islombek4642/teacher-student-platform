@@ -186,6 +186,9 @@
     "date": "Sana",
     "view": "Ko'rish",
     "confirmDelete": "Bu topshiriqni o'chirmoqchimisiz?",
+    "exitTitle": "Topshiriqdan chiqish",
+    "confirmExit": "Haqiqatan ham topshiriqdan chiqmoqchimisiz?",
+    "exit": "Chiqish",
     "emptyTasks": "Hali topshiriqlar yuklanmagan"
   }
 }
