@@ -62,4 +62,42 @@ describe('GroupsService', () => {
     await expect(service.remove('t1', 'g1')).rejects.toBeInstanceOf(ConflictException);
     expect(prisma.group.delete).not.toHaveBeenCalled();
   });
+
+  it('exportGroupsExcel produces a valid buffer with groups and students', async () => {
+    const prisma = {
+      group: {
+        findMany: jest.fn().mockResolvedValue([
+          {
+            id: 'g1',
+            name: 'Group 1',
+            students: [
+              {
+                firstName: 'Ali',
+                lastName: 'Valiyev',
+                user: { username: 'ali_valiyev' },
+              },
+            ],
+          },
+        ]),
+      },
+    } as unknown as PrismaService;
+    const service = new GroupsService(prisma);
+
+    const buffer = await service.exportGroupsExcel('t1');
+    expect(Buffer.isBuffer(buffer)).toBe(true);
+    expect(buffer.length).toBeGreaterThan(0);
+  });
+
+  it('exportGroupsExcel produces a valid fallback buffer when teacher has no groups', async () => {
+    const prisma = {
+      group: {
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+    } as unknown as PrismaService;
+    const service = new GroupsService(prisma);
+
+    const buffer = await service.exportGroupsExcel('t1');
+    expect(Buffer.isBuffer(buffer)).toBe(true);
+    expect(buffer.length).toBeGreaterThan(0);
+  });
 });

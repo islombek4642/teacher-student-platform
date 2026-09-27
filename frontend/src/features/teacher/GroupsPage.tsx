@@ -34,10 +34,22 @@ export function GroupsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
 
+  const hasGroups = (meta?.total ?? 0) > 0;
+
   const handleExport = async () => {
     try {
       const blob = await exportGroups();
-      downloadBlob(blob, t('groups.exportFilename', { defaultValue: 'guruhlar.xlsx' }));
+      if (!hasGroups) {
+        downloadBlob(blob, t('groups.sampleFilename', { defaultValue: 'namuna_guruhlar.xlsx' }));
+        toast.add({
+          type: 'info',
+          description: t('groups.sampleDownloadedNotice', {
+            defaultValue: "Guruhlar bo'sh bo'lgani sababli namuna fayl yuklab berildi",
+          }),
+        });
+      } else {
+        downloadBlob(blob, t('groups.exportFilename', { defaultValue: 'guruhlar.xlsx' }));
+      }
     } catch (err) {
       toast.add({ type: 'error', description: t('common.error') });
     }
@@ -62,8 +74,8 @@ export function GroupsPage() {
         <h1 className="text-xl font-semibold">{t('groups.title')}</h1>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleExport}>
-            <Icon icon="lucide:download" />
-            {t('common.export')}
+            <Icon icon={hasGroups ? 'lucide:download' : 'lucide:file-spreadsheet'} />
+            {hasGroups ? t('common.export') : t('groups.downloadSample', { defaultValue: 'Namuna yuklash' })}
           </Button>
           <Button variant="outline" disabled={isImporting} onClick={() => fileInputRef.current?.click()}>
             <Icon icon="lucide:upload" />

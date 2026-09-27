@@ -28,5 +28,11 @@ export function generateExcelBuffer(sheetsData: Record<string, any[]>): Buffer {
 
     xlsx.utils.book_append_sheet(workbook, worksheet, sheetName);
   }
+
+  if (workbook.SheetNames.length === 0) {
+    const worksheet = xlsx.utils.json_to_sheet([]);
+    xlsx.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+  }
+
   return xlsx.write(workbook, { type: 'buffer', bookType: 'xlsx' });
 }

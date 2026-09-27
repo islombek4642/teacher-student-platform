@@ -62,7 +62,10 @@
     "confirmDelete": "Delete this group?",
     "open": "Open",
     "loading": "Loading...",
-    "empty": "No groups yet"
+    "empty": "No groups yet",
+    "downloadSample": "Download sample",
+    "sampleFilename": "sample_groups.xlsx",
+    "sampleDownloadedNotice": "Downloaded sample file because there are no groups"
   },
   "students": {
     "title": "Students",

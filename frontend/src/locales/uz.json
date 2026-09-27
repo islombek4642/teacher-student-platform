@@ -62,7 +62,10 @@
     "confirmDelete": "Bu guruhni o'chirmoqchimisiz?",
     "open": "Ochish",
     "loading": "Yuklanmoqda...",
-    "empty": "Hozircha guruhlar yo'q"
+    "empty": "Hozircha guruhlar yo'q",
+    "downloadSample": "Namuna yuklash",
+    "sampleFilename": "namuna_guruhlar.xlsx",
+    "sampleDownloadedNotice": "Guruhlar bo'sh bo'lgani sababli namuna fayl yuklab berildi"
   },
   "students": {
     "title": "O'quvchilar",

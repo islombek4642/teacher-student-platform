@@ -32,11 +32,6 @@ export class GroupsController {
     return this.groupsService.findAllForTeacher(user.profileId!, query);
   }
 
-  @Get(':id')
-  findOne(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
-    return this.groupsService.findOneOwned(user.profileId!, id);
-  }
-
   @Post('import')
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: UPLOAD_LIMITS.EXCEL_FILE_SIZE } }))
   importGroupsExcel(@CurrentUser() user: JwtPayload, @UploadedFile() file: Express.Multer.File) {
@@ -57,6 +52,11 @@ export class GroupsController {
       'Content-Disposition': `attachment; filename="${EXCEL_FILENAMES.GROUPS}"`,
     });
     res.send(buffer);
+  }
+
+  @Get(':id')
+  findOne(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    return this.groupsService.findOneOwned(user.profileId!, id);
   }
 
   @Post(':id/import')

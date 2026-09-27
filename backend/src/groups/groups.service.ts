@@ -139,6 +139,16 @@ export class GroupsService {
           ];
     }
 
+    if (groups.length === 0) {
+      sheetsData['Guruh 1'] = [
+        {
+          [EXCEL_COLUMNS.FIRST_NAME]: 'Ali',
+          [EXCEL_COLUMNS.LAST_NAME]: 'Valiyev',
+          [EXCEL_COLUMNS.LOGIN]: 'student_ali',
+        },
+      ];
+    }
+
     return generateExcelBuffer(sheetsData);
   }
 
