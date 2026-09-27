@@ -202,8 +202,8 @@ export function GroupStudentsPage() {
               </TableCell>
             </TableRow>
           )}
-          {students && students.length > 0 && students.length < 10 && (
-            Array.from({ length: 10 - students.length }).map((_, i) => (
+          {students && students.length > 0 && students.length < 15 && (
+            Array.from({ length: 15 - students.length }).map((_, i) => (
               <TableRow key={`empty-${i}`} className="h-[52px]">
                 <TableCell colSpan={6}></TableCell>
               </TableRow>
