@@ -15,6 +15,7 @@ describe('IeltsService', () => {
     },
     ieltsTask: {
       create: jest.fn(),
+      findFirst: jest.fn(),
     },
   };
 
@@ -100,6 +101,32 @@ describe('IeltsService', () => {
       await expect(
         service.uploadTask(user, 'Test', IeltsTaskType.READING, file),
       ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should reject when uploading a task whose title already exists in database', async () => {
+      const listeningHtml = '<html><head><title>IELTS CDI Listening Practice</title></head><body><audio></audio>Part 1</body></html>';
+      const file = {
+        buffer: Buffer.from(listeningHtml, 'utf-8'),
+      } as Express.Multer.File;
+
+      const user = { sub: 'u1', profileId: 'tp1', role: 'TEACHER' as any };
+
+      mockPrisma.ieltsTask.findFirst.mockResolvedValueOnce({
+        id: 'existing-id',
+        title: 'Existing Task Title',
+        type: IeltsTaskType.LISTENING,
+      });
+
+      await expect(
+        service.uploadTask(user, 'Existing Task Title', IeltsTaskType.LISTENING, file),
+      ).rejects.toThrow(BadRequestException);
+
+      expect(mockPrisma.ieltsTask.findFirst).toHaveBeenCalledWith({
+        where: {
+          title: { equals: 'Existing Task Title', mode: 'insensitive' },
+          type: IeltsTaskType.LISTENING,
+        },
+      });
     });
   });
 });

@@ -12,7 +12,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { useUploadIeltsTask } from './api/ielts.api';
+import { useUploadIeltsTask, useIeltsTasks } from './api/ielts.api';
+import { extractErrorCode, errorCodeToI18nKey } from '@/lib/error-codes';
 
 export function detectIeltsTaskType(contentHtml: string): 'LISTENING' | 'READING' | 'UNKNOWN' {
   const hasAudio =
@@ -82,6 +83,16 @@ export function UploadIeltsDialog({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { mutate: upload, isPending } = useUploadIeltsTask();
+  const { data: existingTasks } = useIeltsTasks();
+
+  const isDuplicateTitle = Boolean(
+    title.trim() &&
+    existingTasks?.some(
+      (task) =>
+        task.type === type &&
+        task.title.trim().toLowerCase() === title.trim().toLowerCase(),
+    ),
+  );
 
   const resetForm = () => {
     setTitle('');
@@ -165,16 +176,25 @@ export function UploadIeltsDialog({
       toast.add({ type: 'error', description: t('required') });
       return;
     }
+    if (isDuplicateTitle) {
+      toast.add({ type: 'error', description: t('ielts.taskAlreadyExists') });
+      return;
+    }
     upload(
-      { title, type, file },
+      { title: title.trim(), type, file },
       {
         onSuccess: () => {
           toast.add({ type: 'success', description: t('ielts.uploadSuccess') });
           handleOpenChange(false);
         },
         onError: (err: any) => {
-          const message = err?.response?.data?.message || err?.message || t('common.error');
-          toast.add({ type: 'error', description: message });
+          const errorCode = extractErrorCode(err);
+          if (errorCode) {
+            toast.add({ type: 'error', description: t(errorCodeToI18nKey(errorCode)) });
+          } else {
+            const message = err?.response?.data?.message || err?.message || t('common.error');
+            toast.add({ type: 'error', description: message });
+          }
         },
       },
     );
@@ -218,7 +238,14 @@ export function UploadIeltsDialog({
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={t('ielts.exampleTest')}
+                className={isDuplicateTitle ? 'border-red-500 focus-visible:ring-red-500' : ''}
               />
+              {isDuplicateTitle && (
+                <div className="flex items-center gap-1.5 text-xs font-medium text-red-600 dark:text-red-400">
+                  <Icon icon="lucide:alert-circle" className="h-4 w-4 shrink-0" />
+                  <span>{t('ielts.taskAlreadyExists')}</span>
+                </div>
+              )}
             </div>
           )}
 
@@ -235,7 +262,7 @@ export function UploadIeltsDialog({
           <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isPending}>
             {t('common.close')}
           </Button>
-          <Button onClick={handleUpload} disabled={isPending || !title.trim() || !file || !!fileError}>
+          <Button onClick={handleUpload} disabled={isPending || !title.trim() || !file || !!fileError || isDuplicateTitle}>
             {isPending ? t('common.loading') : t('ielts.upload')}
           </Button>
         </DialogFooter>

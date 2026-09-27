@@ -169,6 +169,8 @@
     "ERR_FORBIDDEN_RESOURCE": "Sizda bu amalni bajarishga ruxsat yo'q",
     "ERR_VALIDATION_FAILED": "Kiritilgan ma'lumotlar noto'g'ri",
     "ERR_USERNAME_TAKEN": "Bu foydalanuvchi nomi band",
+    "ERR_TASK_TYPE_MISMATCH": "Topshiriq turi mos kelmadi",
+    "ERR_TASK_ALREADY_EXISTS": "Bu nomdagi topshiriq allaqachon bazada mavjud",
     "ERR_TASK_HAS_SUBMISSIONS": "Bu topshiriqni o'chirib bo'lmaydi, unga javoblar topshirilgan",
     "ERR_TEACHER_HAS_GROUPS": "Bu o'qituvchini o'chirib bo'lmaydi, uning guruhlari bor",
     "ERR_GROUP_HAS_DEPENDENTS": "Bu guruhni o'chirib bo'lmaydi, unda o'quvchilar yoki topshiriqlar bor",
@@ -203,6 +205,7 @@
     "emptyTasks": "Hali topshiriqlar yuklanmagan",
     "typeMismatch": "Noto'g'ri fayl turi! Siz {{expected}} bo'limida {{detected}} faylini tanladingiz.",
     "pleaseUploadExpected": "Iltimos, haqiqiy {{expected}} topshiriq faylini tanlang.",
-    "deleteSuccess": "Topshiriq muvaffaqiyatli o'chirildi"
+    "deleteSuccess": "Topshiriq muvaffaqiyatli o'chirildi",
+    "taskAlreadyExists": "Bu nomdagi topshiriq allaqachon mavjud"
   }
 }

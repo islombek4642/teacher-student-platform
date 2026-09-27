@@ -101,6 +101,23 @@ export class IeltsService {
       title = extractTaskTitle(contentHtml, htmlFile.originalname);
     }
 
+    const trimmedTitle = title.trim();
+
+    // Check if task with identical title and type already exists in the database
+    const existingTask = await this.prisma.ieltsTask.findFirst({
+      where: {
+        title: { equals: trimmedTitle, mode: 'insensitive' },
+        type,
+      },
+    });
+
+    if (existingTask) {
+      throw new BadRequestException({
+        errorCode: ERROR_CODES.TASK_ALREADY_EXISTS,
+        message: `Task with title "${trimmedTitle}" already exists`,
+      });
+    }
+
     let teacherId = user.profileId;
     if (!teacherId) {
       const teacherProfile = await this.prisma.teacherProfile.findUnique({
@@ -153,7 +170,7 @@ export class IeltsService {
 
     const task = await this.prisma.ieltsTask.create({
       data: {
-        title,
+        title: trimmedTitle,
         type,
         contentHtml,
         teacherId,
