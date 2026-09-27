@@ -60,6 +60,7 @@ export function ConfirmDialog({
         <DialogFooter className="gap-2 sm:gap-0">
           <Button
             variant="outline"
+            autoFocus
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
           >

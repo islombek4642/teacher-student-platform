@@ -41,15 +41,110 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  onKeyDown,
   ...props
 }: DialogPrimitive.Popup.Props & {
   showCloseButton?: boolean
 }) {
+  const contentRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!contentRef.current) return;
+      const active = document.activeElement;
+      if (!active || active === document.body || active === contentRef.current) {
+        const autoFocusEl = contentRef.current.querySelector<HTMLElement>(
+          '[autofocus], [data-autofocus]'
+        );
+        if (autoFocusEl) {
+          autoFocusEl.focus();
+        } else {
+          const hasTextInput = contentRef.current.querySelector(
+            'input:not([type="button"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"]), textarea'
+          );
+          if (!hasTextInput) {
+            const footer = contentRef.current.querySelector('[data-slot="dialog-footer"]');
+            const selector =
+              'button:not(:disabled):not([aria-disabled="true"]):not([data-slot="dialog-close"])';
+            const firstButton = footer
+              ? footer.querySelector<HTMLButtonElement>(selector)
+              : contentRef.current.querySelector<HTMLButtonElement>(selector);
+            firstButton?.focus();
+          }
+        }
+      }
+    }, 10);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    onKeyDown?.(e as any);
+    if (e.defaultPrevented) return;
+
+    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+      const activeEl = document.activeElement as HTMLElement | null;
+
+      // Do not intercept if user is typing in a text-based input or textarea
+      if (
+        activeEl &&
+        (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable)
+      ) {
+        const inputType = (activeEl as HTMLInputElement).type;
+        if (!['button', 'submit', 'reset', 'checkbox', 'radio'].includes(inputType)) {
+          return;
+        }
+      }
+
+      const dialogEl = e.currentTarget;
+      const footer = dialogEl.querySelector('[data-slot="dialog-footer"]');
+      const selector =
+        'button:not(:disabled):not([aria-disabled="true"]):not([data-slot="dialog-close"])';
+
+      const buttons = footer
+        ? Array.from(footer.querySelectorAll<HTMLButtonElement>(selector))
+        : Array.from(dialogEl.querySelectorAll<HTMLButtonElement>(selector));
+
+      if (buttons.length <= 1) return;
+
+      e.preventDefault();
+
+      const currentIndex = activeEl ? buttons.indexOf(activeEl as HTMLButtonElement) : -1;
+
+      let nextIndex = 0;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        nextIndex = currentIndex >= 0 ? (currentIndex + 1) % buttons.length : 0;
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        nextIndex =
+          currentIndex >= 0
+            ? (currentIndex - 1 + buttons.length) % buttons.length
+            : buttons.length - 1;
+      }
+
+      buttons[nextIndex]?.focus();
+    } else if (e.key === 'Enter') {
+      const activeEl = document.activeElement as HTMLElement | null;
+      if (activeEl === e.currentTarget) {
+        const footer = e.currentTarget.querySelector('[data-slot="dialog-footer"]');
+        const selector =
+          'button:not(:disabled):not([aria-disabled="true"]):not([data-slot="dialog-close"])';
+        const buttons = footer
+          ? Array.from(footer.querySelectorAll<HTMLButtonElement>(selector))
+          : Array.from(e.currentTarget.querySelectorAll<HTMLButtonElement>(selector));
+        if (buttons.length > 0) {
+          e.preventDefault();
+          buttons[0]?.click();
+        }
+      }
+    }
+  };
+
   return (
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Popup
+        ref={contentRef}
         data-slot="dialog-content"
+        onKeyDown={handleKeyDown}
         className={cn(
           "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
           className
@@ -68,8 +163,7 @@ function DialogContent({
               />
             }
           >
-            <XIcon
-            />
+            <XIcon />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
         )}

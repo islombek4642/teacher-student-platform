@@ -199,7 +199,7 @@ export function TeachersPage() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setTeacherToDelete(null)}>
+            <Button variant="outline" autoFocus onClick={() => setTeacherToDelete(null)}>
               {t('common.cancel')}
             </Button>
             <Button 
