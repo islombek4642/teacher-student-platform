@@ -92,13 +92,13 @@ describe('AppLayout', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole('link', { name: 'studentTasks.title' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'ielts.listening' })).toHaveAttribute(
       'href',
-      '/student/tasks',
+      '/student/ielts/listening',
     );
-    expect(screen.getByRole('link', { name: 'studentProgress.title' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'ielts.reading' })).toHaveAttribute(
       'href',
-      '/student/progress',
+      '/student/ielts/reading',
     );
   });
 

@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/sidebar';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useAuth } from '@/auth/useAuth';
+import { useSidebarKeyboard } from '@/hooks/useSidebarKeyboard';
 import type { Role } from '@/api/types';
 
 interface NavLinkConfig {
@@ -48,6 +49,8 @@ export function AppLayout() {
   const { username, payload, logout } = useAuth();
   const location = useLocation();
   const navLinks = payload?.role ? NAV_LINKS_BY_ROLE[payload.role] : [];
+
+  useSidebarKeyboard({ navLinks });
 
   return (
     <SidebarProvider>
