@@ -37,13 +37,13 @@ export function detectIeltsTaskType(contentHtml: string): 'LISTENING' | 'READING
 
 export function extractTaskTitle(contentHtml: string, filename?: string): string {
   // 1. Reading passage title
-  const passageTitleMatch = contentHtml.match(/class=["']passage-title["'][^>]*>([^<]+)<\/p>/i);
+  const passageTitleMatch = contentHtml.match(/class=["'][^"']*passage-title[^"']*["'][^>]*>([^<]+)<\/[a-z0-9]+>/i);
   if (passageTitleMatch && passageTitleMatch[1]?.trim()) {
     return passageTitleMatch[1].trim();
   }
 
   // 2. Listening centered title
-  const centeredTitleMatch = contentHtml.match(/class=["']centered-title["'][^>]*>([^<]+)<\/p>/i);
+  const centeredTitleMatch = contentHtml.match(/class=["'][^"']*centered-title[^"']*["'][^>]*>([^<]+)<\/[a-z0-9]+>/i);
   if (centeredTitleMatch && centeredTitleMatch[1]?.trim()) {
     return centeredTitleMatch[1].trim();
   }
@@ -100,6 +100,18 @@ export function UploadIeltsDialog({
     onOpenChange(nextOpen);
   };
 
+  const readFileAsText = (f: File): Promise<string> => {
+    if (typeof f.text === 'function') {
+      return f.text();
+    }
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsText(f);
+    });
+  };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
     setFileError(null);
@@ -107,11 +119,12 @@ export function UploadIeltsDialog({
 
     if (!selectedFile) {
       setFile(null);
+      setTitle('');
       return;
     }
 
     try {
-      const text = await selectedFile.text();
+      const text = await readFileAsText(selectedFile);
       const detected = detectIeltsTaskType(text);
       setDetectedType(detected);
 
@@ -127,6 +140,7 @@ export function UploadIeltsDialog({
           }),
         );
         setFile(null);
+        setTitle('');
         return;
       }
 
@@ -136,9 +150,13 @@ export function UploadIeltsDialog({
       const extractedTitle = extractTaskTitle(text, selectedFile.name);
       if (extractedTitle) {
         setTitle(extractedTitle);
+      } else {
+        setTitle(selectedFile.name.replace(/\.[^/.]+$/, ''));
       }
     } catch {
-      setFile(selectedFile);
+      setFileError(t('common.error'));
+      setFile(null);
+      setTitle('');
     }
   };
 
@@ -170,14 +188,6 @@ export function UploadIeltsDialog({
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>{t('ielts.taskName')}</Label>
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={t('ielts.exampleTest')}
-            />
-          </div>
-          <div className="space-y-2">
             <Label>{t('ielts.htmlFile')}</Label>
             <Input
               ref={fileInputRef}
@@ -198,6 +208,17 @@ export function UploadIeltsDialog({
                   })}
                 </p>
               </div>
+            </div>
+          )}
+
+          {!fileError && file && (
+            <div className="space-y-2">
+              <Label>{t('ielts.taskName')}</Label>
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={t('ielts.exampleTest')}
+              />
             </div>
           )}
 

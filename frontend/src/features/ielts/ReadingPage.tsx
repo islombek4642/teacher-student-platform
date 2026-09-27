@@ -1,7 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { Card } from '@/components/ui/card';
 import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
 import { useIeltsTasks, useDeleteIeltsTask } from './api/ielts.api';
@@ -39,6 +38,12 @@ export function ReadingPage() {
   const safePage = Math.min(page, totalPages);
   const paginatedTasks = readingTasks.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
   const handleConfirmDelete = () => {
     if (taskToDelete) {
       deleteMutation.mutate(taskToDelete, {
@@ -74,58 +79,76 @@ export function ReadingPage() {
         }
       />
       
-      <Card>
-        <Table>
-          <TableHeader>
+      <Table>
+        <TableHeader className="bg-muted/50 font-semibold">
+          <TableRow>
+            <TableHead className="w-10">#</TableHead>
+            <TableHead>{t('ielts.name')}</TableHead>
+            <TableHead>{t('ielts.date')}</TableHead>
+            <TableHead />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {isLoading ? (
             <TableRow>
-              <TableHead>{t('ielts.name')}</TableHead>
-              <TableHead>{t('ielts.date')}</TableHead>
-              <TableHead />
+              <TableCell colSpan={4} className="text-center text-muted-foreground">
+                {t('common.loading')}
+              </TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={3} className="text-center">{t('common.loading')}</TableCell>
-              </TableRow>
-            ) : paginatedTasks.length > 0 ? (
-              paginatedTasks.map(task => (
-                <TableRow key={task.id}>
-                  <TableCell className="font-medium">{task.title}</TableCell>
-                  <TableCell>{new Date(task.createdAt).toLocaleDateString()}</TableCell>
-                  <TableCell className="text-right space-x-2">
-                    <Button variant="outline" size="sm" onClick={() => setViewingTaskId(task.id)}>{t('ielts.view')}</Button>
-                    {isTeacher && (
-                      <Button variant="destructive" size="sm" onClick={() => setTaskToDelete(task.id)} disabled={deleteMutation.isPending}>
-                        <Icon icon="lucide:trash-2" className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={3} className="text-center text-muted-foreground py-8">
-                  <Icon icon="lucide:book-open" className="mx-auto mb-2 h-8 w-8 opacity-50" />
-                  {t('ielts.emptyTasks')}
+          ) : paginatedTasks.length > 0 ? (
+            paginatedTasks.map((task, index) => (
+              <TableRow key={task.id}>
+                <TableCell className="text-muted-foreground">
+                  {(safePage - 1) * PAGE_SIZE + index + 1}
+                </TableCell>
+                <TableCell className="font-medium">{task.title}</TableCell>
+                <TableCell>{new Date(task.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell className="text-right space-x-2">
+                  <Button variant="outline" size="sm" onClick={() => setViewingTaskId(task.id)}>
+                    {t('ielts.view')}
+                  </Button>
+                  {isTeacher && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => setTaskToDelete(task.id)}
+                      disabled={deleteMutation.isPending}
+                    >
+                      <Icon icon="lucide:trash-2" className="h-4 w-4" />
+                    </Button>
+                  )}
                 </TableCell>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </Card>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                <Icon icon="lucide:book-open" className="mx-auto mb-2 h-8 w-8 opacity-50" />
+                {t('ielts.emptyTasks')}
+              </TableCell>
+            </TableRow>
+          )}
+          {paginatedTasks.length > 0 && paginatedTasks.length < PAGE_SIZE && (
+            Array.from({ length: PAGE_SIZE - paginatedTasks.length }).map((_, i) => (
+              <TableRow key={`empty-${i}`} className="h-[52px]">
+                <TableCell colSpan={4}></TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mt-4">
           <span className="text-sm text-muted-foreground">
-            {t('common.totalCount', { count: totalTasks, defaultValue: `Jami: ${totalTasks} ta` })} ({safePage} / {totalPages})
+            {t('common.totalCount', { count: totalTasks, defaultValue: `Jami: ${totalTasks} ta` })}
           </span>
           <div className="flex gap-2">
             <Button
               variant="outline"
               size="sm"
               disabled={safePage === 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              onClick={() => setPage(safePage - 1)}
             >
               {t('common.prev')}
             </Button>
@@ -133,7 +156,7 @@ export function ReadingPage() {
               variant="outline"
               size="sm"
               disabled={safePage === totalPages}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              onClick={() => setPage(safePage + 1)}
             >
               {t('common.next')}
             </Button>
