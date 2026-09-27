@@ -18,10 +18,24 @@ export function IeltsTaskViewer({
     const handleMessage = (e: MessageEvent) => {
       if (e.data?.type === 'CLOSE_IELTS_TASK') {
         setConfirmOpen(true);
+      } else if (e.data?.type === 'ESCAPE_PRESSED') {
+        setConfirmOpen((prev) => !prev);
       }
     };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setConfirmOpen((prev) => !prev);
+      }
+    };
+
     window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const handleConfirmExit = () => {

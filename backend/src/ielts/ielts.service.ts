@@ -18,6 +18,14 @@ export const IELTS_EXIT_BUTTON_HTML = `<button onclick="window.parent.postMessag
   Exit
 </button>`;
 
+export const IELTS_ESC_LISTENER_SCRIPT = `<script>
+  window.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      window.parent.postMessage({ type: 'ESCAPE_PRESSED' }, '*');
+    }
+  });
+</script>`;
+
 
 @Injectable()
 export class IeltsService {
@@ -67,6 +75,17 @@ export class IeltsService {
     // Remove watermark/promo texts if present
     contentHtml = contentHtml.replace(/@MINDLESS_WRITER/g, '');
 
+    // Remove any inline confirm() calls
+    contentHtml = contentHtml.replace(
+      /if\s*\(\s*confirm\s*\([^)]*\)\s*\)\s*/gi,
+      '',
+    );
+
+    // Inject escape key listener script
+    if (!contentHtml.includes('ESCAPE_PRESSED')) {
+      contentHtml += IELTS_ESC_LISTENER_SCRIPT;
+    }
+
     const task = await this.prisma.ieltsTask.create({
       data: {
         title,
@@ -91,17 +110,28 @@ export class IeltsService {
       });
     }
 
-    // Dynamically replace ANY existing exit button (including legacy with confirm())
+    // 1. Dynamically replace ANY existing exit button (including legacy with confirm())
     task.contentHtml = task.contentHtml.replace(
-      /<button[^>]*onclick=["'][^"']*CLOSE_IELTS_TASK[^"']*["'][\s\S]*?<\/button>/gi,
+      /<button\b[^>]*CLOSE_IELTS_TASK[\s\S]*?<\/button>/gi,
       IELTS_EXIT_BUTTON_HTML,
     );
 
-    // Also replace any remaining <a> tags
+    // 2. Also strip any inline confirm() calls anywhere
+    task.contentHtml = task.contentHtml.replace(
+      /if\s*\(\s*confirm\s*\([^)]*\)\s*\)\s*/gi,
+      '',
+    );
+
+    // 3. Also replace any remaining <a> tags
     task.contentHtml = task.contentHtml.replace(
       /<a\b[^>]*>([\s\S]*?)<\/a>/gi,
       IELTS_EXIT_BUTTON_HTML,
     );
+
+    // 4. Inject escape key listener script if not already present
+    if (!task.contentHtml.includes('ESCAPE_PRESSED')) {
+      task.contentHtml += IELTS_ESC_LISTENER_SCRIPT;
+    }
 
     return task;
   }
