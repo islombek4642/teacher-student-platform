@@ -191,6 +191,8 @@
     "exitTitle": "Topshiriqdan chiqish",
     "confirmExit": "Haqiqatan ham topshiriqdan chiqmoqchimisiz?",
     "exit": "Chiqish",
-    "emptyTasks": "Hali topshiriqlar yuklanmagan"
+    "emptyTasks": "Hali topshiriqlar yuklanmagan",
+    "typeMismatch": "Noto'g'ri fayl turi! Siz {{expected}} bo'limida {{detected}} faylini tanladingiz.",
+    "pleaseUploadExpected": "Iltimos, haqiqiy {{expected}} topshiriq faylini tanlang."
   }
 }

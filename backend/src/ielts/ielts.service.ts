@@ -26,6 +26,26 @@ export const IELTS_ESC_LISTENER_SCRIPT = `<script>
   });
 </script>`;
 
+export function detectIeltsTaskType(contentHtml: string): IeltsTaskType | 'UNKNOWN' {
+  const hasAudio =
+    /<audio\b/i.test(contentHtml) ||
+    /id=["']global-audio-player["']/i.test(contentHtml) ||
+    /\.mp3\b/i.test(contentHtml);
+
+  const titleMatch = contentHtml.match(/<title>([^<]*)<\/title>/i);
+  const title = titleMatch ? titleMatch[1].toLowerCase() : '';
+
+  const hasPassage = /passage\s*[1-3]/i.test(contentHtml);
+  const hasPart = /part\s*[1-4]/i.test(contentHtml);
+
+  if (hasAudio || title.includes('listening') || (hasPart && !hasPassage)) {
+    return IeltsTaskType.LISTENING;
+  }
+  if (hasPassage || title.includes('reading')) {
+    return IeltsTaskType.READING;
+  }
+  return 'UNKNOWN';
+}
 
 @Injectable()
 export class IeltsService {
@@ -65,6 +85,17 @@ export class IeltsService {
     }
 
     let contentHtml = htmlFile.buffer.toString('utf-8');
+
+    const detectedType = detectIeltsTaskType(contentHtml);
+    if (
+      (type === IeltsTaskType.LISTENING && detectedType === IeltsTaskType.READING) ||
+      (type === IeltsTaskType.READING && detectedType === IeltsTaskType.LISTENING)
+    ) {
+      throw new BadRequestException({
+        errorCode: ERROR_CODES.TASK_TYPE_MISMATCH,
+        message: `Task type mismatch: uploaded file appears to be ${detectedType} but target is ${type}`,
+      });
+    }
 
     // Remove any telegram links or replace all <a> tags with the exit button
     contentHtml = contentHtml.replace(

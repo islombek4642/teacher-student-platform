@@ -191,6 +191,8 @@
     "exitTitle": "Exit task",
     "confirmExit": "Are you sure you want to exit this task?",
     "exit": "Exit",
-    "emptyTasks": "No tasks uploaded yet"
+    "emptyTasks": "No tasks uploaded yet",
+    "typeMismatch": "File type mismatch! You selected a {{detected}} file in the {{expected}} section.",
+    "pleaseUploadExpected": "Please upload a valid {{expected}} task file."
   }
 }
