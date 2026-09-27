@@ -39,17 +39,13 @@ export function extractTaskTitle(contentHtml: string, filename?: string): string
   // 1. Reading passage title
   const passageTitleMatch = contentHtml.match(/class=["']passage-title["'][^>]*>([^<]+)<\/p>/i);
   if (passageTitleMatch && passageTitleMatch[1]?.trim()) {
-    const title = passageTitleMatch[1].trim();
-    const testNum = filename ? filename.match(/^0*(\d+)/)?.[1] : null;
-    return testNum ? `Test ${testNum}: ${title}` : title;
+    return passageTitleMatch[1].trim();
   }
 
   // 2. Listening centered title
   const centeredTitleMatch = contentHtml.match(/class=["']centered-title["'][^>]*>([^<]+)<\/p>/i);
   if (centeredTitleMatch && centeredTitleMatch[1]?.trim()) {
-    const title = centeredTitleMatch[1].trim();
-    const testNum = filename ? filename.match(/^0*(\d+)/)?.[1] : null;
-    return testNum ? `Test ${testNum}: ${title}` : title;
+    return centeredTitleMatch[1].trim();
   }
 
   // 3. Fallback to <title> tag if not generic

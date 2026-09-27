@@ -59,14 +59,14 @@ describe('IeltsService', () => {
   });
 
   describe('extractTaskTitle', () => {
-    it('should extract reading passage title with test number', () => {
+    it('should extract reading passage title directly', () => {
       const html = '<html><body><p class="passage-title">Wood: a valuable resource</p></body></html>';
-      expect(extractTaskTitle(html, '01_Reading.html')).toBe('Test 1: Wood: a valuable resource');
+      expect(extractTaskTitle(html, '01_Reading.html')).toBe('Wood: a valuable resource');
     });
 
-    it('should extract listening centered title with test number', () => {
+    it('should extract listening centered title directly', () => {
       const html = '<html><body><p class="centered-title">Poppy Reserve in Sandcastle</p></body></html>';
-      expect(extractTaskTitle(html, '02_Listening.html')).toBe('Test 2: Poppy Reserve in Sandcastle');
+      expect(extractTaskTitle(html, '02_Listening.html')).toBe('Poppy Reserve in Sandcastle');
     });
 
     it('should fallback to filename if no custom title is found', () => {
