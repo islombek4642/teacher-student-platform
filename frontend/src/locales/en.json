@@ -83,6 +83,8 @@
   },
   "tasks": {
     "title": "Tasks",
+    "comingSoon": "Coming Soon",
+    "comingSoonDesc": "Assigning and managing IELTS tasks for this group will be available soon.",
     "create": "New task",
     "createSuccess": "Task created successfully",
     "taskTitle": "Title",
@@ -125,6 +127,8 @@
   },
   "statistics": {
     "title": "Statistics",
+    "comingSoon": "Coming Soon",
+    "comingSoonDesc": "Group student task performance analytics and detailed statistics will be available soon.",
     "studentCount": "Students",
     "averageScore": "Average score",
     "tasksCompleted": "Tasks completed",

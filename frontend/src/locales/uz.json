@@ -83,6 +83,8 @@
   },
   "tasks": {
     "title": "Topshiriqlar",
+    "comingSoon": "Tez kunda",
+    "comingSoonDesc": "Guruhga IELTS topshiriqlarini biriktirish va boshqarish imkoniyati tez kunda taqdim etiladi.",
     "create": "Yangi topshiriq",
     "createSuccess": "Topshiriq muvaffaqiyatli yaratildi",
     "taskTitle": "Sarlavha",
@@ -125,6 +127,8 @@
   },
   "statistics": {
     "title": "Statistika",
+    "comingSoon": "Tez kunda",
+    "comingSoonDesc": "Guruh o'quvchilarining topshiriqlar bo'yicha tahlili va batafsil statistikasi tez kunda taqdim etiladi.",
     "studentCount": "O'quvchilar soni",
     "averageScore": "O'rtacha ball",
     "tasksCompleted": "Bajarilgan topshiriqlar",

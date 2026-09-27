@@ -5,7 +5,13 @@ import { CreateGroupDialog } from './CreateGroupDialog';
 import { useCreateGroup } from './api/groups.api';
 
 vi.mock('./api/groups.api');
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
+vi.mock('react-i18next', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-i18next')>();
+  return {
+    ...actual,
+    useTranslation: () => ({ t: (key: string) => key }),
+  };
+});
 
 describe('CreateGroupDialog', () => {
   it('does not submit an empty group name', async () => {

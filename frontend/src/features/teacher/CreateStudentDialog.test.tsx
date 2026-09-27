@@ -5,7 +5,13 @@ import { CreateStudentDialog } from './CreateStudentDialog';
 import { useCreateStudent } from './api/students.api';
 
 vi.mock('./api/students.api');
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
+vi.mock('react-i18next', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-i18next')>();
+  return {
+    ...actual,
+    useTranslation: () => ({ t: (key: string) => key }),
+  };
+});
 
 describe('CreateStudentDialog', () => {
   it('does not submit when required fields are empty', async () => {

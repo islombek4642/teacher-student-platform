@@ -40,16 +40,20 @@ export function GroupLayout() {
         {t('groups.backToList')}
       </Link>
       <h1 className="text-xl font-semibold">{group?.name}</h1>
-      <Tabs value={activeTab} onValueChange={(value) => navigate(`/teacher/groups/${groupId}/${value}`)}>
-        <TabsList>
-          {TABS.map((tab) => (
-            <TabsTrigger key={tab} value={tab}>
-              <Icon icon={TAB_ICONS[tab]} />
-              {t(TAB_LABEL_KEYS[tab])}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <Tabs value={activeTab} onValueChange={(value) => navigate(`/teacher/groups/${groupId}/${value}`)}>
+          <TabsList>
+            {TABS.map((tab) => (
+              <TabsTrigger key={tab} value={tab}>
+                <Icon icon={TAB_ICONS[tab]} />
+                {t(TAB_LABEL_KEYS[tab])}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+
+        <div id="group-header-actions" className="flex items-center gap-2" />
+      </div>
       <Outlet />
     </div>
   );

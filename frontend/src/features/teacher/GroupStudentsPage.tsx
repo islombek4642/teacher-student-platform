@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Icon } from '@iconify/react';
@@ -39,6 +40,14 @@ export function GroupStudentsPage() {
   const [editingLastName, setEditingLastName] = useState('');
   const [resetResult, setResetResult] = useState<{ name: string; password: string } | null>(null);
 
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(() =>
+    typeof document !== 'undefined' ? document.getElementById('group-header-actions') : null,
+  );
+
+  useEffect(() => {
+    setPortalTarget(document.getElementById('group-header-actions'));
+  }, []);
+
   const { mutate: importGroup, isPending: isImporting } = useImportSingleGroup();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -72,27 +81,27 @@ export function GroupStudentsPage() {
     });
   };
 
+  const actionButtons = (
+    <div className="flex gap-2">
+      <Button variant="outline" onClick={handleExport}>
+        <Icon icon="lucide:download" />
+        {t('common.export')}
+      </Button>
+      <Button variant="outline" disabled={isImporting} onClick={() => fileInputRef.current?.click()}>
+        <Icon icon="lucide:upload" />
+        {t('common.import')}
+      </Button>
+      <Button onClick={() => setDialogOpen(true)}>
+        <Icon icon="lucide:user-plus" />
+        {t('students.create')}
+      </Button>
+    </div>
+  );
+
   return (
     <div className="space-y-4">
       <input type="file" ref={fileInputRef} className="hidden" accept=".xlsx" onChange={handleImport} />
-      <PageHeader
-        action={
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleExport}>
-              <Icon icon="lucide:download" />
-              {t('common.export')}
-            </Button>
-            <Button variant="outline" disabled={isImporting} onClick={() => fileInputRef.current?.click()}>
-              <Icon icon="lucide:upload" />
-              {t('common.import')}
-            </Button>
-            <Button onClick={() => setDialogOpen(true)}>
-              <Icon icon="lucide:user-plus" />
-              {t('students.create')}
-            </Button>
-          </div>
-        }
-      />
+      {portalTarget ? createPortal(actionButtons, portalTarget) : <PageHeader action={actionButtons} />}
       <Table>
         <TableHeader className="bg-muted/50 font-semibold">
           <TableRow>

@@ -7,6 +7,8 @@ import { TeachersPage } from '@/features/super-admin/TeachersPage';
 import { GroupsPage } from '@/features/teacher/GroupsPage';
 import { GroupLayout } from '@/features/teacher/GroupLayout';
 import { GroupStudentsPage } from '@/features/teacher/GroupStudentsPage';
+import { GroupTasksPage } from '@/features/teacher/GroupTasksPage';
+import { GroupStatisticsPage } from '@/features/teacher/GroupStatisticsPage';
 import { ListeningPage } from '@/features/ielts/ListeningPage';
 import { ReadingPage } from '@/features/ielts/ReadingPage';
 import { WritingPage } from '@/features/ielts/WritingPage';
@@ -29,6 +31,8 @@ export function AppRouter() {
           <Route path="/teacher/groups/:id" element={<GroupLayout />}>
             <Route index element={<Navigate to="students" replace />} />
             <Route path="students" element={<GroupStudentsPage />} />
+            <Route path="tasks" element={<GroupTasksPage />} />
+            <Route path="statistics" element={<GroupStatisticsPage />} />
           </Route>
           <Route path="/teacher/ielts/listening" element={<ListeningPage />} />
           <Route path="/teacher/ielts/reading" element={<ReadingPage />} />
