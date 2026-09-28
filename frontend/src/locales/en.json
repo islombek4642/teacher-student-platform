@@ -1,5 +1,7 @@
 {
-  "app": { "title": "Teacher-Student Platform" },
+  "app": {
+    "title": "Teacher-Student Platform"
+  },
   "required": "This field is required",
   "common": {
     "show": "Show",
@@ -24,9 +26,18 @@
     "deleting": "Deleting..."
   },
   "auth": {
-    "login": { "title": "Sign in", "username": "Username", "password": "Password", "submit": "Sign in" }
+    "login": {
+      "title": "Sign in",
+      "username": "Username",
+      "password": "Password",
+      "submit": "Sign in"
+    }
   },
-  "nav": { "logout": "Log out", "language": "Language" },
+  "nav": {
+    "logout": "Log out",
+    "language": "Language",
+    "home": "Home"
+  },
   "teachers": {
     "title": "Teachers",
     "exportFilename": "teachers.xlsx",
@@ -210,5 +221,25 @@
     "pleaseUploadExpected": "Please upload a valid {{expected}} task file.",
     "deleteSuccess": "Task deleted successfully",
     "taskAlreadyExists": "A task with this title already exists"
+  },
+  "dashboard": {
+    "teacherWelcome": "Teacher Dashboard",
+    "teacherGreeting": "Hello, {{name}}! 👋",
+    "teacherSubtitle": "Manage your students and assignments.",
+    "studentWelcome": "IELTS Practice Zone",
+    "studentGreeting": "Hello, {{name}}! 🎯",
+    "studentSubtitle": "Which section will you practise today?",
+    "groupsDesc": "Create groups and manage your students.",
+    "listeningDesc": "Upload and manage listening tests.",
+    "readingDesc": "Upload and manage reading tests.",
+    "writingDesc": "Manage writing tasks.",
+    "speakingDesc": "Manage speaking tasks.",
+    "groupsCount_one": "{{count}} group",
+    "groupsCount_other": "{{count}} groups",
+    "tasksCount_one": "{{count}} test",
+    "tasksCount_other": "{{count}} tests",
+    "comingSoon": "Coming soon",
+    "goIn": "Go in",
+    "start": "Start"
   }
 }
