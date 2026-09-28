@@ -30,6 +30,7 @@ interface NavLinkConfig {
 const NAV_LINKS_BY_ROLE: Record<Role, NavLinkConfig[]> = {
   SUPER_ADMIN: [{ to: '/super-admin/teachers', labelKey: 'teachers.title', icon: 'lucide:graduation-cap' }],
   TEACHER: [
+    { to: '/teacher', labelKey: 'nav.home', icon: 'lucide:layout-dashboard' },
     { to: '/teacher/groups', labelKey: 'groups.title', icon: 'lucide:users' },
     { to: '/teacher/ielts/listening', labelKey: 'ielts.listening', icon: 'lucide:headphones' },
     { to: '/teacher/ielts/reading', labelKey: 'ielts.reading', icon: 'lucide:book-open' },
@@ -37,6 +38,7 @@ const NAV_LINKS_BY_ROLE: Record<Role, NavLinkConfig[]> = {
     { to: '/teacher/ielts/speaking', labelKey: 'ielts.speaking', icon: 'lucide:mic' },
   ],
   STUDENT: [
+    { to: '/student', labelKey: 'nav.home', icon: 'lucide:layout-dashboard' },
     { to: '/student/ielts/listening', labelKey: 'ielts.listening', icon: 'lucide:headphones' },
     { to: '/student/ielts/reading', labelKey: 'ielts.reading', icon: 'lucide:book-open' },
     { to: '/student/ielts/writing', labelKey: 'ielts.writing', icon: 'lucide:pen-tool' },
@@ -66,18 +68,24 @@ export function AppLayout() {
             <SidebarGroup>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {navLinks.map((link) => (
-                    <SidebarMenuItem key={link.to}>
-                      <SidebarMenuButton
-                        isActive={location.pathname.startsWith(link.to)}
-                        tooltip={t(link.labelKey)}
-                        render={<Link to={link.to} />}
-                      >
+                  {navLinks.map((link) => {
+                    const isHome = link.to === '/teacher' || link.to === '/student';
+                    const isActive = isHome
+                      ? location.pathname === link.to
+                      : location.pathname.startsWith(link.to);
+                    return (
+                      <SidebarMenuItem key={link.to}>
+                        <SidebarMenuButton
+                          isActive={isActive}
+                          tooltip={t(link.labelKey)}
+                          render={<Link to={link.to} />}
+                        >
                         <Icon icon={link.icon} />
                         <span>{t(link.labelKey)}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
-                  ))}
+                    );
+                  })}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
