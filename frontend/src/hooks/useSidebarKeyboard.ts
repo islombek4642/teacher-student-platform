@@ -58,7 +58,15 @@ export function useSidebarKeyboard({ navLinks, enabled = true }: UseSidebarKeybo
       }
 
       // Find current active index based on route
-      const currentIndex = navLinks.findIndex((link) => location.pathname.startsWith(link.to));
+      // Home links (/teacher, /student) must use exact match to avoid
+      // matching all sub-routes (e.g. /teacher/groups)
+      const currentIndex = navLinks.findIndex((link) => {
+        const isHome = link.to === '/teacher' || link.to === '/student';
+        return isHome
+          ? location.pathname === link.to
+          : location.pathname.startsWith(link.to);
+      });
+
 
       if (e.key === 'ArrowDown') {
         e.preventDefault();
