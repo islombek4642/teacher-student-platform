@@ -13,6 +13,9 @@ import { ListeningPage } from '@/features/ielts/ListeningPage';
 import { ReadingPage } from '@/features/ielts/ReadingPage';
 import { WritingPage } from '@/features/ielts/WritingPage';
 import { SpeakingPage } from '@/features/ielts/SpeakingPage';
+import { TeacherDashboardPage } from '@/features/teacher/TeacherDashboardPage';
+import { StudentDashboardPage } from '@/features/student/StudentDashboardPage';
+
 export function AppRouter() {
   return (
     <Routes>
@@ -27,6 +30,7 @@ export function AppRouter() {
 
       <Route element={<ProtectedRoute allowedRoles={['TEACHER']} />}>
         <Route element={<AppLayout />}>
+          <Route path="/teacher" element={<TeacherDashboardPage />} />
           <Route path="/teacher/groups" element={<GroupsPage />} />
           <Route path="/teacher/groups/:id" element={<GroupLayout />}>
             <Route index element={<Navigate to="students" replace />} />
@@ -43,6 +47,7 @@ export function AppRouter() {
 
       <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}>
         <Route element={<AppLayout />}>
+          <Route path="/student" element={<StudentDashboardPage />} />
           <Route path="/student/ielts/listening" element={<ListeningPage />} />
           <Route path="/student/ielts/reading" element={<ReadingPage />} />
           <Route path="/student/ielts/writing" element={<WritingPage />} />
