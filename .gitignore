@@ -1,3 +1,5 @@
 .env
 backups/
+logs/
+bin/
 server.txt

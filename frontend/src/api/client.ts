@@ -6,7 +6,7 @@ import i18n from '@/i18n';
 export const TOKEN_STORAGE_KEY = 'accessToken';
 
 export const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:3000',
+  baseURL: import.meta.env.VITE_API_URL ?? '',
 });
 
 apiClient.interceptors.request.use((config) => {

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_URL ?? '';
 
 export function IeltsTaskViewer({ 
   taskId, 
