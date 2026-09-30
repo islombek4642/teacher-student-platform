@@ -45,6 +45,7 @@ model StudentProfile {
   lastName    String
   groupId     String
   group       Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  submissions IeltsSubmission[]
   createdAt   DateTime     @default(now())
 
   @@index([groupId])
@@ -80,7 +81,26 @@ model IeltsTask {
 
   teacher     TeacherProfile @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   group       Group?         @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  submissions IeltsSubmission[]
 
   @@index([teacherId])
   @@index([groupId])
+}
+
+model IeltsSubmission {
+  id          String         @id @default(uuid())
+  studentId   String
+  taskId      String
+  score       Int
+  total       Int            @default(40)
+  band        Float
+  answersJson Json
+  submittedAt DateTime       @default(now())
+
+  student     StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  task        IeltsTask      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, taskId])
+  @@index([studentId])
+  @@index([taskId])
 }
