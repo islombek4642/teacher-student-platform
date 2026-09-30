@@ -170,7 +170,16 @@
     "submissionCount": "Topshirilganlar soni",
     "mostMissed": "Eng ko'p xato qilingan savollar",
     "missedByCount": "({{count}} kishi xato qildi)",
-    "noData": "Ma'lumot yo'q"
+    "noData": "Ma'lumot yo'q",
+    "groupAverageBand": "Guruh o'rtacha Band bali",
+    "listeningAverageBand": "Listening o'rtacha Band",
+    "readingAverageBand": "Reading o'rtacha Band",
+    "totalSubmissions": "Jami topshirilgan testlar",
+    "bestBand": "Eng yuqori Band",
+    "lastActive": "Oxirgi test",
+    "noLeaderboardData": "Hozircha test topshirgan o'quvchilar yo'q",
+    "noSubmissionsDesc": "O'quvchilar testlarni yechishni boshlagach, bu yerda batafsil tahlil va reyting paydo bo'ladi.",
+    "rank": "O'rin"
   },
   "studentProgress": {
     "title": "Mening natijalarim",
