@@ -126,7 +126,17 @@
     "cannotDeleteHasSubmissions": "A task with submissions can't be deleted",
     "view": "View",
     "loading": "Loading...",
-    "empty": "No tasks in this group yet"
+    "empty": "No tasks in this group yet",
+    "assignTask": "Assign Task",
+    "assignedCount": "{{submitted}} / {{total}} students submitted",
+    "unassign": "Unassign",
+    "confirmUnassign": "Do you want to unassign this task from the group?",
+    "assignSuccess": "Task assigned to group successfully",
+    "unassignSuccess": "Task unassigned from group successfully",
+    "averageBand": "Average Band",
+    "noTasksToAssign": "No available tasks to assign",
+    "selectTask": "Select Task",
+    "allTypes": "All Types"
   },
   "studentTasks": {
     "title": "My tasks",

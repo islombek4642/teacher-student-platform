@@ -126,7 +126,17 @@
     "cannotDeleteHasSubmissions": "Javoblar topshirilgan topshiriqni o'chirib bo'lmaydi",
     "view": "Ko'rish",
     "loading": "Yuklanmoqda...",
-    "empty": "Bu guruhda hozircha topshiriqlar yo'q"
+    "empty": "Bu guruhda hozircha topshiriqlar yo'q",
+    "assignTask": "Topshiriq biriktirish",
+    "assignedCount": "{{submitted}} / {{total}} o'quvchi topshirgan",
+    "unassign": "Biriktirishdan chiqarish",
+    "confirmUnassign": "Ushbu topshiriqni guruhdan chiqarmoqchimisiz?",
+    "assignSuccess": "Topshiriq guruhga biriktirildi",
+    "unassignSuccess": "Topshiriq guruhdan chiqarildi",
+    "averageBand": "O'rtacha Band",
+    "noTasksToAssign": "Biriktirish uchun yangi topshiriqlar mavjud emas",
+    "selectTask": "Topshiriqni tanlang",
+    "allTypes": "Barcha yo'nalishlar"
   },
   "studentTasks": {
     "title": "Topshiriqlarim",
