@@ -326,4 +326,101 @@ export class IeltsService {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  async submitTask(user: JwtPayload, taskId: string, dto: { score: number; total?: number; band: number; results: any[] }) {
+    const task = await this.prisma.ieltsTask.findUnique({
+      where: { id: taskId },
+    });
+    if (!task) {
+      throw new NotFoundException({
+        errorCode: ERROR_CODES.TASK_NOT_FOUND,
+        message: 'Task not found',
+      });
+    }
+
+    const studentProfile = await this.prisma.studentProfile.findUnique({
+      where: { userId: user.sub },
+    });
+    if (!studentProfile) {
+      throw new BadRequestException({
+        errorCode: ERROR_CODES.STUDENT_NOT_FOUND,
+        message: 'Student profile not found',
+      });
+    }
+
+    const total = dto.total ?? 40;
+    const submission = await this.prisma.ieltsSubmission.upsert({
+      where: {
+        studentId_taskId: {
+          studentId: studentProfile.id,
+          taskId,
+        },
+      },
+      update: {
+        score: dto.score,
+        total,
+        band: dto.band,
+        answersJson: dto.results,
+        submittedAt: new Date(),
+      },
+      create: {
+        studentId: studentProfile.id,
+        taskId,
+        score: dto.score,
+        total,
+        band: dto.band,
+        answersJson: dto.results,
+      },
+    });
+
+    return {
+      id: submission.id,
+      taskId: submission.taskId,
+      score: submission.score,
+      total: submission.total,
+      band: submission.band,
+      submittedAt: submission.submittedAt,
+    };
+  }
+
+  async getMySubmission(user: JwtPayload, taskId: string) {
+    const studentProfile = await this.prisma.studentProfile.findUnique({
+      where: { userId: user.sub },
+    });
+    if (!studentProfile) {
+      return null;
+    }
+
+    return this.prisma.ieltsSubmission.findUnique({
+      where: {
+        studentId_taskId: {
+          studentId: studentProfile.id,
+          taskId,
+        },
+      },
+    });
+  }
+
+  async getMySubmissions(user: JwtPayload) {
+    const studentProfile = await this.prisma.studentProfile.findUnique({
+      where: { userId: user.sub },
+    });
+    if (!studentProfile) {
+      return [];
+    }
+
+    return this.prisma.ieltsSubmission.findMany({
+      where: { studentId: studentProfile.id },
+      include: {
+        task: {
+          select: {
+            id: true,
+            title: true,
+            type: true,
+          },
+        },
+      },
+      orderBy: { submittedAt: 'desc' },
+    });
+  }
 }

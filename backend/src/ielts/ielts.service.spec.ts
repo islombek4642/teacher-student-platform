@@ -13,9 +13,18 @@ describe('IeltsService', () => {
       findUnique: jest.fn(),
       findFirst: jest.fn(),
     },
+    studentProfile: {
+      findUnique: jest.fn(),
+    },
     ieltsTask: {
       create: jest.fn(),
       findFirst: jest.fn(),
+      findUnique: jest.fn(),
+    },
+    ieltsSubmission: {
+      upsert: jest.fn(),
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
     },
   };
 
@@ -127,6 +136,59 @@ describe('IeltsService', () => {
           type: IeltsTaskType.LISTENING,
         },
       });
+    });
+  });
+
+  describe('submitTask', () => {
+    it('should upsert student submission when student and task exist', async () => {
+      const studentUser = { sub: 'u-student', role: 'STUDENT' as any, profileId: 'sp-1' };
+      const taskId = 'task-1';
+      const dto = {
+        score: 32,
+        total: 40,
+        band: 7.5,
+        results: [{ question: 1, userAnswer: 'A', correctAnswer: 'A', isCorrect: true }],
+      };
+
+      mockPrisma.ieltsTask.findUnique.mockResolvedValueOnce({ id: taskId });
+      mockPrisma.studentProfile.findUnique.mockResolvedValueOnce({ id: 'sp-1', userId: 'u-student' });
+      mockPrisma.ieltsSubmission.upsert.mockResolvedValueOnce({
+        id: 'sub-1',
+        studentId: 'sp-1',
+        taskId,
+        score: 32,
+        total: 40,
+        band: 7.5,
+        answersJson: dto.results,
+        submittedAt: new Date('2026-09-30T10:00:00Z'),
+      });
+
+      const result = await service.submitTask(studentUser, taskId, dto);
+      expect(result).toBeDefined();
+      expect(result.score).toBe(32);
+      expect(result.band).toBe(7.5);
+      expect(mockPrisma.ieltsSubmission.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            studentId_taskId: {
+              studentId: 'sp-1',
+              taskId,
+            },
+          },
+        }),
+      );
+    });
+
+    it('should throw NotFoundException if task does not exist', async () => {
+      mockPrisma.ieltsTask.findUnique.mockResolvedValueOnce(null);
+      await expect(
+        service.submitTask({ sub: 'u1', role: 'STUDENT' as any, profileId: null }, 'missing-task', {
+          score: 10,
+          total: 40,
+          band: 4.0,
+          results: [],
+        }),
+      ).rejects.toThrow();
     });
   });
 });

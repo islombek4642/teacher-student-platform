@@ -79,6 +79,34 @@ export class IeltsController {
     return this.ieltsService.getTasksByStudent(user.sub);
   }
 
+  @Get('my-submissions')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.STUDENT)
+  async getMySubmissions(@CurrentUser() user: JwtPayload) {
+    return this.ieltsService.getMySubmissions(user);
+  }
+
+  @Post(':id/submit')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.STUDENT)
+  async submitTask(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: any,
+  ) {
+    return this.ieltsService.submitTask(user, id, dto);
+  }
+
+  @Get(':id/my-submission')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.STUDENT)
+  async getMySubmission(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.ieltsService.getMySubmission(user, id);
+  }
+
   @Get(':id/view')
   async viewTask(@Param('id') id: string, @Res() res: Response) {
     const task = await this.ieltsService.getTask(id);
