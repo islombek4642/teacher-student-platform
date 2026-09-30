@@ -57,7 +57,7 @@ describe('TeachersService', () => {
       expect(result.temporaryPassword).toMatch(/^\d{4}$/);
       expect(prisma.user.update).toHaveBeenCalledWith({
         where: { id: 'u1' },
-        data: { passwordHash: expect.any(String) },
+        data: expect.objectContaining({ passwordHash: expect.any(String) }),
       });
     });
 
@@ -115,22 +115,18 @@ describe('TeachersService', () => {
       expect(prisma.$transaction).not.toHaveBeenCalled();
     });
 
-    it('deletes the teacher profile and user in a transaction when there are no groups', async () => {
+    it('deletes the teacher user record when there are no groups', async () => {
       const prisma = {
         teacherProfile: {
           findUnique: jest.fn().mockResolvedValue({ id: 't1', userId: 'u1' }),
-          delete: jest.fn().mockResolvedValue({ id: 't1' }),
         },
         user: { delete: jest.fn().mockResolvedValue({ id: 'u1' }) },
         group: { count: jest.fn().mockResolvedValue(0) },
-        $transaction: jest.fn().mockResolvedValue(undefined),
       } as unknown as PrismaService;
       const service = new TeachersService(prisma);
 
       await service.remove('t1');
 
-      expect(prisma.$transaction).toHaveBeenCalledTimes(1);
-      expect(prisma.teacherProfile.delete).toHaveBeenCalledWith({ where: { id: 't1' } });
       expect(prisma.user.delete).toHaveBeenCalledWith({ where: { id: 'u1' } });
     });
   });

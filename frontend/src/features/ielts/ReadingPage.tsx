@@ -10,6 +10,8 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { toast } from '@/components/ui/toast';
 import { useAuth } from '@/auth/useAuth';
 import { usePaginationKeyboard } from '@/hooks/usePaginationKeyboard';
+import { Badge } from '@/components/ui/badge';
+import { useStudentMySubmissions } from '@/features/student/api/student-results.api';
 import {
   Table,
   TableBody,
@@ -23,12 +25,16 @@ export function ReadingPage() {
   const { t } = useTranslation();
   const { payload } = useAuth();
   const isTeacher = payload?.role === 'TEACHER' || payload?.role === 'SUPER_ADMIN';
+  const isStudent = payload?.role === 'STUDENT';
 
   const [uploadOpen, setUploadOpen] = useState(false);
   const [viewingTaskId, setViewingTaskId] = useState<string | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
   const { data: tasks, isLoading } = useIeltsTasks();
+  const { data: mySubmissions } = useStudentMySubmissions();
   const deleteMutation = useDeleteIeltsTask();
+
+  const submissionsMap = new Map(mySubmissions?.map((s) => [s.taskId, s]) || []);
   
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
@@ -109,11 +115,30 @@ export function ReadingPage() {
                 <TableCell className="w-12 text-center text-muted-foreground">
                   {(safePage - 1) * PAGE_SIZE + index + 1}
                 </TableCell>
-                <TableCell className="font-medium truncate">{task.title}</TableCell>
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-2">
+                    <span className="truncate">{task.title}</span>
+                    {isStudent && submissionsMap.has(task.id) && (
+                      <Badge
+                        variant="secondary"
+                        className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20 text-xs gap-1 shrink-0 font-bold"
+                      >
+                        <Icon icon="lucide:check" className="h-3 w-3" />
+                        <span>Band {submissionsMap.get(task.id)!.band}</span>
+                      </Badge>
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell className="w-36 text-muted-foreground">{new Date(task.createdAt).toLocaleDateString()}</TableCell>
-                <TableCell className="w-40 text-right space-x-2">
-                  <Button variant="outline" size="sm" onClick={() => setViewingTaskId(task.id)}>
-                    {t('ielts.view')}
+                <TableCell className="w-44 text-right space-x-2">
+                  <Button
+                    variant={isStudent && !submissionsMap.has(task.id) ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewingTaskId(task.id)}
+                  >
+                    {isStudent && !submissionsMap.has(task.id)
+                      ? t('studentTasks.open', { defaultValue: 'Boshlash' })
+                      : t('ielts.view')}
                   </Button>
                   {isTeacher && (
                     <Button

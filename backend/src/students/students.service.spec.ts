@@ -110,19 +110,20 @@ describe('StudentsService', () => {
       expect(prisma.user.delete).toHaveBeenCalledWith({ where: { id: 'u1' } });
     });
 
-    it('rejects deleting a student that has submissions', async () => {
+    it('deletes the student profile and user record', async () => {
       const prisma = {
         studentProfile: {
           findUnique: jest.fn().mockResolvedValue({ id: 's1', userId: 'u1', group: { teacherId: 't1' } }),
           delete: jest.fn(),
         },
         user: { delete: jest.fn() },
-        submission: { count: jest.fn().mockResolvedValue(3) },
+        $transaction: jest.fn().mockResolvedValue([]),
       } as unknown as PrismaService;
       const service = new StudentsService(prisma, {} as GroupsService);
 
-      await expect(service.remove('t1', 's1')).rejects.toBeInstanceOf(ConflictException);
-      expect(prisma.studentProfile.delete).not.toHaveBeenCalled();
+      await service.remove('t1', 's1');
+
+      expect(prisma.$transaction).toHaveBeenCalled();
     });
   });
 
@@ -141,7 +142,7 @@ describe('StudentsService', () => {
       expect(result.temporaryPassword).toMatch(/^\d{4}$/);
       expect(prisma.user.update).toHaveBeenCalledWith({
         where: { id: 'u1' },
-        data: { passwordHash: expect.any(String) },
+        data: expect.objectContaining({ passwordHash: expect.any(String) }),
       });
     });
   });

@@ -12,7 +12,7 @@ function renderAt(initialPath: string) {
       <Routes>
         <Route path="/" element={<RoleHomeRedirect />} />
         <Route path="/login" element={<div>login page</div>} />
-        <Route path="/teacher/groups" element={<div>teacher groups</div>} />
+        <Route path="/teacher" element={<div>teacher home</div>} />
       </Routes>
     </MemoryRouter>,
   );
@@ -33,6 +33,6 @@ describe('RoleHomeRedirect', () => {
     } as unknown as ReturnType<typeof useAuth>);
     renderAt('/');
 
-    expect(screen.getByText('teacher groups')).toBeInTheDocument();
+    expect(screen.getByText('teacher home')).toBeInTheDocument();
   });
 });

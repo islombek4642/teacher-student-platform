@@ -13,6 +13,9 @@ vi.mock('./UploadIeltsDialog', () => ({
 vi.mock('./IeltsTaskViewer', () => ({
   IeltsTaskViewer: () => null,
 }));
+vi.mock('@/features/student/api/student-results.api', () => ({
+  useStudentMySubmissions: () => ({ data: [] }),
+}));
 vi.mock('react-i18next', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-i18next')>();
   return {
