@@ -137,6 +137,17 @@ export const IELTS_REVIEW_MODE_SCRIPT = `<script>
       exitBtns.forEach(function(b) {
         b.style.display = 'none';
       });
+      // Keep header tools (fullscreen, settings) strictly aligned to the right side
+      var headerTools = document.querySelectorAll('.header-tools');
+      headerTools.forEach(function(tools) {
+        tools.style.marginLeft = 'auto';
+      });
+    }
+
+    var style = document.createElement('style');
+    style.textContent = '.header { justify-content: flex-end !important; } .header-tools { margin-left: auto !important; }';
+    if (document.head) {
+      document.head.appendChild(style);
     }
 
     if (document.readyState === 'loading') {
