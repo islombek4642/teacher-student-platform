@@ -145,7 +145,7 @@ export function StudentDashboardPage() {
                 <TableHead className="w-12 text-center">#</TableHead>
                 <TableHead>{t('ielts.name')}</TableHead>
                 <TableHead className="w-32">{t('tasks.questionType')}</TableHead>
-                <TableHead className="w-32 text-center">{t('studentTasks.score')}</TableHead>
+                <TableHead className="w-32 text-center">{t('studentTasks.scoreHeader')}</TableHead>
                 <TableHead className="w-32 text-center">IELTS Band</TableHead>
                 <TableHead className="w-36 text-right">{t('ielts.date')}</TableHead>
                 <TableHead className="w-28 text-right" />

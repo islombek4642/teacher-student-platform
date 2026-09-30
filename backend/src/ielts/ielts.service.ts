@@ -34,13 +34,70 @@ export const IELTS_SUBMISSION_SCRIPT = `<script>
         window.checkAnswers = function() {
           var res = orig.apply(this, arguments);
           try {
-            var curScore = typeof score !== 'undefined' ? score : 0;
-            var totalQ = typeof correctAnswers !== 'undefined' ? Object.keys(correctAnswers).length : 40;
+            var curScore = 0;
+            var totalQ = 40;
             var curBand = 0;
-            if (typeof band !== 'undefined') {
-              curBand = band;
+            var results = [];
+
+            // 1. Extract from #score-summary if rendered ('You scored 28 out of 40 (Band 6.5).')
+            var scoreEl = document.getElementById('score-summary');
+            if (scoreEl && scoreEl.textContent) {
+              var m = scoreEl.textContent.match(/(\\d+)\\s+out of\\s+(\\d+)\\s*\\(Band\\s*([\\d.]+)\\)/i);
+              if (m) {
+                curScore = parseInt(m[1], 10);
+                totalQ = parseInt(m[2], 10);
+                curBand = parseFloat(m[3]);
+              }
             }
-            var results = typeof resultsData !== 'undefined' ? resultsData : [];
+
+            // 2. Extract detailed question results from #result-details
+            var rows = document.querySelectorAll('#result-details table tbody tr');
+            if (rows && rows.length > 0) {
+              rows.forEach(function(row) {
+                var cols = row.querySelectorAll('td');
+                if (cols.length >= 4) {
+                  var isCorr = cols[3].classList.contains('result-correct') || cols[3].textContent.indexOf('Correct') !== -1;
+                  results.push({
+                    question: cols[0].textContent.trim(),
+                    userAnswer: cols[1].textContent.trim(),
+                    correctAnswer: cols[2].textContent.trim(),
+                    isCorrect: isCorr
+                  });
+                }
+              });
+              if (curScore === 0 && results.length > 0) {
+                curScore = results.filter(function(r) { return r.isCorrect; }).length;
+                totalQ = results.length;
+              }
+            }
+
+            // 3. Fallback to counting correct question classes if results table wasn't found
+            if (curScore === 0 && document.querySelectorAll('.subQuestion.correct').length > 0) {
+              curScore = document.querySelectorAll('.subQuestion.correct').length;
+            }
+
+            // Fallback band calculation if curBand is 0 and curScore > 0
+            if (curBand === 0 && curScore > 0) {
+              var r = curScore;
+              if (r >= 39) curBand = 9;
+              else if (r >= 37) curBand = 8.5;
+              else if (r >= 35) curBand = 8;
+              else if (r >= 32) curBand = 7.5;
+              else if (r >= 30) curBand = 7;
+              else if (r >= 26) curBand = 6.5;
+              else if (r >= 23) curBand = 6;
+              else if (r >= 18) curBand = 5.5;
+              else if (r >= 16) curBand = 5;
+              else if (r >= 13) curBand = 4.5;
+              else if (r >= 10) curBand = 4;
+              else if (r >= 8) curBand = 3.5;
+              else if (r >= 6) curBand = 3;
+              else if (r >= 4) curBand = 2.5;
+              else if (r >= 2) curBand = 2;
+              else if (r === 1) curBand = 1.5;
+              else curBand = 0;
+            }
+
             window.parent.postMessage({
               type: 'IELTS_TEST_SUBMITTED',
               payload: {
@@ -250,10 +307,12 @@ export class IeltsService {
       task.contentHtml += IELTS_ESC_LISTENER_SCRIPT;
     }
 
-    // 5. Inject submission postMessage hook if not already present
-    if (!task.contentHtml.includes('IELTS_TEST_SUBMITTED')) {
-      task.contentHtml += IELTS_SUBMISSION_SCRIPT;
-    }
+    // 5. Always inject latest submission postMessage hook
+    task.contentHtml = task.contentHtml.replace(
+      /<script>[\s\S]*?IELTS_TEST_SUBMITTED[\s\S]*?<\/script>/gi,
+      '',
+    );
+    task.contentHtml += IELTS_SUBMISSION_SCRIPT;
 
     return task;
   }

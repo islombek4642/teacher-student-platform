@@ -145,6 +145,7 @@
     "completedScore": "{{score}}/{{total}}",
     "submit": "Submit",
     "yourAnswer": "Your answer",
+    "scoreHeader": "Score",
     "score": "Score: {{score}} / {{total}}",
     "correct": "Correct",
     "incorrect": "Incorrect",

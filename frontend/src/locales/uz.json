@@ -145,6 +145,7 @@
     "completedScore": "{{score}}/{{total}}",
     "submit": "Yuborish",
     "yourAnswer": "Javobingiz",
+    "scoreHeader": "Ball",
     "score": "Ball: {{score}} / {{total}}",
     "correct": "To'g'ri",
     "incorrect": "Noto'g'ri",
