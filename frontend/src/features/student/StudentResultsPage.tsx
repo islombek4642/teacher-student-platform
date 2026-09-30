@@ -196,10 +196,10 @@ export function StudentResultsPage() {
               <TableHead className="w-10 text-center" />
               <TableHead>{t('ielts.name')}</TableHead>
               <TableHead className="w-32">{t('tasks.questionType')}</TableHead>
-              <TableHead className="w-28 text-center">Urinishlar</TableHead>
+              <TableHead className="w-24 text-center">Urinishlar</TableHead>
               <TableHead className="w-32 text-center">Eng yaxshi Band</TableHead>
-              <TableHead className="w-36 text-right">Oxirgi sana</TableHead>
-              <TableHead className="w-48 text-right" />
+              <TableHead className="w-44 text-right">Oxirgi vaqt</TableHead>
+              <TableHead className="w-28 text-right" />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -264,7 +264,7 @@ export function StudentResultsPage() {
                           </span>
                         </Badge>
                       </TableCell>
-                      <TableCell className="w-28 text-center text-xs font-bold text-muted-foreground">
+                      <TableCell className="w-24 text-center text-xs font-bold text-muted-foreground">
                         <span className="rounded-full bg-muted px-2 py-0.5 font-mono">
                           {group.attempts.length} ta
                         </span>
@@ -275,27 +275,26 @@ export function StudentResultsPage() {
                           <span>Band {group.bestBand}</span>
                         </span>
                       </TableCell>
-                      <TableCell className="w-36 text-right text-xs text-muted-foreground">
-                        {new Date(group.latestSubmission.submittedAt).toLocaleDateString()}
+                      <TableCell className="w-44 text-right text-xs whitespace-nowrap">
+                        <span className="font-semibold text-foreground">
+                          {new Date(group.latestSubmission.submittedAt).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                        <span className="mx-1.5 text-muted-foreground/50">•</span>
+                        <span className="text-muted-foreground">
+                          {new Date(group.latestSubmission.submittedAt).toLocaleDateString([], {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                          })}
+                        </span>
                       </TableCell>
                       <TableCell
-                        className="w-48 text-right space-x-1"
+                        className="w-28 text-right"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            setViewerState({
-                              taskId: group.taskId,
-                              mode: 'review',
-                            })
-                          }
-                          className="h-8 text-xs"
-                        >
-                          <Icon icon="lucide:eye" className="mr-1 h-3.5 w-3.5" />
-                          {t('studentResults.review')}
-                        </Button>
                         <Button
                           variant="default"
                           size="sm"
@@ -305,10 +304,10 @@ export function StudentResultsPage() {
                               mode: 'take',
                             })
                           }
-                          className="h-8 text-xs font-semibold"
+                          className="h-8 text-xs font-semibold gap-1"
                         >
-                          <Icon icon="lucide:rotate-ccw" className="mr-1 h-3.5 w-3.5" />
-                          {t('studentResults.retake')}
+                          <Icon icon="lucide:rotate-ccw" className="h-3.5 w-3.5" />
+                          <span>{t('studentResults.retake')}</span>
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -347,9 +346,23 @@ export function StudentResultsPage() {
                                             Band {att.band}
                                           </span>
                                         </div>
-                                        <div className="text-[11px] text-muted-foreground">
-                                          {att.score}/{att.total} •{' '}
-                                          {new Date(att.submittedAt).toLocaleDateString()}
+                                        <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                                          <span>{att.score}/{att.total} ball</span>
+                                          <span className="text-muted-foreground/40">•</span>
+                                          <span className="font-semibold text-foreground">
+                                            {new Date(att.submittedAt).toLocaleTimeString([], {
+                                              hour: '2-digit',
+                                              minute: '2-digit',
+                                            })}
+                                          </span>
+                                          <span className="text-muted-foreground/40">•</span>
+                                          <span>
+                                            {new Date(att.submittedAt).toLocaleDateString([], {
+                                              day: '2-digit',
+                                              month: '2-digit',
+                                              year: 'numeric',
+                                            })}
+                                          </span>
                                         </div>
                                       </div>
 

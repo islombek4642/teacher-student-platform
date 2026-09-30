@@ -106,8 +106,21 @@ export function AttemptHistoryDialog({
                           <div className="text-xs font-bold text-foreground">
                             {att.score} / {att.total}
                           </div>
-                          <div className="text-[11px] text-muted-foreground">
-                            {new Date(att.submittedAt).toLocaleString()}
+                          <div className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                            <span className="font-semibold text-foreground">
+                              {new Date(att.submittedAt).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </span>
+                            <span className="text-muted-foreground/40">•</span>
+                            <span>
+                              {new Date(att.submittedAt).toLocaleDateString([], {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                              })}
+                            </span>
                           </div>
                         </div>
                       </div>

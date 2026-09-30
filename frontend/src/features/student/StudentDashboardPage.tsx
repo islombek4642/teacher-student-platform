@@ -172,8 +172,21 @@ export function StudentDashboardPage() {
                         />
                         <span>{isListening ? t('ielts.listening') : t('ielts.reading')}</span>
                       </Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(sub.submittedAt).toLocaleDateString()}
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        <span className="font-semibold text-foreground">
+                          {new Date(sub.submittedAt).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                        <span className="mx-1 text-muted-foreground/40">•</span>
+                        <span>
+                          {new Date(sub.submittedAt).toLocaleDateString([], {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                          })}
+                        </span>
                       </span>
                     </div>
 
