@@ -69,4 +69,63 @@ export function useUploadIeltsTask() {
     },
   });
 }
-export function useDeleteIeltsTask() { const queryClient = useQueryClient(); return useMutation({ mutationFn: async (id: string) => { const res = await apiClient.delete('/ielts/' + id); return res.data; }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['ielts-tasks'] }); }, }); }
+export function useDeleteIeltsTask() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await apiClient.delete('/ielts/' + id);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ielts-tasks'] });
+    },
+  });
+}
+
+export type SubmitIeltsTaskPayload = {
+  score: number;
+  total?: number;
+  band: number;
+  results: Array<{
+    question: string | number;
+    userAnswer: string;
+    correctAnswer: string;
+    isCorrect: boolean;
+  }>;
+};
+
+export type IeltsSubmission = {
+  id: string;
+  taskId: string;
+  score: number;
+  total: number;
+  band: number;
+  submittedAt: string;
+  task?: {
+    id: string;
+    title: string;
+    type: 'LISTENING' | 'READING' | 'WRITING' | 'SPEAKING';
+  };
+};
+
+export function useSubmitIeltsTask() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      taskId,
+      data,
+    }: {
+      taskId: string;
+      data: SubmitIeltsTaskPayload;
+    }) => {
+      const res = await apiClient.post<IeltsSubmission>(`/ielts/${taskId}/submit`, data);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ielts-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['my-submissions'] });
+      queryClient.invalidateQueries({ queryKey: ['group-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['group-statistics'] });
+    },
+  });
+}

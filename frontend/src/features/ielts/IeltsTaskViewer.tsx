@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+import { useAuth } from '@/auth/useAuth';
+import { useSubmitIeltsTask } from './api/ielts.api';
+import { toast } from '@/components/ui/toast';
 
 const API_URL = import.meta.env.VITE_API_URL ?? '';
 
@@ -12,6 +15,9 @@ export function IeltsTaskViewer({
   onClose: () => void;
 }) {
   const { t } = useTranslation();
+  const { payload } = useAuth();
+  const isStudent = payload?.role === 'STUDENT';
+  const submitMutation = useSubmitIeltsTask();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
@@ -20,6 +26,34 @@ export function IeltsTaskViewer({
         setConfirmOpen(true);
       } else if (e.data?.type === 'ESCAPE_PRESSED') {
         setConfirmOpen((prev) => !prev);
+      } else if (e.data?.type === 'IELTS_TEST_SUBMITTED' && isStudent && e.data.payload) {
+        submitMutation.mutate(
+          {
+            taskId,
+            data: e.data.payload,
+          },
+          {
+            onSuccess: (res) => {
+              toast.add({
+                type: 'success',
+                description: t('ielts.submittedSuccess', {
+                  band: res.band,
+                  defaultValue: `Topshiriq topshirildi! Band: ${res.band}`,
+                }),
+              });
+            },
+            onError: (err: any) => {
+              const msg =
+                err?.response?.data?.message ||
+                err?.message ||
+                t('ielts.submitError', { defaultValue: 'Xatolik yuz berdi' });
+              toast.add({
+                type: 'error',
+                description: msg,
+              });
+            },
+          },
+        );
       }
     };
 
@@ -36,7 +70,7 @@ export function IeltsTaskViewer({
       window.removeEventListener('message', handleMessage);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [taskId, isStudent, submitMutation, t]);
 
   const handleConfirmExit = () => {
     setConfirmOpen(false);

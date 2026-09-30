@@ -26,6 +26,41 @@ export const IELTS_ESC_LISTENER_SCRIPT = `<script>
   });
 </script>`;
 
+export const IELTS_SUBMISSION_SCRIPT = `<script>
+  (function() {
+    var checkInterval = setInterval(function() {
+      if (typeof window.checkAnswers === 'function') {
+        var orig = window.checkAnswers;
+        window.checkAnswers = function() {
+          var res = orig.apply(this, arguments);
+          try {
+            var curScore = typeof score !== 'undefined' ? score : 0;
+            var totalQ = typeof correctAnswers !== 'undefined' ? Object.keys(correctAnswers).length : 40;
+            var curBand = 0;
+            if (typeof band !== 'undefined') {
+              curBand = band;
+            }
+            var results = typeof resultsData !== 'undefined' ? resultsData : [];
+            window.parent.postMessage({
+              type: 'IELTS_TEST_SUBMITTED',
+              payload: {
+                score: curScore,
+                total: totalQ,
+                band: curBand,
+                results: results
+              }
+            }, '*');
+          } catch(err) {
+            console.error('Failed to dispatch IELTS submission message', err);
+          }
+          return res;
+        };
+        clearInterval(checkInterval);
+      }
+    }, 100);
+  })();
+</script>`;
+
 export function detectIeltsTaskType(contentHtml: string): IeltsTaskType | 'UNKNOWN' {
   const hasAudio =
     /<audio\b/i.test(contentHtml) ||
@@ -213,6 +248,11 @@ export class IeltsService {
     // 4. Inject escape key listener script if not already present
     if (!task.contentHtml.includes('ESCAPE_PRESSED')) {
       task.contentHtml += IELTS_ESC_LISTENER_SCRIPT;
+    }
+
+    // 5. Inject submission postMessage hook if not already present
+    if (!task.contentHtml.includes('IELTS_TEST_SUBMITTED')) {
+      task.contentHtml += IELTS_SUBMISSION_SCRIPT;
     }
 
     return task;
