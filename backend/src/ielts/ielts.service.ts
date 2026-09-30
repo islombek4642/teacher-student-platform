@@ -257,93 +257,167 @@ export const IELTS_ESC_LISTENER_SCRIPT = `<script>
 
 export const IELTS_SUBMISSION_SCRIPT = `<script>
   (function() {
+    var hasDispatched = false;
+
+    function extractAndDispatch() {
+      if (hasDispatched) return;
+
+      var curScore = 0;
+      var totalQ = 40;
+      var curBand = 0;
+      var results = [];
+
+      // 1. Extract from #score-summary if rendered ('You scored 28 out of 40 (Band 6.5).')
+      var scoreEl = document.getElementById('score-summary');
+      if (scoreEl && scoreEl.textContent && scoreEl.textContent.trim().length > 0) {
+        var text = scoreEl.textContent.trim();
+        var m = text.match(/(\\d+)\\s+out of\\s+(\\d+)\\s*\\(Band\\s*([\\d.]+)\\)/i);
+        if (m) {
+          curScore = parseInt(m[1], 10);
+          totalQ = parseInt(m[2], 10);
+          curBand = parseFloat(m[3]);
+        }
+      }
+
+      // 2. Extract detailed question results from #result-details
+      var rows = document.querySelectorAll('#result-details table tbody tr');
+      if (rows && rows.length > 0) {
+        rows.forEach(function(row) {
+          var cols = row.querySelectorAll('td');
+          if (cols.length >= 4) {
+            var isCorr = cols[3].classList.contains('result-correct') ||
+                         cols[3].textContent.indexOf('Correct') !== -1 ||
+                         cols[3].textContent.indexOf('✓') !== -1;
+            results.push({
+              question: cols[0].textContent.trim(),
+              userAnswer: cols[1].textContent.trim(),
+              correctAnswer: cols[2].textContent.trim(),
+              isCorrect: isCorr
+            });
+          }
+        });
+        if (curScore === 0 && results.length > 0) {
+          curScore = results.filter(function(r) { return r.isCorrect; }).length;
+          totalQ = results.length;
+        }
+      }
+
+      // 3. Fallback to counting correct question classes if results table wasn't found
+      if (curScore === 0 && document.querySelectorAll('.subQuestion.correct').length > 0) {
+        curScore = document.querySelectorAll('.subQuestion.correct').length;
+      }
+
+      // Fallback band calculation if curBand is 0 and curScore > 0
+      if (curBand === 0 && curScore > 0) {
+        var r = curScore;
+        if (r >= 39) curBand = 9;
+        else if (r >= 37) curBand = 8.5;
+        else if (r >= 35) curBand = 8;
+        else if (r >= 33) curBand = 7.5;
+        else if (r >= 30) curBand = 7;
+        else if (r >= 26) curBand = 6.5;
+        else if (r >= 23) curBand = 6;
+        else if (r >= 18) curBand = 5.5;
+        else if (r >= 15) curBand = 5;
+        else if (r >= 13) curBand = 4.5;
+        else if (r >= 10) curBand = 4;
+        else if (r >= 8) curBand = 3.5;
+        else if (r >= 6) curBand = 3;
+        else if (r >= 4) curBand = 2.5;
+        else if (r >= 2) curBand = 2;
+        else if (r === 1) curBand = 1.5;
+        else curBand = 0;
+      }
+
+      var isResultsActive = (document.querySelector('.results-mode') !== null) ||
+                            (scoreEl && scoreEl.textContent && scoreEl.textContent.indexOf('out of') !== -1) ||
+                            (results.length > 0);
+
+      if (!isResultsActive) {
+        return;
+      }
+
+      hasDispatched = true;
+
+      try {
+        window.parent.postMessage({
+          type: 'IELTS_TEST_SUBMITTED',
+          payload: {
+            score: curScore,
+            total: totalQ,
+            band: curBand,
+            results: results
+          }
+        }, '*');
+      } catch(err) {
+        console.error('Failed to dispatch IELTS submission message', err);
+      }
+    }
+
+    // Approach A: Wrap window.checkAnswers if available
     var checkInterval = setInterval(function() {
-      if (typeof window.checkAnswers === 'function') {
+      if (typeof window.checkAnswers === 'function' && !window.checkAnswers.__wrapped) {
         var orig = window.checkAnswers;
         window.checkAnswers = function() {
           var res = orig.apply(this, arguments);
-          try {
-            var curScore = 0;
-            var totalQ = 40;
-            var curBand = 0;
-            var results = [];
-
-            // 1. Extract from #score-summary if rendered ('You scored 28 out of 40 (Band 6.5).')
-            var scoreEl = document.getElementById('score-summary');
-            if (scoreEl && scoreEl.textContent) {
-              var m = scoreEl.textContent.match(/(\\d+)\\s+out of\\s+(\\d+)\\s*\\(Band\\s*([\\d.]+)\\)/i);
-              if (m) {
-                curScore = parseInt(m[1], 10);
-                totalQ = parseInt(m[2], 10);
-                curBand = parseFloat(m[3]);
-              }
-            }
-
-            // 2. Extract detailed question results from #result-details
-            var rows = document.querySelectorAll('#result-details table tbody tr');
-            if (rows && rows.length > 0) {
-              rows.forEach(function(row) {
-                var cols = row.querySelectorAll('td');
-                if (cols.length >= 4) {
-                  var isCorr = cols[3].classList.contains('result-correct') || cols[3].textContent.indexOf('Correct') !== -1;
-                  results.push({
-                    question: cols[0].textContent.trim(),
-                    userAnswer: cols[1].textContent.trim(),
-                    correctAnswer: cols[2].textContent.trim(),
-                    isCorrect: isCorr
-                  });
-                }
-              });
-              if (curScore === 0 && results.length > 0) {
-                curScore = results.filter(function(r) { return r.isCorrect; }).length;
-                totalQ = results.length;
-              }
-            }
-
-            // 3. Fallback to counting correct question classes if results table wasn't found
-            if (curScore === 0 && document.querySelectorAll('.subQuestion.correct').length > 0) {
-              curScore = document.querySelectorAll('.subQuestion.correct').length;
-            }
-
-            // Fallback band calculation if curBand is 0 and curScore > 0
-            if (curBand === 0 && curScore > 0) {
-              var r = curScore;
-              if (r >= 39) curBand = 9;
-              else if (r >= 37) curBand = 8.5;
-              else if (r >= 35) curBand = 8;
-              else if (r >= 32) curBand = 7.5;
-              else if (r >= 30) curBand = 7;
-              else if (r >= 26) curBand = 6.5;
-              else if (r >= 23) curBand = 6;
-              else if (r >= 18) curBand = 5.5;
-              else if (r >= 16) curBand = 5;
-              else if (r >= 13) curBand = 4.5;
-              else if (r >= 10) curBand = 4;
-              else if (r >= 8) curBand = 3.5;
-              else if (r >= 6) curBand = 3;
-              else if (r >= 4) curBand = 2.5;
-              else if (r >= 2) curBand = 2;
-              else if (r === 1) curBand = 1.5;
-              else curBand = 0;
-            }
-
-            window.parent.postMessage({
-              type: 'IELTS_TEST_SUBMITTED',
-              payload: {
-                score: curScore,
-                total: totalQ,
-                band: curBand,
-                results: results
-              }
-            }, '*');
-          } catch(err) {
-            console.error('Failed to dispatch IELTS submission message', err);
-          }
+          setTimeout(extractAndDispatch, 50);
           return res;
         };
-        clearInterval(checkInterval);
+        window.checkAnswers.__wrapped = true;
       }
     }, 100);
+
+    // Approach B: Capture clicks on submit buttons and modals
+    document.addEventListener('click', function(e) {
+      var target = e.target;
+      if (!target) return;
+      var isSubmitAction =
+        target.id === 'confirm-submit-ok' ||
+        target.id === 'deliver-button' ||
+        target.closest('#confirm-submit-ok') ||
+        target.closest('#deliver-button') ||
+        target.classList.contains('footer__deliverButton___3FM07') ||
+        target.closest('.footer__deliverButton___3FM07') ||
+        target.classList.contains('submit-button') ||
+        target.closest('.submit-button') ||
+        target.classList.contains('check-button') ||
+        target.closest('.check-button');
+
+      if (isSubmitAction) {
+        setTimeout(extractAndDispatch, 100);
+        setTimeout(extractAndDispatch, 300);
+        setTimeout(extractAndDispatch, 600);
+        setTimeout(extractAndDispatch, 1200);
+      }
+    }, true);
+
+    // Approach C: MutationObserver on document.documentElement
+    if (window.MutationObserver) {
+      var observer = new MutationObserver(function() {
+        var scoreEl = document.getElementById('score-summary');
+        if (scoreEl && scoreEl.textContent && scoreEl.textContent.indexOf('out of') !== -1) {
+          extractAndDispatch();
+        }
+      });
+      observer.observe(document.documentElement, {
+        childList: true,
+        subtree: true,
+        characterData: true
+      });
+    }
+
+    // Approach D: Polling interval
+    var pollTimer = setInterval(function() {
+      if (hasDispatched) {
+        clearInterval(pollTimer);
+        clearInterval(checkInterval);
+        return;
+      }
+      var scoreEl = document.getElementById('score-summary');
+      if (scoreEl && scoreEl.textContent && scoreEl.textContent.indexOf('out of') !== -1) {
+        extractAndDispatch();
+      }
+    }, 500);
   })();
 </script>`;
 
@@ -751,16 +825,20 @@ export class IeltsService {
       });
     }
 
-    const isAssigned =
-      task.groupId === studentProfile.groupId ||
-      (await this.prisma.groupTask.findUnique({
-        where: {
-          groupId_taskId: {
+    let isAssigned = false;
+    if (studentProfile.groupId) {
+      if (task.groupId === studentProfile.groupId) {
+        isAssigned = true;
+      } else {
+        const count = await this.prisma.groupTask.count({
+          where: {
             groupId: studentProfile.groupId,
             taskId,
           },
-        },
-      })) !== null;
+        });
+        isAssigned = count > 0;
+      }
+    }
 
     if (!isAssigned) {
       throw new ForbiddenException({
