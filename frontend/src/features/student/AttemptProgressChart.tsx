@@ -6,6 +6,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import { useTranslation } from 'react-i18next';
 import { Icon } from '@iconify/react';
 import type { IeltsSubmission } from '@/features/ielts/api/ielts.api';
 
@@ -14,12 +15,16 @@ interface AttemptProgressChartProps {
 }
 
 export function AttemptProgressChart({ attempts }: AttemptProgressChartProps) {
+  const { t } = useTranslation();
   if (!attempts || attempts.length === 0) return null;
 
   const sorted = [...attempts].sort((a, b) => (a.attempt || 1) - (b.attempt || 1));
 
   const chartData = sorted.map((att, idx) => ({
-    name: `${att.attempt || idx + 1}-urinish`,
+    name: t('studentResults.attemptNumber', {
+      number: att.attempt || idx + 1,
+      defaultValue: `${att.attempt || idx + 1}-urinish`,
+    }),
     attempt: att.attempt || idx + 1,
     band: att.band,
     score: att.score,
@@ -37,7 +42,7 @@ export function AttemptProgressChart({ attempts }: AttemptProgressChartProps) {
         <div className="flex items-center gap-2">
           <Icon icon="lucide:trending-up" className="h-4 w-4 text-primary" />
           <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            O'sish dinamikasi (Progress Trend)
+            {t('studentResults.progressTrend')}
           </span>
         </div>
 
@@ -54,15 +59,15 @@ export function AttemptProgressChart({ attempts }: AttemptProgressChartProps) {
             {diff > 0 ? (
               <>
                 <Icon icon="lucide:arrow-up-right" className="h-3 w-3" />
-                <span>+{diff} Band o'sish 🚀</span>
+                <span>{t('studentResults.bandGrowth', { diff })}</span>
               </>
             ) : diff < 0 ? (
               <>
                 <Icon icon="lucide:arrow-down-right" className="h-3 w-3" />
-                <span>{diff} Band</span>
+                <span>{t('studentResults.bandDrop', { diff })}</span>
               </>
             ) : (
-              <span>Barqaror natija</span>
+              <span>{t('studentResults.steadyScore')}</span>
             )}
           </span>
         )}
@@ -104,7 +109,7 @@ export function AttemptProgressChart({ attempts }: AttemptProgressChartProps) {
                           Band {data.band}
                         </div>
                         <div className="text-muted-foreground text-[11px]">
-                          Ball: {data.score}/{data.total} • {data.date}
+                          {t('studentResults.scoreLabel')}: {data.score}/{data.total} • {data.date}
                         </div>
                       </div>
                     );
@@ -127,7 +132,7 @@ export function AttemptProgressChart({ attempts }: AttemptProgressChartProps) {
         <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
           <Icon icon="lucide:info" className="h-4 w-4 shrink-0 text-primary" />
           <span>
-            Hozircha faqat 1 ta urinish mavjud. Testni qayta yechib, ballingiz o'sishini grafikda kuzating!
+            {t('studentResults.singleAttemptNotice')}
           </span>
         </div>
       )}

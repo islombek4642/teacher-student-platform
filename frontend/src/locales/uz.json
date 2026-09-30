@@ -286,6 +286,17 @@
     "attemptsHistory": "Urinishlar tarixi",
     "bestBand": "Eng yaxshi: Band {{band}}",
     "attemptsCount": "{{count}} ta urinish",
-    "retakenTimes": "+{{count}} ta qayta yechilgan"
+    "retakenTimes": "+{{count}} ta qayta yechilgan",
+    "attemptsHeader": "Urinishlar",
+    "bestBandHeader": "Eng yaxshi Band",
+    "lastDateHeader": "Oxirgi topshirilgan vaqt",
+    "progressTrend": "O'sish dinamikasi",
+    "bandGrowth": "+{{diff}} Band o'sish 🚀",
+    "bandDrop": "{{diff}} Band",
+    "steadyScore": "Barqaror natija",
+    "singleAttemptNotice": "Hozircha faqat 1 ta urinish mavjud. Testni qayta yechib, ballingiz o'sishini grafikda kuzating!",
+    "attemptNumber": "{{number}}-urinish",
+    "scoreLabel": "Ball",
+    "pointsSuffix": "ball"
   }
 }

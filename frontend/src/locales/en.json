@@ -286,6 +286,17 @@
     "attemptsHistory": "Attempts History",
     "bestBand": "Best: Band {{band}}",
     "attemptsCount": "{{count}} attempts",
-    "retakenTimes": "+{{count}} retakes"
+    "retakenTimes": "+{{count}} retakes",
+    "attemptsHeader": "Attempts",
+    "bestBandHeader": "Best Band",
+    "lastDateHeader": "Last Attempted Time",
+    "progressTrend": "Progress Trend",
+    "bandGrowth": "+{{diff}} Band growth 🚀",
+    "bandDrop": "{{diff}} Band",
+    "steadyScore": "Steady Score",
+    "singleAttemptNotice": "Only 1 attempt so far. Retake the test to track your score progression on the chart!",
+    "attemptNumber": "Attempt {{number}}",
+    "scoreLabel": "Score",
+    "pointsSuffix": "pts"
   }
 }

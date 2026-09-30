@@ -196,9 +196,9 @@ export function StudentResultsPage() {
               <TableHead className="w-10 text-center" />
               <TableHead>{t('ielts.name')}</TableHead>
               <TableHead className="w-32">{t('tasks.questionType')}</TableHead>
-              <TableHead className="w-24 text-center">Urinishlar</TableHead>
-              <TableHead className="w-32 text-center">Eng yaxshi Band</TableHead>
-              <TableHead className="w-44 text-right">Oxirgi vaqt</TableHead>
+              <TableHead className="w-24 text-center">{t('studentResults.attemptsHeader')}</TableHead>
+              <TableHead className="w-32 text-center">{t('studentResults.bestBandHeader')}</TableHead>
+              <TableHead className="w-44 text-right">{t('studentResults.lastDateHeader')}</TableHead>
               <TableHead className="w-28 text-right" />
             </TableRow>
           </TableHeader>
@@ -241,7 +241,9 @@ export function StudentResultsPage() {
                               variant="outline"
                               className="text-[10px] px-1.5 py-0 border-primary/30 text-primary font-bold"
                             >
-                              +{group.attempts.length - 1} ta qayta yechilgan
+                              {t('studentResults.retakenTimes', {
+                                count: group.attempts.length - 1,
+                              })}
                             </Badge>
                           )}
                         </div>
@@ -266,7 +268,9 @@ export function StudentResultsPage() {
                       </TableCell>
                       <TableCell className="w-24 text-center text-xs font-bold text-muted-foreground">
                         <span className="rounded-full bg-muted px-2 py-0.5 font-mono">
-                          {group.attempts.length} ta
+                          {t('studentResults.attemptsCount', {
+                            count: group.attempts.length,
+                          })}
                         </span>
                       </TableCell>
                       <TableCell className="w-32 text-center">
@@ -347,7 +351,7 @@ export function StudentResultsPage() {
                                           </span>
                                         </div>
                                         <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 flex-wrap">
-                                          <span>{att.score}/{att.total} ball</span>
+                                          <span>{att.score}/{att.total} {t('studentResults.pointsSuffix')}</span>
                                           <span className="text-muted-foreground/40">•</span>
                                           <span className="font-semibold text-foreground">
                                             {new Date(att.submittedAt).toLocaleTimeString([], {
