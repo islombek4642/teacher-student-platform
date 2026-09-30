@@ -158,11 +158,30 @@ if ($gitCmd) {
 $psqlCmd   = Get-Command psql -ErrorAction SilentlyContinue
 $dockerCmd = Get-Command docker -ErrorAction SilentlyContinue
 
-# If psql not on PATH, search common PostgreSQL install directories
+# If psql not on PATH, search common PostgreSQL install directories or Windows services
+if (-not $psqlCmd) {
+    # 1. Try detecting from Windows Service
+    $pgSvc = Get-Service -Name 'postgresql*' -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($pgSvc) {
+        $svcPath = (Get-CimInstance win32_service -Filter "name='$($pgSvc.Name)'" -ErrorAction SilentlyContinue).PathName
+        if ($svcPath -match '"?([^"]+?\\bin)\\?') {
+            $svcBin = $matches[1]
+            if (Test-Path (Join-Path $svcBin 'psql.exe')) {
+                $env:Path = "$svcBin;$env:Path"
+                $psqlCmd = Get-Command psql -ErrorAction SilentlyContinue
+                Write-Log "  PostgreSQL topildi (servisdan): $svcBin (PATH ga qo`shildi)" 'INFO'
+            }
+        }
+    }
+}
+
 if (-not $psqlCmd) {
     $pgRoots = @(
         "$env:ProgramFiles\PostgreSQL",
-        "${env:ProgramFiles(x86)}\PostgreSQL"
+        "${env:ProgramFiles(x86)}\PostgreSQL",
+        "D:\Program Files\PostgreSQL",
+        "D:\PostgreSQL",
+        "C:\PostgreSQL"
     )
     foreach ($root in $pgRoots) {
         if (Test-Path $root) {
@@ -352,22 +371,24 @@ if ($dockerCmd -and -not $psqlCmd) {
 
     try {
         # Check if role exists
-        $roleCheck = & psql -U postgres -h $dbHost -p $dbPort -tAc "SELECT 1 FROM pg_roles WHERE rolname='$dbUser'" 2>$null
-        if ($roleCheck.Trim() -ne '1') {
+        $roleCheck = (& psql -U postgres -d postgres -h $dbHost -p $dbPort -tAc "SELECT 1 FROM pg_roles WHERE rolname='$dbUser'" 2>$null)
+        $roleExists = ($null -ne $roleCheck -and $roleCheck.ToString().Trim() -eq '1')
+        if (-not $roleExists) {
             Write-Log "  '$dbUser' foydalanuvchisi yaratilmoqda..." 'STEP'
-            & psql -U postgres -h $dbHost -p $dbPort -c "CREATE ROLE $dbUser WITH LOGIN CREATEDB PASSWORD '$dbPass'" 2>&1 | ForEach-Object { Write-Log "  psql: $_" 'INFO' }
+            & psql -U postgres -d postgres -h $dbHost -p $dbPort -c "CREATE ROLE $dbUser WITH LOGIN CREATEDB PASSWORD '$dbPass'" 2>&1 | ForEach-Object { Write-Log "  psql: $_" 'INFO' }
             Write-Log "  '$dbUser' foydalanuvchisi yaratildi" 'OK'
         } else {
             Write-Log "  '$dbUser' foydalanuvchisi allaqachon mavjud" 'OK'
             # Prisma migrate dev shadow database yaratishi uchun CREATEDB ruxsati kerak
-            & psql -U postgres -h $dbHost -p $dbPort -c "ALTER ROLE $dbUser CREATEDB" 2>&1 | Out-Null
+            & psql -U postgres -d postgres -h $dbHost -p $dbPort -c "ALTER ROLE $dbUser CREATEDB" 2>&1 | Out-Null
         }
 
         # Check if database exists
-        $dbCheck = & psql -U postgres -h $dbHost -p $dbPort -tAc "SELECT 1 FROM pg_database WHERE datname='$dbName'" 2>$null
-        if ($dbCheck.Trim() -ne '1') {
+        $dbCheck = (& psql -U postgres -d postgres -h $dbHost -p $dbPort -tAc "SELECT 1 FROM pg_database WHERE datname='$dbName'" 2>$null)
+        $dbExists = ($null -ne $dbCheck -and $dbCheck.ToString().Trim() -eq '1')
+        if (-not $dbExists) {
             Write-Log "  '$dbName' bazasi yaratilmoqda..." 'STEP'
-            & psql -U postgres -h $dbHost -p $dbPort -c "CREATE DATABASE $dbName OWNER $dbUser" 2>&1 | ForEach-Object { Write-Log "  psql: $_" 'INFO' }
+            & psql -U postgres -d postgres -h $dbHost -p $dbPort -c "CREATE DATABASE $dbName OWNER $dbUser" 2>&1 | ForEach-Object { Write-Log "  psql: $_" 'INFO' }
             Write-Log "  '$dbName' bazasi yaratildi" 'OK'
         } else {
             Write-Log "  '$dbName' bazasi allaqachon mavjud" 'OK'
@@ -509,10 +530,34 @@ $frontendJob = Start-Job -Name 'TSP_Frontend' -ScriptBlock {
 } -ArgumentList $FRONTEND
 
 # --- Start Cloudflare Tunnel (Internet orqali global kirish) ---
-$cloudflaredExe = Join-Path $ROOT 'bin\cloudflared.exe'
-if (-not (Test-Path $cloudflaredExe)) {
+$cloudflaredCmd = Get-Command cloudflared -ErrorAction SilentlyContinue
+$cloudflaredExe = if ($cloudflaredCmd) { $cloudflaredCmd.Source } else { Join-Path $ROOT 'bin\cloudflared.exe' }
+if (-not (Test-Path $cloudflaredExe) -and (Test-Path 'C:\teacher-student-platform\bin\cloudflared.exe')) {
     $cloudflaredExe = 'C:\teacher-student-platform\bin\cloudflared.exe'
 }
+
+# Agar topilmasa, avtomatik yuklab olamiz
+if (-not (Test-Path $cloudflaredExe)) {
+    $binDir = Join-Path $ROOT 'bin'
+    if (-not (Test-Path $binDir)) {
+        New-Item -ItemType Directory -Path $binDir -Force | Out-Null
+    }
+    $targetExe = Join-Path $binDir 'cloudflared.exe'
+    Write-Log 'Cloudflared topilmadi. Avtomatik yuklab olinmoqda (rasmiy GitHub relizdan)...' 'STEP'
+    try {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        $cfUrl = 'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe'
+        $wc = New-Object System.Net.WebClient
+        $wc.DownloadFile($cfUrl, $targetExe)
+        if (Test-Path $targetExe) {
+            $cloudflaredExe = $targetExe
+            Write-Log 'Cloudflared muvaffaqiyatli yuklab olindi va o`rnatildi!' 'OK'
+        }
+    } catch {
+        Write-Log "Cloudflared yuklab olishda xatolik: $_" 'WARN'
+    }
+}
+
 $tunnelProc = $null
 $tunnelUrl  = $null
 $tunnelLog  = Join-Path $LOGS_DIR "tunnel_$TIMESTAMP.log"

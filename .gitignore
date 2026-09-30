@@ -3,3 +3,5 @@ backups/
 logs/
 bin/
 server.txt
+.superpowers/
+scratch/
