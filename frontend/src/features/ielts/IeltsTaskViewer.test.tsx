@@ -1,4 +1,4 @@
-import { render, waitFor } from '@testing-library/react';
+import { render, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { IeltsTaskViewer } from './IeltsTaskViewer';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -46,14 +46,16 @@ describe('IeltsTaskViewer submission listener', () => {
       results: [{ question: 1, userAnswer: 'B', correctAnswer: 'B', isCorrect: true }],
     };
 
-    window.dispatchEvent(
-      new MessageEvent('message', {
-        data: {
-          type: 'IELTS_TEST_SUBMITTED',
-          payload: testPayload,
-        },
-      })
-    );
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: {
+            type: 'IELTS_TEST_SUBMITTED',
+            payload: testPayload,
+          },
+        })
+      );
+    });
 
     await waitFor(() => {
       expect(mockMutate).toHaveBeenCalledWith(
@@ -63,6 +65,61 @@ describe('IeltsTaskViewer submission listener', () => {
         }),
         expect.anything()
       );
+    });
+  });
+
+  it('immediately calls onClose when receiving CLOSE_IELTS_TASK in review mode', async () => {
+    const handleClose = vi.fn();
+    render(
+      <QueryClientProvider client={queryClient}>
+        <IeltsTaskViewer taskId="task-123" mode="review" onClose={handleClose} />
+      </QueryClientProvider>
+    );
+
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: { type: 'CLOSE_IELTS_TASK' },
+        })
+      );
+    });
+
+    await waitFor(() => {
+      expect(handleClose).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it('immediately calls onClose when receiving CLOSE_IELTS_TASK after submitting in take mode (e.g. retake)', async () => {
+    const handleClose = vi.fn();
+    render(
+      <QueryClientProvider client={queryClient}>
+        <IeltsTaskViewer taskId="task-123" mode="take" onClose={handleClose} />
+      </QueryClientProvider>
+    );
+
+    // 1. Submit test
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: {
+            type: 'IELTS_TEST_SUBMITTED',
+            payload: { score: 30, total: 40, band: 7.0, results: [] },
+          },
+        })
+      );
+    });
+
+    // 2. Click Exit
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: { type: 'CLOSE_IELTS_TASK' },
+        })
+      );
+    });
+
+    await waitFor(() => {
+      expect(handleClose).toHaveBeenCalledTimes(1);
     });
   });
 });

@@ -39,12 +39,14 @@ function DialogOverlay({
 
 function DialogContent({
   className,
+  overlayClassName,
   children,
   showCloseButton = true,
   onKeyDown,
   ...props
 }: DialogPrimitive.Popup.Props & {
-  showCloseButton?: boolean
+  showCloseButton?: boolean;
+  overlayClassName?: string;
 }) {
   const contentRef = React.useRef<HTMLDivElement>(null);
 
@@ -140,7 +142,7 @@ function DialogContent({
 
   return (
     <DialogPortal>
-      <DialogOverlay />
+      <DialogOverlay className={overlayClassName} />
       <DialogPrimitive.Popup
         ref={contentRef}
         data-slot="dialog-content"

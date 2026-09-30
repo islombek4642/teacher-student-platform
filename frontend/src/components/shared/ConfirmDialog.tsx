@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@iconify/react';
+import { cn } from '@/lib/utils';
 
 export interface ConfirmDialogProps {
   open: boolean;
@@ -21,6 +22,8 @@ export interface ConfirmDialogProps {
   icon?: string;
   isLoading?: boolean;
   loadingText?: string;
+  className?: string;
+  overlayClassName?: string;
   onConfirm: () => void;
 }
 
@@ -35,13 +38,15 @@ export function ConfirmDialog({
   icon = 'lucide:alert-triangle',
   isLoading = false,
   loadingText,
+  className,
+  overlayClassName,
   onConfirm,
 }: ConfirmDialogProps) {
   const { t } = useTranslation();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className={cn("sm:max-w-md", className)} overlayClassName={overlayClassName}>
         <DialogHeader className="flex flex-row items-center gap-3">
           <div
             className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${

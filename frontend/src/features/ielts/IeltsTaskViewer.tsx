@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useAuth } from '@/auth/useAuth';
@@ -26,22 +26,36 @@ export function IeltsTaskViewer({
   const isReview = mode === 'review';
   const submitMutation = useSubmitIeltsTask();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [, setIsSubmitted] = useState(false);
+  const isSubmittedRef = useRef(false);
+  const isReviewRef = useRef(isReview);
+
+  useEffect(() => {
+    isReviewRef.current = isReview;
+  }, [isReview]);
+
+  useEffect(() => {
+    isSubmittedRef.current = false;
+    setIsSubmitted(false);
+  }, [taskId, mode]);
 
   useEffect(() => {
     const handleMessage = (e: MessageEvent) => {
       if (e.data?.type === 'CLOSE_IELTS_TASK') {
-        if (isReview) {
+        if (isReviewRef.current || isSubmittedRef.current) {
           onClose();
         } else {
           setConfirmOpen(true);
         }
       } else if (e.data?.type === 'ESCAPE_PRESSED') {
-        if (isReview) {
+        if (isReviewRef.current || isSubmittedRef.current) {
           onClose();
         } else {
           setConfirmOpen((prev) => !prev);
         }
-      } else if (e.data?.type === 'IELTS_TEST_SUBMITTED' && isStudent && !isReview && e.data.payload) {
+      } else if (e.data?.type === 'IELTS_TEST_SUBMITTED' && isStudent && !isReviewRef.current && e.data.payload) {
+        isSubmittedRef.current = true;
+        setIsSubmitted(true);
         submitMutation.mutate(
           {
             taskId,
@@ -74,7 +88,7 @@ export function IeltsTaskViewer({
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (isReview) {
+        if (isReviewRef.current || isSubmittedRef.current) {
           onClose();
         } else {
           setConfirmOpen((prev) => !prev);
@@ -89,7 +103,7 @@ export function IeltsTaskViewer({
       window.removeEventListener('message', handleMessage);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [taskId, isStudent, isReview, onClose, submitMutation, t]);
+  }, [taskId, isStudent, onClose, submitMutation, t]);
 
   const handleConfirmExit = () => {
     setConfirmOpen(false);
@@ -115,7 +129,11 @@ export function IeltsTaskViewer({
             {onRetake && (
               <Button
                 size="sm"
-                onClick={onRetake}
+                onClick={() => {
+                  isSubmittedRef.current = false;
+                  setIsSubmitted(false);
+                  onRetake();
+                }}
                 className="gap-1.5 text-xs bg-primary font-semibold h-8"
               >
                 <Icon icon="lucide:rotate-ccw" className="h-3.5 w-3.5" />
@@ -152,6 +170,8 @@ export function IeltsTaskViewer({
         variant="destructive"
         icon="lucide:log-out"
         onConfirm={handleConfirmExit}
+        className="z-[110]"
+        overlayClassName="z-[110]"
       />
     </div>
   );

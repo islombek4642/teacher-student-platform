@@ -125,6 +125,7 @@ export function useSubmitIeltsTask() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ielts-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['my-submissions'] });
+      queryClient.invalidateQueries({ queryKey: ['task-attempts'] });
       queryClient.invalidateQueries({ queryKey: ['group-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['group-statistics'] });
     },
