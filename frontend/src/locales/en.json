@@ -232,6 +232,7 @@
     "uploadSuccess": "Task uploaded successfully",
     "name": "Name",
     "date": "Date",
+    "uploadedDate": "Uploaded Date",
     "view": "View",
     "confirmDelete": "Are you sure you want to delete this task?",
     "exitTitle": "Exit task",

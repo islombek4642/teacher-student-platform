@@ -28,7 +28,10 @@ export function ReadingPage() {
   const isStudent = payload?.role === 'STUDENT';
 
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [viewingTaskId, setViewingTaskId] = useState<string | null>(null);
+  const [viewerState, setViewerState] = useState<{
+    taskId: string;
+    mode: 'take' | 'review';
+  } | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
   const { data: tasks, isLoading } = useIeltsTasks();
   const { data: mySubmissions } = useStudentMySubmissions();
@@ -49,7 +52,7 @@ export function ReadingPage() {
     page: safePage,
     totalPages,
     setPage,
-    enabled: !taskToDelete && !uploadOpen && !viewingTaskId,
+    enabled: !taskToDelete && !uploadOpen && !viewerState,
   });
 
   useEffect(() => {
@@ -98,7 +101,7 @@ export function ReadingPage() {
           <TableRow className="h-[44px]">
             <TableHead className="w-12 text-center">#</TableHead>
             <TableHead>{t('ielts.name')}</TableHead>
-            <TableHead className="w-36">{t('ielts.date')}</TableHead>
+            <TableHead className="w-44">{t('ielts.uploadedDate')}</TableHead>
             <TableHead className="w-40 text-right" />
           </TableRow>
         </TableHeader>
@@ -129,12 +132,33 @@ export function ReadingPage() {
                     )}
                   </div>
                 </TableCell>
-                <TableCell className="w-36 text-muted-foreground">{new Date(task.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell className="w-44 text-muted-foreground whitespace-nowrap text-xs">
+                  <span className="font-semibold text-foreground">
+                    {new Date(task.createdAt).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </span>
+                  <span className="mx-1.5 text-muted-foreground/40">•</span>
+                  <span>
+                    {new Date(task.createdAt).toLocaleDateString([], {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                    })}
+                  </span>
+                </TableCell>
                 <TableCell className="w-44 text-right space-x-2">
                   <Button
                     variant={isStudent && !submissionsMap.has(task.id) ? 'default' : 'outline'}
                     size="sm"
-                    onClick={() => setViewingTaskId(task.id)}
+                    onClick={() => {
+                      if (isStudent && !submissionsMap.has(task.id)) {
+                        setViewerState({ taskId: task.id, mode: 'take' });
+                      } else {
+                        setViewerState({ taskId: task.id, mode: 'review' });
+                      }
+                    }}
                   >
                     {isStudent && !submissionsMap.has(task.id)
                       ? t('studentTasks.open', { defaultValue: 'Boshlash' })
@@ -166,7 +190,7 @@ export function ReadingPage() {
               <TableRow key={`empty-${i}`} className="h-[52px] pointer-events-none select-none">
                 <TableCell className="w-12 text-center text-muted-foreground">&nbsp;</TableCell>
                 <TableCell>&nbsp;</TableCell>
-                <TableCell className="w-36">&nbsp;</TableCell>
+                <TableCell className="w-44">&nbsp;</TableCell>
                 <TableCell className="w-40 text-right">&nbsp;</TableCell>
               </TableRow>
             ))
@@ -207,10 +231,12 @@ export function ReadingPage() {
           type="READING" 
         />
       )}
-      {viewingTaskId && (
+      {viewerState && (
         <IeltsTaskViewer 
-          taskId={viewingTaskId} 
-          onClose={() => setViewingTaskId(null)} 
+          taskId={viewerState.taskId} 
+          mode={viewerState.mode}
+          onRetake={() => setViewerState({ taskId: viewerState.taskId, mode: 'take' })}
+          onClose={() => setViewerState(null)} 
         />
       )}
 

@@ -232,6 +232,7 @@
     "uploadSuccess": "Topshiriq yuklandi",
     "name": "Nomi",
     "date": "Sana",
+    "uploadedDate": "Yuklangan sana",
     "view": "Ko'rish",
     "confirmDelete": "Bu topshiriqni o'chirmoqchimisiz?",
     "exitTitle": "Topshiriqdan chiqish",
