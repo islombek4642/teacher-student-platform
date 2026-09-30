@@ -141,7 +141,15 @@
     "unassignSuccess": "Task unassigned from group successfully",
     "averageBand": "Average Band",
     "noTasksToAssign": "No available tasks to assign",
-    "selectTask": "Select Task",
+    "selectTask": "Select Tasks",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "selectedCount": "{{count}} selected",
+    "assignMultipleTasks": "Assign Tasks ({{count}})",
+    "assignMultipleSuccess": "Selected tasks assigned to group successfully",
+    "unassignSelected": "Unassign Selected ({{count}})",
+    "confirmUnassignMultiple": "Do you want to unassign {{count}} selected tasks from the group?",
+    "searchTasksPlaceholder": "Search tasks by title...",
     "allTypes": "All Types"
   },
   "studentTasks": {

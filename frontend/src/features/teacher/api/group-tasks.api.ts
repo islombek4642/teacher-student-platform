@@ -46,3 +46,28 @@ export function useAssignGroupTask() {
     },
   });
 }
+
+export function useAssignMultipleGroupTasks() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      groupId,
+      taskIds,
+      assign,
+    }: {
+      groupId: string;
+      taskIds: string[];
+      assign: boolean;
+    }) => {
+      const res = await apiClient.post(`/groups/${groupId}/tasks/assign-multiple`, {
+        taskIds,
+        assign,
+      });
+      return res.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['group-tasks', variables.groupId] });
+      queryClient.invalidateQueries({ queryKey: ['group-statistics', variables.groupId] });
+    },
+  });
+}

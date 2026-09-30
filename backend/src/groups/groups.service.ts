@@ -229,12 +229,12 @@ export class GroupsService {
 
     const tasks = await this.prisma.ieltsTask.findMany({
       where: {
-        OR: [
-          { groupId },
-          { teacherId: group.teacherId, groupId: null },
-        ],
+        teacherId: group.teacherId,
       },
       include: {
+        groupTasks: {
+          where: { groupId },
+        },
         submissions: {
           where: {
             studentId: { in: studentIds },
@@ -250,7 +250,7 @@ export class GroupsService {
     });
 
     return tasks.map((task) => {
-      const isAssigned = task.groupId === groupId;
+      const isAssigned = (task.groupTasks && task.groupTasks.length > 0) || task.groupId === groupId;
       const studentBestMap = new Map<string, number>();
       for (const sub of task.submissions || []) {
         const currentBest = studentBestMap.get(sub.studentId) ?? 0;
@@ -283,25 +283,62 @@ export class GroupsService {
     });
   }
 
-  async assignTaskToGroup(teacherProfileId: string, groupId: string, taskId: string, assign: boolean) {
+  async assignMultipleTasksToGroup(
+    teacherProfileId: string,
+    groupId: string,
+    taskIds: string[],
+    assign: boolean = true,
+  ) {
     const group = await this.findOneOwned(teacherProfileId, groupId);
-    const task = await this.prisma.ieltsTask.findUnique({
-      where: { id: taskId },
-    });
-
-    if (!task || task.teacherId !== group.teacherId) {
-      throw new NotFoundException({
-        errorCode: ERROR_CODES.TASK_NOT_FOUND,
-        message: 'Task not found',
-      });
+    if (!taskIds || !Array.isArray(taskIds) || taskIds.length === 0) {
+      return { success: true, count: 0, isAssigned: assign };
     }
 
-    await this.prisma.ieltsTask.update({
-      where: { id: taskId },
-      data: { groupId: assign ? groupId : null },
+    const validTasks = await this.prisma.ieltsTask.findMany({
+      where: {
+        id: { in: taskIds },
+        teacherId: group.teacherId,
+      },
+      select: { id: true },
     });
+    const validTaskIds = validTasks.map((t) => t.id);
 
-    return { success: true, isAssigned: assign };
+    if (validTaskIds.length === 0) {
+      return { success: true, count: 0, isAssigned: assign };
+    }
+
+    if (assign) {
+      const created = await this.prisma.groupTask.createMany({
+        data: validTaskIds.map((taskId) => ({
+          groupId,
+          taskId,
+        })),
+        skipDuplicates: true,
+      });
+
+      return { success: true, count: created.count, isAssigned: true };
+    } else {
+      const deleted = await this.prisma.groupTask.deleteMany({
+        where: {
+          groupId,
+          taskId: { in: validTaskIds },
+        },
+      });
+
+      await this.prisma.ieltsTask.updateMany({
+        where: {
+          id: { in: validTaskIds },
+          groupId,
+        },
+        data: { groupId: null },
+      });
+
+      return { success: true, count: deleted.count, isAssigned: false };
+    }
+  }
+
+  async assignTaskToGroup(teacherProfileId: string, groupId: string, taskId: string, assign: boolean) {
+    return this.assignMultipleTasksToGroup(teacherProfileId, groupId, [taskId], assign);
   }
 
   async getGroupOverviewStatistics(teacherProfileId: string, groupId: string) {

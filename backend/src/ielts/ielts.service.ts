@@ -536,6 +536,15 @@ export class IeltsService {
         contentHtml,
         teacherId,
         groupId,
+        ...(groupId
+          ? {
+              groupTasks: {
+                create: {
+                  groupId,
+                },
+              },
+            }
+          : {}),
       },
     });
 
@@ -644,7 +653,12 @@ export class IeltsService {
 
   async getTasksByGroup(groupId: string) {
     return this.prisma.ieltsTask.findMany({
-      where: { groupId },
+      where: {
+        OR: [
+          { groupTasks: { some: { groupId } } },
+          { groupId },
+        ],
+      },
       select: {
         id: true,
         title: true,
@@ -689,7 +703,10 @@ export class IeltsService {
 
     return this.prisma.ieltsTask.findMany({
       where: {
-        groupId: student.groupId,
+        OR: [
+          { groupTasks: { some: { groupId: student.groupId } } },
+          { groupId: student.groupId },
+        ],
       },
       select: {
         id: true,
@@ -734,7 +751,18 @@ export class IeltsService {
       });
     }
 
-    if (task.groupId !== studentProfile.groupId) {
+    const isAssigned =
+      task.groupId === studentProfile.groupId ||
+      (await this.prisma.groupTask.findUnique({
+        where: {
+          groupId_taskId: {
+            groupId: studentProfile.groupId,
+            taskId,
+          },
+        },
+      })) !== null;
+
+    if (!isAssigned) {
       throw new ForbiddenException({
         errorCode: ERROR_CODES.FORBIDDEN_RESOURCE,
         message: 'This task is not assigned to your group',

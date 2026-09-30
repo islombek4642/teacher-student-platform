@@ -52,13 +52,14 @@ model StudentProfile {
 }
 
 model Group {
-  id        String           @id @default(uuid())
-  name      String
-  teacherId String
-  teacher   TeacherProfile   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  students  StudentProfile[]
+  id         String           @id @default(uuid())
+  name       String
+  teacherId  String
+  teacher    TeacherProfile   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  students   StudentProfile[]
+  groupTasks GroupTask[]
   ieltsTasks IeltsTask[]
-  createdAt DateTime         @default(now())
+  createdAt  DateTime         @default(now())
 
   @@index([teacherId])
 }
@@ -80,11 +81,26 @@ model IeltsTask {
   createdAt   DateTime       @default(now())
 
   teacher     TeacherProfile @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  group       Group?         @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  group       Group?         @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  groupTasks  GroupTask[]
   submissions IeltsSubmission[]
 
   @@index([teacherId])
   @@index([groupId])
+}
+
+model GroupTask {
+  id        String   @id @default(uuid())
+  groupId   String
+  taskId    String
+  createdAt DateTime @default(now())
+
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  task      IeltsTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, taskId])
+  @@index([groupId])
+  @@index([taskId])
 }
 
 model IeltsSubmission {

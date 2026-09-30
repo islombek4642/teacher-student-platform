@@ -142,6 +142,14 @@
     "averageBand": "O'rtacha Band",
     "noTasksToAssign": "Biriktirish uchun yangi topshiriqlar mavjud emas",
     "selectTask": "Topshiriqni tanlang",
+    "selectAll": "Hammasini tanlash",
+    "deselectAll": "Tanlovni bekor qilish",
+    "selectedCount": "{{count}} ta tanlandi",
+    "assignMultipleTasks": "Topshiriqlarni biriktirish ({{count}})",
+    "assignMultipleSuccess": "Tanlangan topshiriqlar guruhga biriktirildi",
+    "unassignSelected": "Tanlanganlarni chiqarish ({{count}})",
+    "confirmUnassignMultiple": "Tanlangan {{count}} ta topshiriqni guruhdan chiqarmoqchimisiz?",
+    "searchTasksPlaceholder": "Topshiriq nomi bo'yicha qidirish...",
     "allTypes": "Barcha yo'nalishlar"
   },
   "studentTasks": {

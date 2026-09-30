@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Icon } from '@iconify/react';
@@ -14,7 +14,12 @@ import {
 } from '@/components/ui/table';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { IeltsTaskViewer } from '@/features/ielts/IeltsTaskViewer';
-import { useGroupTasks, useAssignGroupTask, type GroupTaskItem } from './api/group-tasks.api';
+import {
+  useGroupTasks,
+  useAssignGroupTask,
+  useAssignMultipleGroupTasks,
+  type GroupTaskItem,
+} from './api/group-tasks.api';
 import { AssignTaskDialog } from './AssignTaskDialog';
 import { toast } from '@/components/ui/toast';
 
@@ -24,17 +29,46 @@ export function GroupTasksPage() {
 
   const { data: tasks, isLoading } = useGroupTasks(groupId || '');
   const assignMutation = useAssignGroupTask();
+  const assignMultipleMutation = useAssignMultipleGroupTasks();
 
   const [assignOpen, setAssignOpen] = useState(false);
   const [viewingTaskId, setViewingTaskId] = useState<string | null>(null);
   const [taskToUnassign, setTaskToUnassign] = useState<GroupTaskItem | null>(null);
+  const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
+  const [isBulkUnassignOpen, setIsBulkUnassignOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState<'ALL' | 'LISTENING' | 'READING'>('ALL');
 
-  const assignedTasks = (tasks || []).filter((task) => task.isAssigned);
-  const filteredTasks = assignedTasks.filter((task) => {
-    if (typeFilter === 'ALL') return true;
-    return task.type === typeFilter;
-  });
+  const assignedTasks = useMemo(
+    () => (tasks || []).filter((task) => task.isAssigned),
+    [tasks],
+  );
+
+  const filteredTasks = useMemo(() => {
+    return assignedTasks.filter((task) => {
+      if (typeFilter === 'ALL') return true;
+      return task.type === typeFilter;
+    });
+  }, [assignedTasks, typeFilter]);
+
+  const allFilteredSelected =
+    filteredTasks.length > 0 &&
+    filteredTasks.every((task) => selectedRowIds.includes(task.id));
+
+  const toggleSelectAllRows = () => {
+    if (allFilteredSelected) {
+      const filteredIdSet = new Set(filteredTasks.map((t) => t.id));
+      setSelectedRowIds((prev) => prev.filter((id) => !filteredIdSet.has(id)));
+    } else {
+      const combined = new Set([...selectedRowIds, ...filteredTasks.map((t) => t.id)]);
+      setSelectedRowIds(Array.from(combined));
+    }
+  };
+
+  const toggleRow = (id: string) => {
+    setSelectedRowIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+    );
+  };
 
   const handleConfirmUnassign = () => {
     if (!groupId || !taskToUnassign) return;
@@ -47,7 +81,33 @@ export function GroupTasksPage() {
             type: 'success',
             description: t('tasks.unassignSuccess'),
           });
+          setSelectedRowIds((prev) => prev.filter((id) => id !== taskToUnassign.id));
           setTaskToUnassign(null);
+        },
+        onError: (err: any) => {
+          const msg = err?.response?.data?.message || err?.message || t('common.error');
+          toast.add({
+            type: 'error',
+            description: msg,
+          });
+        },
+      },
+    );
+  };
+
+  const handleConfirmBulkUnassign = () => {
+    if (!groupId || selectedRowIds.length === 0) return;
+
+    assignMultipleMutation.mutate(
+      { groupId, taskIds: selectedRowIds, assign: false },
+      {
+        onSuccess: () => {
+          toast.add({
+            type: 'success',
+            description: t('tasks.unassignSuccess'),
+          });
+          setSelectedRowIds([]);
+          setIsBulkUnassignOpen(false);
         },
         onError: (err: any) => {
           const msg = err?.response?.data?.message || err?.message || t('common.error');
@@ -82,10 +142,24 @@ export function GroupTasksPage() {
           ))}
         </div>
 
-        <Button onClick={() => setAssignOpen(true)} className="gap-2">
-          <Icon icon="lucide:plus" className="h-4 w-4" />
-          <span>{t('tasks.assignTask')}</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          {selectedRowIds.length > 0 && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setIsBulkUnassignOpen(true)}
+              className="gap-1.5 text-xs"
+            >
+              <Icon icon="lucide:unlink" className="h-3.5 w-3.5" />
+              <span>{t('tasks.unassignSelected', { count: selectedRowIds.length })}</span>
+            </Button>
+          )}
+
+          <Button onClick={() => setAssignOpen(true)} className="gap-2">
+            <Icon icon="lucide:plus" className="h-4 w-4" />
+            <span>{t('tasks.assignTask')}</span>
+          </Button>
+        </div>
       </div>
 
       {/* Tasks Table */}
@@ -93,6 +167,29 @@ export function GroupTasksPage() {
         <Table>
           <TableHeader className="bg-muted/40 font-semibold">
             <TableRow className="h-[44px]">
+              <TableHead className="w-10 text-center">
+                <div
+                  onClick={toggleSelectAllRows}
+                  className={`h-4 w-4 rounded border mx-auto flex items-center justify-center transition-colors cursor-pointer select-none ${
+                    allFilteredSelected
+                      ? 'bg-primary border-primary text-primary-foreground'
+                      : selectedRowIds.some((id) =>
+                          filteredTasks.some((t) => t.id === id),
+                        )
+                      ? 'bg-primary/20 border-primary text-primary'
+                      : 'border-muted-foreground/40 bg-background'
+                  }`}
+                  title={allFilteredSelected ? t('tasks.deselectAll') : t('tasks.selectAll')}
+                >
+                  {allFilteredSelected ? (
+                    <Icon icon="lucide:check" className="h-3 w-3 stroke-[3]" />
+                  ) : selectedRowIds.some((id) =>
+                      filteredTasks.some((t) => t.id === id),
+                    ) ? (
+                    <Icon icon="lucide:minus" className="h-3 w-3 stroke-[3]" />
+                  ) : null}
+                </div>
+              </TableHead>
               <TableHead className="w-12 text-center">#</TableHead>
               <TableHead>{t('ielts.name')}</TableHead>
               <TableHead className="w-32">{t('tasks.questionType')}</TableHead>
@@ -105,19 +202,39 @@ export function GroupTasksPage() {
           <TableBody>
             {isLoading ? (
               <TableRow className="h-[52px]">
-                <TableCell colSpan={7} className="text-center text-muted-foreground">
+                <TableCell colSpan={8} className="text-center text-muted-foreground">
                   {t('common.loading')}
                 </TableCell>
               </TableRow>
             ) : filteredTasks.length > 0 ? (
               filteredTasks.map((task, index) => {
+                const isSelected = selectedRowIds.includes(task.id);
                 const submissionPercent =
                   task.studentCount > 0
                     ? Math.round((task.submissionCount / task.studentCount) * 100)
                     : 0;
 
                 return (
-                  <TableRow key={task.id} className="h-[52px]">
+                  <TableRow
+                    key={task.id}
+                    className={`h-[52px] transition-colors ${
+                      isSelected ? 'bg-primary/5' : ''
+                    }`}
+                  >
+                    <TableCell className="w-10 text-center">
+                      <div
+                        onClick={() => toggleRow(task.id)}
+                        className={`h-4 w-4 rounded border mx-auto flex items-center justify-center transition-colors cursor-pointer select-none ${
+                          isSelected
+                            ? 'bg-primary border-primary text-primary-foreground'
+                            : 'border-muted-foreground/40 bg-background'
+                        }`}
+                      >
+                        {isSelected && (
+                          <Icon icon="lucide:check" className="h-3 w-3 stroke-[3]" />
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell className="w-12 text-center text-muted-foreground font-medium">
                       {index + 1}
                     </TableCell>
@@ -201,14 +318,18 @@ export function GroupTasksPage() {
               })
             ) : (
               <TableRow className="h-[200px]">
-                <TableCell colSpan={7} className="text-center text-muted-foreground py-12">
-                  <Icon icon="lucide:clipboard-list" className="mx-auto mb-2 h-10 w-10 opacity-40 text-primary" />
+                <TableCell colSpan={8} className="text-center text-muted-foreground py-12">
+                  <Icon
+                    icon="lucide:clipboard-list"
+                    className="mx-auto mb-2 h-10 w-10 opacity-40 text-primary"
+                  />
                   <div className="text-base font-semibold text-foreground">
                     {t('tasks.empty')}
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground max-w-sm mx-auto">
                     {t('tasks.comingSoonDesc', {
-                      defaultValue: "Guruhga topshiriq biriktirish uchun yuqoridagi 'Topshiriq biriktirish' tugmasini bosing.",
+                      defaultValue:
+                        "Guruhga topshiriq biriktirish uchun yuqoridagi 'Topshiriq biriktirish' tugmasini bosing.",
                     })}
                   </p>
                   <Button
@@ -253,6 +374,18 @@ export function GroupTasksPage() {
         variant="destructive"
         isLoading={assignMutation.isPending}
         onConfirm={handleConfirmUnassign}
+      />
+
+      <ConfirmDialog
+        open={isBulkUnassignOpen}
+        onOpenChange={setIsBulkUnassignOpen}
+        title={t('tasks.unassign')}
+        description={t('tasks.confirmUnassignMultiple', { count: selectedRowIds.length })}
+        confirmText={t('common.confirm')}
+        cancelText={t('common.cancel')}
+        variant="destructive"
+        isLoading={assignMultipleMutation.isPending}
+        onConfirm={handleConfirmBulkUnassign}
       />
     </div>
   );

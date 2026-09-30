@@ -97,6 +97,16 @@ export class GroupsController {
     return this.groupsService.getGroupTasks(user.profileId!, groupId);
   }
 
+  @Post(':groupId/tasks/assign-multiple')
+  assignMultipleTasksToGroup(
+    @CurrentUser() user: JwtPayload,
+    @Param('groupId') groupId: string,
+    @Body('taskIds') taskIds: string[],
+    @Body('assign') assign: boolean = true,
+  ) {
+    return this.groupsService.assignMultipleTasksToGroup(user.profileId!, groupId, taskIds, assign);
+  }
+
   @Post(':groupId/tasks/:taskId/assign')
   assignTaskToGroup(
     @CurrentUser() user: JwtPayload,
