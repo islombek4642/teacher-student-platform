@@ -12,6 +12,7 @@ import { Icon } from '@iconify/react';
 import { useIeltsTasks } from '@/features/ielts/api/ielts.api';
 import { useAssignGroupTask, type GroupTaskItem } from './api/group-tasks.api';
 import { toast } from '@/components/ui/toast';
+import { IeltsTaskViewer } from '@/features/ielts/IeltsTaskViewer';
 
 interface AssignTaskDialogProps {
   open: boolean;
@@ -30,6 +31,7 @@ export function AssignTaskDialog({
   const { data: allTasks, isLoading } = useIeltsTasks();
   const assignMutation = useAssignGroupTask();
   const [selectedTaskId, setSelectedTaskId] = useState<string>('');
+  const [previewTaskId, setPreviewTaskId] = useState<string | null>(null);
 
   const assignedTaskIds = new Set(
     currentTasks.filter((ct) => ct.isAssigned).map((ct) => ct.id),
@@ -63,7 +65,8 @@ export function AssignTaskDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl font-bold">
@@ -125,12 +128,27 @@ export function AssignTaskDialog({
                         </div>
                       </div>
                     </div>
-                    {isSelected && (
-                      <Icon
-                        icon="lucide:check"
-                        className="h-4 w-4 text-primary shrink-0"
-                      />
-                    )}
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewTaskId(task.id);
+                        }}
+                        title={t('ielts.view')}
+                      >
+                        <Icon icon="lucide:eye" className="h-4 w-4" />
+                      </Button>
+                      {isSelected && (
+                        <Icon
+                          icon="lucide:check"
+                          className="h-4 w-4 text-primary shrink-0"
+                        />
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -156,5 +174,14 @@ export function AssignTaskDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    {previewTaskId && (
+      <IeltsTaskViewer
+        taskId={previewTaskId}
+        mode="review"
+        onClose={() => setPreviewTaskId(null)}
+      />
+    )}
+    </>
   );
 }

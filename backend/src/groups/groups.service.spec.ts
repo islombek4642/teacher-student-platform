@@ -173,14 +173,17 @@ describe('GroupsService', () => {
               firstName: 'Ali',
               lastName: 'Valiyev',
               user: { username: 'ali' },
-              submissions: [{ band: 6.0 }, { band: 7.0 }],
+              submissions: [
+                { taskId: 'task-1', band: 6.0 },
+                { taskId: 'task-2', band: 7.0 },
+              ],
             },
             {
               id: 'sp2',
               firstName: 'Vali',
               lastName: 'Aliyev',
               user: { username: 'vali' },
-              submissions: [{ band: 8.5 }],
+              submissions: [{ taskId: 'task-1', band: 8.5 }],
             },
           ]),
         },
@@ -191,8 +194,42 @@ describe('GroupsService', () => {
       expect(leaderboard).toHaveLength(2);
       expect(leaderboard[0].username).toBe('vali');
       expect(leaderboard[0].averageBand).toBe(8.5);
+      expect(leaderboard[0].bestBand).toBe(8.5);
+      expect(leaderboard[0].testsTaken).toBe(1);
       expect(leaderboard[1].username).toBe('ali');
       expect(leaderboard[1].averageBand).toBe(6.5);
+      expect(leaderboard[1].bestBand).toBe(7.0);
+      expect(leaderboard[1].testsTaken).toBe(2);
+    });
+
+    it('calculates average band from best attempt per task', async () => {
+      const prisma = {
+        group: {
+          findUnique: jest.fn().mockResolvedValue({ id: 'g1', teacherId: 't1' }),
+        },
+        studentProfile: {
+          findMany: jest.fn().mockResolvedValue([
+            {
+              id: 'sp1',
+              firstName: 'Ali',
+              lastName: 'Valiyev',
+              user: { username: 'ali' },
+              submissions: [
+                { taskId: 'task-1', band: 5.0 }, // attempt 1
+                { taskId: 'task-1', band: 7.0 }, // attempt 2 (best on task-1 is 7.0)
+                { taskId: 'task-2', band: 6.0 }, // attempt 1 on task-2
+              ],
+            },
+          ]),
+        },
+      } as unknown as PrismaService;
+      const service = new GroupsService(prisma);
+
+      const leaderboard = await (service as any).getGroupLeaderboard('t1', 'g1');
+      expect(leaderboard).toHaveLength(1);
+      expect(leaderboard[0].testsTaken).toBe(2);
+      expect(leaderboard[0].bestBand).toBe(7.0);
+      expect(leaderboard[0].averageBand).toBe(6.5); // (7.0 + 6.0) / 2
     });
   });
 });

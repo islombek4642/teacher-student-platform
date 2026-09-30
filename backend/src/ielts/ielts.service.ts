@@ -451,23 +451,15 @@ export class IeltsService {
   async getTasksByStudent(userId: string) {
     const student = await this.prisma.studentProfile.findUnique({
       where: { userId },
-      include: {
-        group: true,
-      },
     });
 
-    if (!student) {
+    if (!student || !student.groupId) {
       return [];
     }
 
     return this.prisma.ieltsTask.findMany({
       where: {
-        OR: [
-          { groupId: student.groupId },
-          ...(student.group?.teacherId
-            ? [{ teacherId: student.group.teacherId, groupId: null }]
-            : []),
-        ],
+        groupId: student.groupId,
       },
       select: {
         id: true,
@@ -509,6 +501,13 @@ export class IeltsService {
       throw new BadRequestException({
         errorCode: ERROR_CODES.STUDENT_NOT_FOUND,
         message: 'Student profile not found',
+      });
+    }
+
+    if (task.groupId !== studentProfile.groupId) {
+      throw new ForbiddenException({
+        errorCode: ERROR_CODES.FORBIDDEN_RESOURCE,
+        message: 'This task is not assigned to your group',
       });
     }
 

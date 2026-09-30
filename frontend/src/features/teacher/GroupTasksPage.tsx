@@ -238,6 +238,7 @@ export function GroupTasksPage() {
       {viewingTaskId && (
         <IeltsTaskViewer
           taskId={viewingTaskId}
+          mode="review"
           onClose={() => setViewingTaskId(null)}
         />
       )}

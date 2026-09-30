@@ -101,7 +101,7 @@ export function IeltsTaskViewer({
     : `${API_URL}/ielts/${taskId}/view`;
 
   return (
-    <div className="fixed inset-0 z-[40] bg-background flex flex-col">
+    <div className="fixed inset-0 z-[100] bg-background flex flex-col">
       {isReview && (
         <div className="flex items-center justify-between border-b border-border/80 bg-muted/90 px-4 py-2 backdrop-blur-sm z-10 shrink-0">
           <div className="flex items-center gap-2">

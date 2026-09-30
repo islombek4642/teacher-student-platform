@@ -251,12 +251,20 @@ export class GroupsService {
 
     return tasks.map((task) => {
       const isAssigned = task.groupId === groupId;
-      const submissionCount = task.submissions?.length || 0;
+      const studentBestMap = new Map<string, number>();
+      for (const sub of task.submissions || []) {
+        const currentBest = studentBestMap.get(sub.studentId) ?? 0;
+        if (sub.band > currentBest) {
+          studentBestMap.set(sub.studentId, sub.band);
+        }
+      }
+      const submissionCount = studentBestMap.size;
+      const bestBands = Array.from(studentBestMap.values());
       const averageBand =
         submissionCount > 0
           ? Number(
               (
-                task.submissions.reduce((acc, curr) => acc + curr.band, 0) /
+                bestBands.reduce((acc, curr) => acc + curr, 0) /
                 submissionCount
               ).toFixed(1),
             )
@@ -308,38 +316,51 @@ export class GroupsService {
       },
       include: {
         task: {
-          select: { type: true },
+          select: { id: true, type: true },
         },
       },
     });
 
     const totalSubmissions = submissions.length;
+
+    const studentTaskBestMap = new Map<string, { band: number; type: string }>();
+    for (const sub of submissions) {
+      const key = `${sub.studentId}_${sub.taskId}`;
+      const existing = studentTaskBestMap.get(key);
+      if (!existing || sub.band > existing.band) {
+        studentTaskBestMap.set(key, { band: sub.band, type: sub.task?.type });
+      }
+    }
+
+    const uniqueCompleted = Array.from(studentTaskBestMap.values());
     const averageBand =
-      totalSubmissions > 0
+      uniqueCompleted.length > 0
         ? Number(
             (
-              submissions.reduce((acc, s) => acc + s.band, 0) / totalSubmissions
+              uniqueCompleted.reduce((acc, s) => acc + s.band, 0) /
+              uniqueCompleted.length
             ).toFixed(1),
           )
         : 0;
 
-    const listeningSubs = submissions.filter((s) => s.task?.type === 'LISTENING');
+    const listeningScores = uniqueCompleted.filter((s) => s.type === 'LISTENING');
     const listeningAverageBand =
-      listeningSubs.length > 0
+      listeningScores.length > 0
         ? Number(
             (
-              listeningSubs.reduce((acc, s) => acc + s.band, 0) /
-              listeningSubs.length
+              listeningScores.reduce((acc, s) => acc + s.band, 0) /
+              listeningScores.length
             ).toFixed(1),
           )
         : 0;
 
-    const readingSubs = submissions.filter((s) => s.task?.type === 'READING');
+    const readingScores = uniqueCompleted.filter((s) => s.type === 'READING');
     const readingAverageBand =
-      readingSubs.length > 0
+      readingScores.length > 0
         ? Number(
             (
-              readingSubs.reduce((acc, s) => acc + s.band, 0) / readingSubs.length
+              readingScores.reduce((acc, s) => acc + s.band, 0) /
+              readingScores.length
             ).toFixed(1),
           )
         : 0;
@@ -368,6 +389,7 @@ export class GroupsService {
         user: { select: { username: true } },
         submissions: {
           select: {
+            taskId: true,
             band: true,
             submittedAt: true,
           },
@@ -376,20 +398,30 @@ export class GroupsService {
     });
 
     const leaderboard = students.map((student) => {
-      const testsTaken = student.submissions.length;
+      const taskBestMap = new Map<string, number>();
+      for (const s of student.submissions) {
+        const cur = taskBestMap.get(s.taskId) ?? 0;
+        if (s.band > cur) {
+          taskBestMap.set(s.taskId, s.band);
+        }
+      }
+      const testsTaken = taskBestMap.size;
+      const bestScores = Array.from(taskBestMap.values());
       const averageBand =
         testsTaken > 0
           ? Number(
               (
-                student.submissions.reduce((acc, s) => acc + s.band, 0) /
+                bestScores.reduce((acc, b) => acc + b, 0) /
                 testsTaken
               ).toFixed(1),
             )
           : 0;
       const bestBand =
-        testsTaken > 0 ? Math.max(...student.submissions.map((s) => s.band)) : 0;
+        student.submissions.length > 0
+          ? Math.max(...student.submissions.map((s) => s.band))
+          : 0;
       const lastActive =
-        testsTaken > 0
+        student.submissions.length > 0
           ? [...student.submissions].sort(
               (a, b) =>
                 new Date(b.submittedAt).getTime() -
@@ -412,6 +444,9 @@ export class GroupsService {
     return leaderboard.sort((a, b) => {
       if (b.averageBand !== a.averageBand) {
         return b.averageBand - a.averageBand;
+      }
+      if (b.bestBand !== a.bestBand) {
+        return b.bestBand - a.bestBand;
       }
       return b.testsTaken - a.testsTaken;
     });
