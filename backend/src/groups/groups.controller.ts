@@ -91,4 +91,29 @@ export class GroupsController {
   remove(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
     return this.groupsService.remove(user.profileId!, id);
   }
+
+  @Get(':groupId/tasks')
+  getGroupTasks(@CurrentUser() user: JwtPayload, @Param('groupId') groupId: string) {
+    return this.groupsService.getGroupTasks(user.profileId!, groupId);
+  }
+
+  @Post(':groupId/tasks/:taskId/assign')
+  assignTaskToGroup(
+    @CurrentUser() user: JwtPayload,
+    @Param('groupId') groupId: string,
+    @Param('taskId') taskId: string,
+    @Body('assign') assign: boolean = true,
+  ) {
+    return this.groupsService.assignTaskToGroup(user.profileId!, groupId, taskId, assign);
+  }
+
+  @Get(':groupId/statistics/overview')
+  getGroupOverviewStatistics(@CurrentUser() user: JwtPayload, @Param('groupId') groupId: string) {
+    return this.groupsService.getGroupOverviewStatistics(user.profileId!, groupId);
+  }
+
+  @Get(':groupId/statistics/leaderboard')
+  getGroupLeaderboard(@CurrentUser() user: JwtPayload, @Param('groupId') groupId: string) {
+    return this.groupsService.getGroupLeaderboard(user.profileId!, groupId);
+  }
 }
