@@ -241,7 +241,10 @@
     "typeMismatch": "Noto'g'ri fayl turi! Siz {{expected}} bo'limida {{detected}} faylini tanladingiz.",
     "pleaseUploadExpected": "Iltimos, haqiqiy {{expected}} topshiriq faylini tanlang.",
     "deleteSuccess": "Topshiriq muvaffaqiyatli o'chirildi",
-    "taskAlreadyExists": "Bu nomdagi topshiriq allaqachon mavjud"
+    "taskAlreadyExists": "Bu nomdagi topshiriq allaqachon mavjud",
+    "reviewModeBanner": "Ko'rish rejimi: Xatolarni tahlil qilish (Read-only)",
+    "retakeTest": "Qayta yechish",
+    "exitReview": "Chiqish"
   },
   "dashboard": {
     "teacherWelcome": "O'qituvchi boshqaruv paneli",
@@ -277,6 +280,12 @@
     "filterAll": "Barcha testlar",
     "filterListening": "Listening",
     "filterReading": "Reading",
-    "review": "Ko'rish"
+    "review": "Ko'rish",
+    "retake": "Qayta yechish",
+    "retakeTest": "Qayta yechish (Retake)",
+    "attemptsHistory": "Urinishlar tarixi",
+    "bestBand": "Eng yaxshi: Band {{band}}",
+    "attemptsCount": "{{count}} ta urinish",
+    "retakenTimes": "+{{count}} ta qayta yechilgan"
   }
 }

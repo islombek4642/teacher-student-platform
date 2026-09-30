@@ -94,13 +94,15 @@ model IeltsSubmission {
   score       Int
   total       Int            @default(40)
   band        Float
+  attempt     Int            @default(1)
   answersJson Json
   submittedAt DateTime       @default(now())
 
   student     StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
   task        IeltsTask      @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
-  @@unique([studentId, taskId])
+  @@unique([studentId, taskId, attempt])
   @@index([studentId])
   @@index([taskId])
+  @@index([studentId, taskId])
 }

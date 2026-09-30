@@ -11,3 +11,14 @@ export function useStudentMySubmissions() {
     },
   });
 }
+
+export function useStudentTaskAttempts(taskId: string, enabled = true) {
+  return useQuery({
+    queryKey: ['task-attempts', taskId],
+    queryFn: async () => {
+      const res = await apiClient.get<IeltsSubmission[]>(`/ielts/${taskId}/attempts`);
+      return res.data;
+    },
+    enabled: !!taskId && enabled,
+  });
+}

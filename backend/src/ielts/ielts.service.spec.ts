@@ -22,6 +22,8 @@ describe('IeltsService', () => {
       findUnique: jest.fn(),
     },
     ieltsSubmission: {
+      create: jest.fn(),
+      findFirst: jest.fn(),
       upsert: jest.fn(),
       findUnique: jest.fn(),
       findMany: jest.fn(),
@@ -152,13 +154,15 @@ describe('IeltsService', () => {
 
       mockPrisma.ieltsTask.findUnique.mockResolvedValueOnce({ id: taskId });
       mockPrisma.studentProfile.findUnique.mockResolvedValueOnce({ id: 'sp-1', userId: 'u-student' });
-      mockPrisma.ieltsSubmission.upsert.mockResolvedValueOnce({
+      mockPrisma.ieltsSubmission.findFirst.mockResolvedValueOnce(null);
+      mockPrisma.ieltsSubmission.create.mockResolvedValueOnce({
         id: 'sub-1',
         studentId: 'sp-1',
         taskId,
         score: 32,
         total: 40,
         band: 7.5,
+        attempt: 1,
         answersJson: dto.results,
         submittedAt: new Date('2026-09-30T10:00:00Z'),
       });
@@ -167,14 +171,15 @@ describe('IeltsService', () => {
       expect(result).toBeDefined();
       expect(result.score).toBe(32);
       expect(result.band).toBe(7.5);
-      expect(mockPrisma.ieltsSubmission.upsert).toHaveBeenCalledWith(
+      expect(result.attempt).toBe(1);
+      expect(mockPrisma.ieltsSubmission.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: {
-            studentId_taskId: {
-              studentId: 'sp-1',
-              taskId,
-            },
-          },
+          data: expect.objectContaining({
+            studentId: 'sp-1',
+            taskId,
+            score: 32,
+            attempt: 1,
+          }),
         }),
       );
     });

@@ -118,6 +118,36 @@ export const IELTS_SUBMISSION_SCRIPT = `<script>
   })();
 </script>`;
 
+export const IELTS_REVIEW_MODE_SCRIPT = `<script>
+  (function() {
+    function lockInputs() {
+      document.querySelectorAll('input, select, textarea').forEach(function(el) {
+        el.disabled = true;
+      });
+      var deliverBtn = document.getElementById('deliver-button');
+      if (deliverBtn) {
+        deliverBtn.style.display = 'none';
+      }
+      var submitBtns = document.querySelectorAll('button[type="submit"], .submit-button, .check-button');
+      submitBtns.forEach(function(b) {
+        b.style.display = 'none';
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+      lockInputs();
+      setTimeout(function() {
+        if (typeof window.checkAnswers === 'function') {
+          try {
+            window.checkAnswers();
+          } catch(e) {}
+          lockInputs();
+        }
+      }, 400);
+    });
+  })();
+</script>`;
+
 export function detectIeltsTaskType(contentHtml: string): IeltsTaskType | 'UNKNOWN' {
   const hasAudio =
     /<audio\b/i.test(contentHtml) ||
@@ -273,7 +303,7 @@ export class IeltsService {
     return { id: task.id, title: task.title, type: task.type };
   }
 
-  async getTask(id: string) {
+  async getTask(id: string, mode?: string) {
     const task = await this.prisma.ieltsTask.findUnique({
       where: { id },
     });
@@ -307,12 +337,21 @@ export class IeltsService {
       task.contentHtml += IELTS_ESC_LISTENER_SCRIPT;
     }
 
-    // 5. Always inject latest submission postMessage hook
+    // 5. Always inject latest submission postMessage hook or review script
     task.contentHtml = task.contentHtml.replace(
       /<script>[\s\S]*?IELTS_TEST_SUBMITTED[\s\S]*?<\/script>/gi,
       '',
     );
-    task.contentHtml += IELTS_SUBMISSION_SCRIPT;
+    task.contentHtml = task.contentHtml.replace(
+      /<script>[\s\S]*?IELTS_REVIEW_MODE[\s\S]*?<\/script>/gi,
+      '',
+    );
+
+    if (mode === 'review') {
+      task.contentHtml += IELTS_REVIEW_MODE_SCRIPT;
+    } else {
+      task.contentHtml += IELTS_SUBMISSION_SCRIPT;
+    }
 
     return task;
   }
@@ -448,26 +487,23 @@ export class IeltsService {
     }
 
     const total = dto.total ?? 40;
-    const submission = await this.prisma.ieltsSubmission.upsert({
+    const lastSubmission = await this.prisma.ieltsSubmission.findFirst({
       where: {
-        studentId_taskId: {
-          studentId: studentProfile.id,
-          taskId,
-        },
+        studentId: studentProfile.id,
+        taskId,
       },
-      update: {
-        score: dto.score,
-        total,
-        band: dto.band,
-        answersJson: dto.results,
-        submittedAt: new Date(),
-      },
-      create: {
+      orderBy: { attempt: 'desc' },
+    });
+    const attempt = lastSubmission ? lastSubmission.attempt + 1 : 1;
+
+    const submission = await this.prisma.ieltsSubmission.create({
+      data: {
         studentId: studentProfile.id,
         taskId,
         score: dto.score,
         total,
         band: dto.band,
+        attempt,
         answersJson: dto.results,
       },
     });
@@ -478,6 +514,7 @@ export class IeltsService {
       score: submission.score,
       total: submission.total,
       band: submission.band,
+      attempt: submission.attempt,
       submittedAt: submission.submittedAt,
     };
   }
@@ -490,13 +527,12 @@ export class IeltsService {
       return null;
     }
 
-    return this.prisma.ieltsSubmission.findUnique({
+    return this.prisma.ieltsSubmission.findFirst({
       where: {
-        studentId_taskId: {
-          studentId: studentProfile.id,
-          taskId,
-        },
+        studentId: studentProfile.id,
+        taskId,
       },
+      orderBy: { attempt: 'desc' },
     });
   }
 
@@ -520,6 +556,33 @@ export class IeltsService {
         },
       },
       orderBy: { submittedAt: 'desc' },
+    });
+  }
+
+  async getTaskAttempts(user: JwtPayload, taskId: string) {
+    const studentProfile = await this.prisma.studentProfile.findUnique({
+      where: { userId: user.sub },
+    });
+    if (!studentProfile) {
+      return [];
+    }
+
+    return this.prisma.ieltsSubmission.findMany({
+      where: {
+        studentId: studentProfile.id,
+        taskId,
+      },
+      select: {
+        id: true,
+        taskId: true,
+        score: true,
+        total: true,
+        band: true,
+        attempt: true,
+        submittedAt: true,
+        answersJson: true,
+      },
+      orderBy: { attempt: 'asc' },
     });
   }
 }

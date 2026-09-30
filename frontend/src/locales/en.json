@@ -241,7 +241,10 @@
     "typeMismatch": "File type mismatch! You selected a {{detected}} file in the {{expected}} section.",
     "pleaseUploadExpected": "Please upload a valid {{expected}} task file.",
     "deleteSuccess": "Task deleted successfully",
-    "taskAlreadyExists": "A task with this title already exists"
+    "taskAlreadyExists": "A task with this title already exists",
+    "reviewModeBanner": "Review Mode: Analysing answers & errors (Read-only)",
+    "retakeTest": "Retake Test",
+    "exitReview": "Exit"
   },
   "dashboard": {
     "teacherWelcome": "Teacher Dashboard",
@@ -277,6 +280,12 @@
     "filterAll": "All tests",
     "filterListening": "Listening",
     "filterReading": "Reading",
-    "review": "Review"
+    "review": "Review",
+    "retake": "Retake",
+    "retakeTest": "Retake test",
+    "attemptsHistory": "Attempts History",
+    "bestBand": "Best: Band {{band}}",
+    "attemptsCount": "{{count}} attempts",
+    "retakenTimes": "+{{count}} retakes"
   }
 }

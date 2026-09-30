@@ -9,6 +9,7 @@ import {
   Param,
   Res,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { IeltsService } from './ielts.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -107,9 +108,23 @@ export class IeltsController {
     return this.ieltsService.getMySubmission(user, id);
   }
 
+  @Get(':id/attempts')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.STUDENT, Role.TEACHER, Role.SUPER_ADMIN)
+  async getTaskAttempts(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.ieltsService.getTaskAttempts(user, id);
+  }
+
   @Get(':id/view')
-  async viewTask(@Param('id') id: string, @Res() res: Response) {
-    const task = await this.ieltsService.getTask(id);
+  async viewTask(
+    @Param('id') id: string,
+    @Query('mode') mode: string,
+    @Res() res: Response,
+  ) {
+    const task = await this.ieltsService.getTask(id, mode);
     res.setHeader('Content-Type', 'text/html');
     res.send(task.contentHtml);
   }

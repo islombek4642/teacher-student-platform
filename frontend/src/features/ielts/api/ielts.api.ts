@@ -100,6 +100,7 @@ export type IeltsSubmission = {
   score: number;
   total: number;
   band: number;
+  attempt?: number;
   submittedAt: string;
   task?: {
     id: string;

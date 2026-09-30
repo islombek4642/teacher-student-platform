@@ -9,11 +9,20 @@ import { DashboardCard } from '@/components/shared/DashboardCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { IeltsTaskViewer } from '@/features/ielts/IeltsTaskViewer';
+import { AttemptHistoryDialog } from './AttemptHistoryDialog';
 
 export function StudentDashboardPage() {
   const { t } = useTranslation();
   const { username } = useAuth();
-  const [viewingTaskId, setViewingTaskId] = useState<string | null>(null);
+  const [historyDialogTask, setHistoryDialogTask] = useState<{
+    id: string;
+    title: string;
+    type?: 'LISTENING' | 'READING' | 'WRITING' | 'SPEAKING';
+  } | null>(null);
+  const [viewerState, setViewerState] = useState<{
+    taskId: string;
+    mode: 'take' | 'review';
+  } | null>(null);
 
   const { data: tasks } = useIeltsTasks();
   const { data: submissions } = useStudentMySubmissions();
@@ -185,18 +194,39 @@ export function StudentDashboardPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                       <span className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-xs font-black text-primary">
                         <Icon icon="lucide:award" className="h-3.5 w-3.5" />
                         <span>Band {sub.band}</span>
                       </span>
                       <Button
+                        variant="ghost"
+                        size="icon"
+                        title={t('studentResults.attemptsHistory', "Urinishlar tarixi")}
+                        onClick={() =>
+                          setHistoryDialogTask({
+                            id: sub.taskId,
+                            title: sub.task?.title || 'IELTS Test',
+                            type: sub.task?.type,
+                          })
+                        }
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      >
+                        <Icon icon="lucide:line-chart" className="h-4 w-4" />
+                      </Button>
+                      <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setViewingTaskId(sub.taskId)}
-                        className="h-8 text-xs"
+                        onClick={() =>
+                          setViewerState({
+                            taskId: sub.taskId,
+                            mode: 'review',
+                          })
+                        }
+                        className="h-8 text-xs gap-1"
                       >
-                        {t('ielts.view')}
+                        <Icon icon="lucide:eye" className="h-3.5 w-3.5" />
+                        <span>{t('ielts.view')}</span>
                       </Button>
                     </div>
                   </div>
@@ -217,10 +247,30 @@ export function StudentDashboardPage() {
         )}
       </div>
 
-      {viewingTaskId && (
+      {viewerState && (
         <IeltsTaskViewer
-          taskId={viewingTaskId}
-          onClose={() => setViewingTaskId(null)}
+          taskId={viewerState.taskId}
+          mode={viewerState.mode}
+          onRetake={() => setViewerState({ taskId: viewerState.taskId, mode: 'take' })}
+          onClose={() => setViewerState(null)}
+        />
+      )}
+
+      {historyDialogTask && (
+        <AttemptHistoryDialog
+          open={!!historyDialogTask}
+          onOpenChange={(open) => !open && setHistoryDialogTask(null)}
+          taskId={historyDialogTask.id}
+          taskTitle={historyDialogTask.title}
+          taskType={historyDialogTask.type}
+          onReviewAttempt={(id) => {
+            setHistoryDialogTask(null);
+            setViewerState({ taskId: id, mode: 'review' });
+          }}
+          onRetake={(id) => {
+            setHistoryDialogTask(null);
+            setViewerState({ taskId: id, mode: 'take' });
+          }}
         />
       )}
     </div>

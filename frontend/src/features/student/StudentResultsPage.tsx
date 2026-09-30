@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
@@ -13,12 +13,18 @@ import {
 } from '@/components/ui/table';
 import { useStudentMySubmissions } from './api/student-results.api';
 import { IeltsTaskViewer } from '@/features/ielts/IeltsTaskViewer';
+import { AttemptProgressChart } from './AttemptProgressChart';
+import type { IeltsSubmission } from '@/features/ielts/api/ielts.api';
 
 export function StudentResultsPage() {
   const { t } = useTranslation();
   const { data: submissions, isLoading } = useStudentMySubmissions();
   const [selectedType, setSelectedType] = useState<'ALL' | 'LISTENING' | 'READING'>('ALL');
-  const [viewingTaskId, setViewingTaskId] = useState<string | null>(null);
+  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
+  const [viewerState, setViewerState] = useState<{
+    taskId: string;
+    mode: 'take' | 'review';
+  } | null>(null);
 
   const allSubmissions = submissions || [];
   const listeningSubs = allSubmissions.filter((s) => s.task?.type === 'LISTENING');
@@ -40,9 +46,46 @@ export function StudentResultsPage() {
       ? (readingSubs.reduce((acc, s) => acc + s.band, 0) / readingSubs.length).toFixed(1)
       : '—';
 
-  const filteredSubmissions = allSubmissions.filter((s) => {
+  // Group submissions by task
+  const taskGroupsMap = new Map<
+    string,
+    {
+      taskId: string;
+      title: string;
+      type: 'LISTENING' | 'READING' | 'WRITING' | 'SPEAKING';
+      attempts: IeltsSubmission[];
+      bestBand: number;
+      latestSubmission: IeltsSubmission;
+    }
+  >();
+
+  allSubmissions.forEach((sub) => {
+    const taskId = sub.taskId;
+    const title = sub.task?.title || 'IELTS Test';
+    const type = sub.task?.type || 'READING';
+    const existing = taskGroupsMap.get(taskId);
+    if (existing) {
+      existing.attempts.push(sub);
+      if (sub.band > existing.bestBand) existing.bestBand = sub.band;
+      if (new Date(sub.submittedAt).getTime() > new Date(existing.latestSubmission.submittedAt).getTime()) {
+        existing.latestSubmission = sub;
+      }
+    } else {
+      taskGroupsMap.set(taskId, {
+        taskId,
+        title,
+        type,
+        attempts: [sub],
+        bestBand: sub.band,
+        latestSubmission: sub,
+      });
+    }
+  });
+
+  const taskGroups = Array.from(taskGroupsMap.values());
+  const filteredTaskGroups = taskGroups.filter((g) => {
     if (selectedType === 'ALL') return true;
-    return s.task?.type === selectedType;
+    return g.type === selectedType;
   });
 
   return (
@@ -109,9 +152,17 @@ export function StudentResultsPage() {
       <div className="flex flex-wrap items-center gap-2 border-b border-border/60 pb-3">
         {(
           [
-            { id: 'ALL', label: t('studentResults.filterAll'), count: allSubmissions.length },
-            { id: 'LISTENING', label: t('studentResults.filterListening'), count: listeningSubs.length },
-            { id: 'READING', label: t('studentResults.filterReading'), count: readingSubs.length },
+            { id: 'ALL', label: t('studentResults.filterAll'), count: taskGroups.length },
+            {
+              id: 'LISTENING',
+              label: t('studentResults.filterListening'),
+              count: taskGroups.filter((g) => g.type === 'LISTENING').length,
+            },
+            {
+              id: 'READING',
+              label: t('studentResults.filterReading'),
+              count: taskGroups.filter((g) => g.type === 'READING').length,
+            },
           ] as const
         ).map((tab) => (
           <button
@@ -137,18 +188,18 @@ export function StudentResultsPage() {
         ))}
       </div>
 
-      {/* Results Table */}
+      {/* Results Table with Expandable Row History */}
       <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm">
         <Table>
           <TableHeader className="bg-muted/40 font-semibold">
             <TableRow className="h-[44px]">
-              <TableHead className="w-12 text-center">#</TableHead>
+              <TableHead className="w-10 text-center" />
               <TableHead>{t('ielts.name')}</TableHead>
-              <TableHead className="w-36">{t('tasks.questionType')}</TableHead>
-              <TableHead className="w-32 text-center">{t('studentTasks.scoreHeader')}</TableHead>
-              <TableHead className="w-32 text-center">IELTS Band</TableHead>
-              <TableHead className="w-36 text-right">{t('ielts.date')}</TableHead>
-              <TableHead className="w-28 text-right" />
+              <TableHead className="w-32">{t('tasks.questionType')}</TableHead>
+              <TableHead className="w-28 text-center">Urinishlar</TableHead>
+              <TableHead className="w-32 text-center">Eng yaxshi Band</TableHead>
+              <TableHead className="w-36 text-right">Oxirgi sana</TableHead>
+              <TableHead className="w-48 text-right" />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -158,65 +209,174 @@ export function StudentResultsPage() {
                   {t('common.loading')}
                 </TableCell>
               </TableRow>
-            ) : filteredSubmissions.length > 0 ? (
-              filteredSubmissions.map((sub, index) => (
-                <TableRow key={sub.id} className="h-[52px]">
-                  <TableCell className="w-12 text-center text-muted-foreground font-medium">
-                    {index + 1}
-                  </TableCell>
-                  <TableCell className="font-medium text-foreground">
-                    {sub.task?.title || 'IELTS Test'}
-                  </TableCell>
-                  <TableCell className="w-36">
-                    {sub.task?.type && (
-                      <Badge
-                        variant="secondary"
-                        className={`gap-1.5 font-semibold text-xs ${
-                          sub.task.type === 'LISTENING'
-                            ? 'bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20'
-                            : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20'
-                        }`}
-                      >
+            ) : filteredTaskGroups.length > 0 ? (
+              filteredTaskGroups.map((group) => {
+                const isExpanded = expandedTaskId === group.taskId;
+                const isListening = group.type === 'LISTENING';
+                return (
+                  <Fragment key={group.taskId}>
+                    <TableRow
+                      className={`h-[56px] cursor-pointer transition-colors hover:bg-muted/30 ${
+                        isExpanded ? 'bg-muted/20' : ''
+                      }`}
+                      onClick={() =>
+                        setExpandedTaskId(isExpanded ? null : group.taskId)
+                      }
+                    >
+                      <TableCell className="w-10 text-center text-muted-foreground">
                         <Icon
                           icon={
-                            sub.task.type === 'LISTENING'
-                              ? 'lucide:headphones'
-                              : 'lucide:book-open'
+                            isExpanded
+                              ? 'lucide:chevron-down'
+                              : 'lucide:chevron-right'
                           }
-                          className="h-3 w-3"
+                          className="h-4 w-4 transition-transform text-primary"
                         />
-                        <span>
-                          {sub.task.type === 'LISTENING'
-                            ? t('ielts.listening')
-                            : t('ielts.reading')}
+                      </TableCell>
+                      <TableCell className="font-semibold text-foreground">
+                        <div className="flex items-center gap-2">
+                          <span>{group.title}</span>
+                          {group.attempts.length > 1 && (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] px-1.5 py-0 border-primary/30 text-primary font-bold"
+                            >
+                              +{group.attempts.length - 1} ta qayta yechilgan
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="w-32">
+                        <Badge
+                          variant="secondary"
+                          className={`gap-1.5 font-semibold text-xs ${
+                            isListening
+                              ? 'bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20'
+                              : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20'
+                          }`}
+                        >
+                          <Icon
+                            icon={isListening ? 'lucide:headphones' : 'lucide:book-open'}
+                            className="h-3 w-3"
+                          />
+                          <span>
+                            {isListening ? t('ielts.listening') : t('ielts.reading')}
+                          </span>
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="w-28 text-center text-xs font-bold text-muted-foreground">
+                        <span className="rounded-full bg-muted px-2 py-0.5 font-mono">
+                          {group.attempts.length} ta
                         </span>
-                      </Badge>
+                      </TableCell>
+                      <TableCell className="w-32 text-center">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-extrabold text-primary border border-primary/20">
+                          <Icon icon="lucide:award" className="h-3 w-3" />
+                          <span>Band {group.bestBand}</span>
+                        </span>
+                      </TableCell>
+                      <TableCell className="w-36 text-right text-xs text-muted-foreground">
+                        {new Date(group.latestSubmission.submittedAt).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell
+                        className="w-48 text-right space-x-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            setViewerState({
+                              taskId: group.taskId,
+                              mode: 'review',
+                            })
+                          }
+                          className="h-8 text-xs"
+                        >
+                          <Icon icon="lucide:eye" className="mr-1 h-3.5 w-3.5" />
+                          {t('studentResults.review')}
+                        </Button>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() =>
+                            setViewerState({
+                              taskId: group.taskId,
+                              mode: 'take',
+                            })
+                          }
+                          className="h-8 text-xs font-semibold"
+                        >
+                          <Icon icon="lucide:rotate-ccw" className="mr-1 h-3.5 w-3.5" />
+                          {t('studentResults.retake')}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+
+                    {/* Expandable sub-content */}
+                    {isExpanded && (
+                      <TableRow className="bg-muted/10 border-none hover:bg-muted/10">
+                        <TableCell colSpan={7} className="p-4 sm:p-6">
+                          <div className="space-y-4 rounded-xl border border-border/80 bg-card p-4 sm:p-5 shadow-xs">
+                            {/* Mini Chart */}
+                            <AttemptProgressChart attempts={group.attempts} />
+
+                            {/* Attempts Table */}
+                            <div className="space-y-2">
+                              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                {t('studentResults.attemptsHistory')} ({group.attempts.length})
+                              </div>
+
+                              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                                {group.attempts
+                                  .slice()
+                                  .sort(
+                                    (a, b) => (b.attempt || 1) - (a.attempt || 1),
+                                  )
+                                  .map((att, idx) => (
+                                    <div
+                                      key={att.id}
+                                      className="flex items-center justify-between rounded-xl border border-border/60 bg-muted/20 p-3 shadow-xs"
+                                    >
+                                      <div className="space-y-0.5">
+                                        <div className="flex items-center gap-1.5">
+                                          <span className="font-bold text-xs text-foreground">
+                                            #{att.attempt || group.attempts.length - idx}
+                                          </span>
+                                          <span className="text-[11px] font-semibold text-primary">
+                                            Band {att.band}
+                                          </span>
+                                        </div>
+                                        <div className="text-[11px] text-muted-foreground">
+                                          {att.score}/{att.total} •{' '}
+                                          {new Date(att.submittedAt).toLocaleDateString()}
+                                        </div>
+                                      </div>
+
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() =>
+                                          setViewerState({
+                                            taskId: group.taskId,
+                                            mode: 'review',
+                                          })
+                                        }
+                                        className="h-7 text-xs text-primary"
+                                      >
+                                        {t('studentResults.review')}
+                                      </Button>
+                                    </div>
+                                  ))}
+                              </div>
+                            </div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
                     )}
-                  </TableCell>
-                  <TableCell className="w-32 text-center text-sm font-semibold">
-                    {sub.score} / {sub.total}
-                  </TableCell>
-                  <TableCell className="w-32 text-center">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-extrabold text-primary border border-primary/20">
-                      <Icon icon="lucide:award" className="h-3 w-3" />
-                      <span>Band {sub.band}</span>
-                    </span>
-                  </TableCell>
-                  <TableCell className="w-36 text-right text-xs text-muted-foreground">
-                    {new Date(sub.submittedAt).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell className="w-28 text-right">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setViewingTaskId(sub.taskId)}
-                      className="text-xs"
-                    >
-                      {t('studentResults.review')}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
+                  </Fragment>
+                );
+              })
             ) : (
               <TableRow className="h-[180px]">
                 <TableCell colSpan={7} className="text-center text-muted-foreground py-12">
@@ -234,10 +394,14 @@ export function StudentResultsPage() {
         </Table>
       </div>
 
-      {viewingTaskId && (
+      {viewerState && (
         <IeltsTaskViewer
-          taskId={viewingTaskId}
-          onClose={() => setViewingTaskId(null)}
+          taskId={viewerState.taskId}
+          mode={viewerState.mode}
+          onRetake={() =>
+            setViewerState({ taskId: viewerState.taskId, mode: 'take' })
+          }
+          onClose={() => setViewerState(null)}
         />
       )}
     </div>
