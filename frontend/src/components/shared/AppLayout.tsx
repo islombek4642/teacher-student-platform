@@ -39,6 +39,7 @@ const NAV_LINKS_BY_ROLE: Record<Role, NavLinkConfig[]> = {
   ],
   STUDENT: [
     { to: '/student', labelKey: 'nav.home', icon: 'lucide:layout-dashboard' },
+    { to: '/student/results', labelKey: 'nav.results', icon: 'lucide:award' },
     { to: '/student/ielts/listening', labelKey: 'ielts.listening', icon: 'lucide:headphones' },
     { to: '/student/ielts/reading', labelKey: 'ielts.reading', icon: 'lucide:book-open' },
     { to: '/student/ielts/writing', labelKey: 'ielts.writing', icon: 'lucide:pen-tool' },

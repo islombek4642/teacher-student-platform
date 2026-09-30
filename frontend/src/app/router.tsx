@@ -15,6 +15,7 @@ import { WritingPage } from '@/features/ielts/WritingPage';
 import { SpeakingPage } from '@/features/ielts/SpeakingPage';
 import { TeacherDashboardPage } from '@/features/teacher/TeacherDashboardPage';
 import { StudentDashboardPage } from '@/features/student/StudentDashboardPage';
+import { StudentResultsPage } from '@/features/student/StudentResultsPage';
 
 export function AppRouter() {
   return (
@@ -48,6 +49,7 @@ export function AppRouter() {
       <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}>
         <Route element={<AppLayout />}>
           <Route path="/student" element={<StudentDashboardPage />} />
+          <Route path="/student/results" element={<StudentResultsPage />} />
           <Route path="/student/ielts/listening" element={<ListeningPage />} />
           <Route path="/student/ielts/reading" element={<ReadingPage />} />
           <Route path="/student/ielts/writing" element={<WritingPage />} />

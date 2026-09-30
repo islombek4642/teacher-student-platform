@@ -36,7 +36,8 @@
   "nav": {
     "logout": "Chiqish",
     "language": "Til",
-    "home": "Asosiy sahifa"
+    "home": "Asosiy sahifa",
+    "results": "Natijalarim"
   },
   "teachers": {
     "title": "O'qituvchilar",
@@ -261,5 +262,21 @@
     "comingSoon": "Tez kunda",
     "goIn": "Kirish",
     "start": "Boshlash"
+  },
+  "studentResults": {
+    "title": "Natijalarim",
+    "subtitle": "Topshirilgan barcha IELTS testlaringiz va natijalaringiz tahlili",
+    "recentTitle": "So'nggi natijalar",
+    "viewAll": "Barchasini ko'rish",
+    "noRecent": "Hozircha topshirilgan testlar yo'q",
+    "noRecentDesc": "Reading yoki Listening bo'limidan birorta testni yechib o'z bilimingizni sinab ko'ring",
+    "totalCompleted": "Jami topshirilgan",
+    "averageBand": "O'rtacha Band",
+    "listeningAvg": "Listening o'rtacha",
+    "readingAvg": "Reading o'rtacha",
+    "filterAll": "Barcha testlar",
+    "filterListening": "Listening",
+    "filterReading": "Reading",
+    "review": "Ko'rish"
   }
 }

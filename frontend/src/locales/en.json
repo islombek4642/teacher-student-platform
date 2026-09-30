@@ -36,7 +36,8 @@
   "nav": {
     "logout": "Log out",
     "language": "Language",
-    "home": "Home"
+    "home": "Home",
+    "results": "My Results"
   },
   "teachers": {
     "title": "Teachers",
@@ -261,5 +262,21 @@
     "comingSoon": "Coming soon",
     "goIn": "Go in",
     "start": "Start"
+  },
+  "studentResults": {
+    "title": "My Results",
+    "subtitle": "Analytics and history of all your completed IELTS tests",
+    "recentTitle": "Recent Results",
+    "viewAll": "View all",
+    "noRecent": "No completed tests yet",
+    "noRecentDesc": "Take a Reading or Listening practice test to see your score and Band analysis",
+    "totalCompleted": "Total Completed",
+    "averageBand": "Average Band",
+    "listeningAvg": "Listening Avg",
+    "readingAvg": "Reading Avg",
+    "filterAll": "All tests",
+    "filterListening": "Listening",
+    "filterReading": "Reading",
+    "review": "Review"
   }
 }
