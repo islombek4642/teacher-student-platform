@@ -5,6 +5,8 @@ import { ReadingPage } from './ReadingPage';
 import { useIeltsTasks, useDeleteIeltsTask } from './api/ielts.api';
 import { useAuth } from '@/auth/useAuth';
 
+import { useStudentMySubmissions } from '@/features/student/api/student-results.api';
+
 vi.mock('./api/ielts.api');
 vi.mock('@/auth/useAuth');
 vi.mock('./UploadIeltsDialog', () => ({
@@ -14,7 +16,7 @@ vi.mock('./IeltsTaskViewer', () => ({
   IeltsTaskViewer: () => null,
 }));
 vi.mock('@/features/student/api/student-results.api', () => ({
-  useStudentMySubmissions: () => ({ data: [] }),
+  useStudentMySubmissions: vi.fn(() => ({ data: [] })),
 }));
 vi.mock('react-i18next', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-i18next')>();
@@ -105,4 +107,50 @@ describe('ReadingPage', () => {
     expect(screen.getByText('11')).toBeInTheDocument();
     expect(screen.getByText('12')).toBeInTheDocument();
   });
+
+  it('displays the latest/best band score badge and does not get stuck at 0 when older attempt was 0', () => {
+    vi.mocked(useAuth).mockReturnValue({
+      payload: { role: 'STUDENT', userId: 's1' },
+    } as any);
+
+    const mockTasks = [
+      { id: 'task-1', title: 'Reading Task 1', type: 'READING', createdAt: '2026-09-01T00:00:00.000Z' },
+    ];
+
+    vi.mocked(useIeltsTasks).mockReturnValue({
+      data: mockTasks,
+      isLoading: false,
+    } as any);
+
+    // Backend returns submissions ordered by submittedAt: 'desc'
+    // Latest attempt is first (band 7.0), older attempt is second (band 0)
+    vi.mocked(useStudentMySubmissions).mockReturnValue({
+      data: [
+        {
+          id: 'sub-2',
+          taskId: 'task-1',
+          score: 30,
+          total: 40,
+          band: 7.0,
+          attempt: 2,
+          submittedAt: '2026-09-30T10:30:00.000Z',
+        },
+        {
+          id: 'sub-1',
+          taskId: 'task-1',
+          score: 0,
+          total: 40,
+          band: 0,
+          attempt: 1,
+          submittedAt: '2026-09-30T10:00:00.000Z',
+        },
+      ],
+    } as any);
+
+    render(<ReadingPage />);
+
+    expect(screen.getByText('Band 7')).toBeInTheDocument();
+    expect(screen.queryByText('Band 0')).not.toBeInTheDocument();
+  });
 });
+

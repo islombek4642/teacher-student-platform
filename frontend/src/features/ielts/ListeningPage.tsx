@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
-import { useIeltsTasks, useDeleteIeltsTask } from './api/ielts.api';
+import { useIeltsTasks, useDeleteIeltsTask, type IeltsSubmission } from './api/ielts.api';
 import { UploadIeltsDialog } from './UploadIeltsDialog';
 import { IeltsTaskViewer } from './IeltsTaskViewer';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
@@ -37,7 +37,25 @@ export function ListeningPage() {
   const { data: mySubmissions } = useStudentMySubmissions();
   const deleteMutation = useDeleteIeltsTask();
 
-  const submissionsMap = new Map(mySubmissions?.map((s) => [s.taskId, s]) || []);
+  const submissionsMap = new Map<string, IeltsSubmission & { bestBand: number }>();
+  if (mySubmissions) {
+    for (const s of mySubmissions) {
+      const existing = submissionsMap.get(s.taskId);
+      const isNewer =
+        !existing ||
+        (s.attempt !== undefined && existing.attempt !== undefined
+          ? s.attempt > existing.attempt
+          : new Date(s.submittedAt).getTime() > new Date(existing.submittedAt).getTime());
+
+      const bestBand = existing ? Math.max(existing.bestBand, s.band) : s.band;
+
+      if (isNewer) {
+        submissionsMap.set(s.taskId, { ...s, bestBand });
+      } else {
+        existing.bestBand = bestBand;
+      }
+    }
+  }
   
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
@@ -127,7 +145,7 @@ export function ListeningPage() {
                         className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20 text-xs gap-1 shrink-0 font-bold"
                       >
                         <Icon icon="lucide:check" className="h-3 w-3" />
-                        <span>Band {submissionsMap.get(task.id)!.band}</span>
+                        <span>Band {submissionsMap.get(task.id)!.bestBand ?? submissionsMap.get(task.id)!.band}</span>
                       </Badge>
                     )}
                   </div>
