@@ -30,9 +30,17 @@ export function IeltsTaskViewer({
   useEffect(() => {
     const handleMessage = (e: MessageEvent) => {
       if (e.data?.type === 'CLOSE_IELTS_TASK') {
-        setConfirmOpen(true);
+        if (isReview) {
+          onClose();
+        } else {
+          setConfirmOpen(true);
+        }
       } else if (e.data?.type === 'ESCAPE_PRESSED') {
-        setConfirmOpen((prev) => !prev);
+        if (isReview) {
+          onClose();
+        } else {
+          setConfirmOpen((prev) => !prev);
+        }
       } else if (e.data?.type === 'IELTS_TEST_SUBMITTED' && isStudent && !isReview && e.data.payload) {
         submitMutation.mutate(
           {
@@ -66,7 +74,11 @@ export function IeltsTaskViewer({
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setConfirmOpen((prev) => !prev);
+        if (isReview) {
+          onClose();
+        } else {
+          setConfirmOpen((prev) => !prev);
+        }
       }
     };
 
@@ -77,7 +89,7 @@ export function IeltsTaskViewer({
       window.removeEventListener('message', handleMessage);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [taskId, isStudent, submitMutation, t]);
+  }, [taskId, isStudent, isReview, onClose, submitMutation, t]);
 
   const handleConfirmExit = () => {
     setConfirmOpen(false);

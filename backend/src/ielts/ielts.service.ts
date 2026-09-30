@@ -132,19 +132,34 @@ export const IELTS_REVIEW_MODE_SCRIPT = `<script>
       submitBtns.forEach(function(b) {
         b.style.display = 'none';
       });
+      // Hide inner exit buttons in review mode so it does not duplicate the outer top bar exit button
+      var exitBtns = document.querySelectorAll('button[onclick*="CLOSE_IELTS_TASK"], #exit-button, .exit-btn');
+      exitBtns.forEach(function(b) {
+        b.style.display = 'none';
+      });
     }
 
-    window.addEventListener('DOMContentLoaded', function() {
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', lockInputs);
+    } else {
       lockInputs();
-      setTimeout(function() {
-        if (typeof window.checkAnswers === 'function') {
-          try {
-            window.checkAnswers();
-          } catch(e) {}
-          lockInputs();
-        }
-      }, 400);
-    });
+    }
+
+    var checkTimer = setInterval(function() {
+      lockInputs();
+      if (typeof window.checkAnswers === 'function') {
+        try {
+          window.checkAnswers();
+        } catch(e) {}
+        lockInputs();
+        clearInterval(checkTimer);
+      }
+    }, 100);
+
+    setTimeout(function() {
+      clearInterval(checkTimer);
+      lockInputs();
+    }, 3000);
   })();
 </script>`;
 
