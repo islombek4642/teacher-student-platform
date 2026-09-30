@@ -34,7 +34,7 @@ export function useSidebarKeyboard({ navLinks, enabled = true }: UseSidebarKeybo
 
       // Check if a modal dialog, alert dialog, or dropdown menu is open
       const hasOpenOverlay = document.querySelector(
-        '[data-slot="dialog-content"], [role="dialog"], [data-slot="dropdown-menu-content"], [data-slot="popover-content"]'
+        '[data-slot="dialog-content"]:not([data-closed]), [role="dialog"]:not([data-closed]):not([aria-hidden="true"]), [data-slot="dropdown-menu-content"]:not([data-closed]), [data-slot="popover-content"]:not([data-closed])'
       );
       if (hasOpenOverlay) {
         return;
@@ -67,24 +67,27 @@ export function useSidebarKeyboard({ navLinks, enabled = true }: UseSidebarKeybo
           : location.pathname.startsWith(link.to);
       });
 
-
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        const nextIndex = currentIndex === -1 ? 0 : Math.min(currentIndex + 1, navLinks.length - 1);
-        if (nextIndex !== currentIndex && nextIndex >= 0) {
-          navigate(navLinks[nextIndex].to);
+        const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % navLinks.length;
+        if (nextIndex >= 0 && nextIndex < navLinks.length) {
+          if (nextIndex !== currentIndex) {
+            navigate(navLinks[nextIndex].to);
+          }
           const targetLinkEl = document.querySelector<HTMLAnchorElement>(
-            `[data-sidebar="menu-button"][href="${navLinks[nextIndex].to}"]`
+            `a[href="${navLinks[nextIndex].to}"][data-sidebar="menu-button"], [data-sidebar="menu-button"][href="${navLinks[nextIndex].to}"], a[href="${navLinks[nextIndex].to}"]`
           );
           targetLinkEl?.focus();
         }
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        const prevIndex = currentIndex === -1 ? navLinks.length - 1 : Math.max(currentIndex - 1, 0);
-        if (prevIndex !== currentIndex && prevIndex >= 0) {
-          navigate(navLinks[prevIndex].to);
+        const prevIndex = currentIndex === -1 ? navLinks.length - 1 : (currentIndex - 1 + navLinks.length) % navLinks.length;
+        if (prevIndex >= 0 && prevIndex < navLinks.length) {
+          if (prevIndex !== currentIndex) {
+            navigate(navLinks[prevIndex].to);
+          }
           const targetLinkEl = document.querySelector<HTMLAnchorElement>(
-            `[data-sidebar="menu-button"][href="${navLinks[prevIndex].to}"]`
+            `a[href="${navLinks[prevIndex].to}"][data-sidebar="menu-button"], [data-sidebar="menu-button"][href="${navLinks[prevIndex].to}"], a[href="${navLinks[prevIndex].to}"]`
           );
           targetLinkEl?.focus();
         }

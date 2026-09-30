@@ -42,13 +42,13 @@ export function IeltsTaskViewer({
   useEffect(() => {
     const handleMessage = (e: MessageEvent) => {
       if (e.data?.type === 'CLOSE_IELTS_TASK') {
-        if (isReviewRef.current || isSubmittedRef.current) {
+        if (isReviewRef.current || isSubmittedRef.current || !isStudent) {
           onClose();
         } else {
           setConfirmOpen(true);
         }
       } else if (e.data?.type === 'ESCAPE_PRESSED') {
-        if (isReviewRef.current || isSubmittedRef.current) {
+        if (isReviewRef.current || isSubmittedRef.current || !isStudent) {
           onClose();
         } else {
           setConfirmOpen((prev) => !prev);
@@ -88,7 +88,7 @@ export function IeltsTaskViewer({
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (isReviewRef.current || isSubmittedRef.current) {
+        if (isReviewRef.current || isSubmittedRef.current || !isStudent) {
           onClose();
         } else {
           setConfirmOpen((prev) => !prev);
@@ -110,22 +110,25 @@ export function IeltsTaskViewer({
     onClose();
   };
 
+  const isPreview = !isStudent;
   const iframeSrc = isReview
     ? `${API_URL}/ielts/${taskId}/view?mode=review`
-    : `${API_URL}/ielts/${taskId}/view`;
+    : isPreview
+      ? `${API_URL}/ielts/${taskId}/view?preview=true`
+      : `${API_URL}/ielts/${taskId}/view`;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-background flex flex-col">
-      {isReview && (
-        <div className="flex items-center justify-between border-b border-border/80 bg-muted/90 px-4 py-2 backdrop-blur-sm z-10 shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-600 dark:text-amber-400 border border-amber-500/20">
-              <Icon icon="lucide:shield-alert" className="h-3.5 w-3.5" />
+    <div className="fixed inset-0 z-[100] bg-background">
+      {isReview && isStudent && (
+        <div className="flex items-center justify-between border-b border-border/80 bg-muted/90 px-2.5 sm:px-4 py-1.5 sm:py-2 backdrop-blur-sm z-10 shrink-0 gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2 sm:px-2.5 py-0.5 sm:py-1 text-[11px] sm:text-xs font-bold text-amber-600 dark:text-amber-400 border border-amber-500/20 whitespace-nowrap">
+              <Icon icon="lucide:shield-alert" className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               <span>{t('ielts.reviewModeBanner')}</span>
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {onRetake && (
               <Button
                 size="sm"
@@ -155,9 +158,10 @@ export function IeltsTaskViewer({
 
       <iframe
         src={iframeSrc}
-        className="flex-1 w-full border-none"
+        className={isReview && isStudent ? "w-full h-[calc(100%-48px)] border-none" : "w-full h-full border-none"}
         title="IELTS Task"
         allowFullScreen
+        allow="fullscreen"
       />
 
       <ConfirmDialog

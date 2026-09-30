@@ -12,8 +12,12 @@ vi.mock('@/auth/useAuth');
 vi.mock('./UploadIeltsDialog', () => ({
   UploadIeltsDialog: () => null,
 }));
+const mockIeltsTaskViewer = vi.fn();
 vi.mock('./IeltsTaskViewer', () => ({
-  IeltsTaskViewer: () => null,
+  IeltsTaskViewer: (props: any) => {
+    mockIeltsTaskViewer(props);
+    return <div data-testid="ielts-task-viewer" data-mode={props.mode} />;
+  },
 }));
 vi.mock('@/features/student/api/student-results.api', () => ({
   useStudentMySubmissions: vi.fn(() => ({ data: [] })),
@@ -152,6 +156,76 @@ describe('ListeningPage', () => {
 
     expect(screen.getByText('Band 6.5')).toBeInTheDocument();
     expect(screen.queryByText('Band 0')).not.toBeInTheDocument();
+  });
+
+  it('opens in take mode when a teacher clicks view', async () => {
+    vi.mocked(useAuth).mockReturnValue({
+      payload: { role: 'TEACHER', userId: 't1' },
+    } as any);
+
+    const mockTasks = [
+      { id: 'task-100', title: 'Teacher Listening Task', type: 'LISTENING', createdAt: '2026-09-01T00:00:00.000Z' },
+    ];
+
+    vi.mocked(useIeltsTasks).mockReturnValue({
+      data: mockTasks,
+      isLoading: false,
+    } as any);
+
+    const user = userEvent.setup();
+    render(<ListeningPage />);
+
+    const viewBtn = screen.getByText('ielts.view');
+    await user.click(viewBtn);
+
+    expect(mockIeltsTaskViewer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        taskId: 'task-100',
+        mode: 'take',
+      })
+    );
+  });
+
+  it('opens in review mode when a student has a submission and clicks view', async () => {
+    vi.mocked(useAuth).mockReturnValue({
+      payload: { role: 'STUDENT', userId: 's1' },
+    } as any);
+
+    const mockTasks = [
+      { id: 'task-200', title: 'Student Listening Task', type: 'LISTENING', createdAt: '2026-09-01T00:00:00.000Z' },
+    ];
+
+    vi.mocked(useIeltsTasks).mockReturnValue({
+      data: mockTasks,
+      isLoading: false,
+    } as any);
+
+    vi.mocked(useStudentMySubmissions).mockReturnValue({
+      data: [
+        {
+          id: 'sub-200',
+          taskId: 'task-200',
+          score: 30,
+          total: 40,
+          band: 7.0,
+          attempt: 1,
+          submittedAt: '2026-09-30T10:00:00.000Z',
+        },
+      ],
+    } as any);
+
+    const user = userEvent.setup();
+    render(<ListeningPage />);
+
+    const viewBtn = screen.getByText('ielts.view');
+    await user.click(viewBtn);
+
+    expect(mockIeltsTaskViewer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        taskId: 'task-200',
+        mode: 'review',
+      })
+    );
   });
 });
 

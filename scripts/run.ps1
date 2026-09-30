@@ -17,6 +17,11 @@
   powershell -ExecutionPolicy Bypass -File scripts/start-local.ps1
 #>
 
+param(
+    [switch]$Tunnel,
+    [switch]$NoBrowser
+)
+
 # ─── Strict mode ────────────────────────────────────────────────────
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
@@ -86,7 +91,6 @@ function Write-SubBanner {
 # ─── Cleanup: kill background jobs on exit ──────────────────────────
 $backendJob  = $null
 $frontendJob = $null
-$tunnelProc  = $null
 
 function Stop-AllJobs {
     Write-Log 'Barcha jarayonlar to`xtatilmoqda...' 'WARN'
@@ -97,10 +101,6 @@ function Stop-AllJobs {
     if ($script:frontendJob -and $script:frontendJob.State -eq 'Running') {
         Stop-Job $script:frontendJob -PassThru | Remove-Job -Force
         Write-Log 'Frontend to`xtatildi.' 'INFO'
-    }
-    if ($script:tunnelProc -and -not $script:tunnelProc.HasExited) {
-        Stop-Process -Id $script:tunnelProc.Id -Force -ErrorAction SilentlyContinue
-        Write-Log 'Cloudflare Tunnel to`xtatildi.' 'INFO'
     }
     Get-Process cloudflared -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
 }
@@ -303,12 +303,48 @@ if ($needsSave) {
 # Re-read env for later use
 $envContent = Get-Content $backendEnv -Raw
 
-# --- Frontend .env va nip.io sozlash ---
-$frontendEnv = Join-Path $FRONTEND '.env'
-# Bo'sh qoldiriladi - Vite proxy barcha API so'rovlarni avtomatik backend ga yo'naltiradi
-Set-Content -Path $frontendEnv -Value 'VITE_API_URL=' -Encoding UTF8
+# Parse backend PORT and HOST from .env
+$BACKEND_PORT = 3000
+$BACKEND_HOST = 'localhost'
+if ($envContent -match '(?m)^PORT\s*=\s*(\d+)') {
+    $BACKEND_PORT = [int]$Matches[1]
+}
+if ($envContent -match '(?m)^HOST\s*=\s*(\S+)') {
+    $BACKEND_HOST = $Matches[1].Trim()
+}
 
-# Lokal IP va nip.io domenini aniqlash (Wi-Fi tarmoq uchun)
+# --- Frontend .env sozlash ---
+$frontendEnv = Join-Path $FRONTEND '.env'
+$frontendEnvExample = Join-Path $FRONTEND '.env.example'
+if (-not (Test-Path $frontendEnv)) {
+    if (Test-Path $frontendEnvExample) {
+        Copy-Item $frontendEnvExample $frontendEnv
+        Write-Log "frontend/.env nusxalandi (.env.example dan)" 'OK'
+    } else {
+        $defaultFrontendEnv = @"
+VITE_PORT=5173
+VITE_HOST=localhost
+VITE_BACKEND_URL=http://${BACKEND_HOST}:${BACKEND_PORT}
+VITE_API_URL=
+"@
+        Set-Content -Path $frontendEnv -Value $defaultFrontendEnv -Encoding UTF8
+        Write-Log "frontend/.env yaratildi" 'OK'
+    }
+} else {
+    Write-Log 'frontend/.env allaqachon mavjud' 'INFO'
+}
+
+$frontendEnvContent = Get-Content $frontendEnv -Raw
+$FRONTEND_PORT = 5173
+$FRONTEND_HOST = 'localhost'
+if ($frontendEnvContent -match '(?m)^VITE_PORT\s*=\s*(\d+)') {
+    $FRONTEND_PORT = [int]$Matches[1]
+}
+if ($frontendEnvContent -match '(?m)^VITE_HOST\s*=\s*(\S+)') {
+    $FRONTEND_HOST = $Matches[1].Trim()
+}
+
+# Lokal IP aniqlash (Wi-Fi / LAN tarmoq uchun)
 $localIP = $null
 try {
     $localIP = (Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue | Where-Object { 
@@ -317,12 +353,8 @@ try {
         $_.IPAddress -notlike '127.*' 
     } | Select-Object -First 1).IPAddress
 } catch {}
-
-if ($localIP) {
-    $nipDomain = "$localIP.nip.io"
-} else {
+if (-not $localIP) {
     $localIP = "127.0.0.1"
-    $nipDomain = "localhost"
 }
 
 # ════════════════════════════════════════════════════════════════════
@@ -507,11 +539,8 @@ try {
 # ════════════════════════════════════════════════════════════════════
 Write-SubBanner '6-QADAM: Backend va Frontend ishga tushirilmoqda'
 
-$BACKEND_PORT  = 3000
-$FRONTEND_PORT = 5173
-
 # --- Start Backend as background job ---
-Write-Log "Backend ishga tushirilmoqda (port $BACKEND_PORT)..." 'STEP'
+Write-Log "Backend ishga tushirilmoqda (host: $BACKEND_HOST, port: $BACKEND_PORT)..." 'STEP'
 
 $backendJob = Start-Job -Name 'TSP_Backend' -ScriptBlock {
     param($dir)
@@ -521,53 +550,13 @@ $backendJob = Start-Job -Name 'TSP_Backend' -ScriptBlock {
 } -ArgumentList $BACKEND
 
 # --- Start Frontend as background job ---
-Write-Log "Frontend ishga tushirilmoqda (port $FRONTEND_PORT)..." 'STEP'
+Write-Log "Frontend ishga tushirilmoqda (host: $FRONTEND_HOST, port: $FRONTEND_PORT)..." 'STEP'
 
 $frontendJob = Start-Job -Name 'TSP_Frontend' -ScriptBlock {
     param($dir)
     Set-Location $dir
     & npm.cmd run dev 2>&1
 } -ArgumentList $FRONTEND
-
-# --- Start Cloudflare Tunnel (Internet orqali global kirish) ---
-$cloudflaredCmd = Get-Command cloudflared -ErrorAction SilentlyContinue
-$cloudflaredExe = if ($cloudflaredCmd) { $cloudflaredCmd.Source } else { Join-Path $ROOT 'bin\cloudflared.exe' }
-if (-not (Test-Path $cloudflaredExe) -and (Test-Path 'C:\teacher-student-platform\bin\cloudflared.exe')) {
-    $cloudflaredExe = 'C:\teacher-student-platform\bin\cloudflared.exe'
-}
-
-# Agar topilmasa, avtomatik yuklab olamiz
-if (-not (Test-Path $cloudflaredExe)) {
-    $binDir = Join-Path $ROOT 'bin'
-    if (-not (Test-Path $binDir)) {
-        New-Item -ItemType Directory -Path $binDir -Force | Out-Null
-    }
-    $targetExe = Join-Path $binDir 'cloudflared.exe'
-    Write-Log 'Cloudflared topilmadi. Avtomatik yuklab olinmoqda (rasmiy GitHub relizdan)...' 'STEP'
-    try {
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        $cfUrl = 'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe'
-        $wc = New-Object System.Net.WebClient
-        $wc.DownloadFile($cfUrl, $targetExe)
-        if (Test-Path $targetExe) {
-            $cloudflaredExe = $targetExe
-            Write-Log 'Cloudflared muvaffaqiyatli yuklab olindi va o`rnatildi!' 'OK'
-        }
-    } catch {
-        Write-Log "Cloudflared yuklab olishda xatolik: $_" 'WARN'
-    }
-}
-
-$tunnelProc = $null
-$tunnelUrl  = $null
-$tunnelLog  = Join-Path $LOGS_DIR "tunnel_$TIMESTAMP.log"
-
-if (Test-Path $cloudflaredExe) {
-    Write-Log 'Cloudflare Tunnel ishga tushirilmoqda (Global Internet uchun)...' 'STEP'
-    $tunnelProc = Start-Process -FilePath $cloudflaredExe -ArgumentList 'tunnel --url http://localhost:5173' -NoNewWindow -PassThru -RedirectStandardError $tunnelLog
-} else {
-    Write-Log "Cloudflare topilmadi: $cloudflaredExe" 'WARN'
-}
 
 Write-Log 'Serverlar background da ishga tushdi!' 'OK'
 
@@ -577,11 +566,12 @@ Write-Log 'Serverlar background da ishga tushdi!' 'OK'
 Write-SubBanner '7-QADAM: Serverlar tayyorligini kutish'
 
 # Wait for backend
+$backendCheckHost = if ($BACKEND_HOST -eq '0.0.0.0') { '127.0.0.1' } else { $BACKEND_HOST }
 $backendReady = $false
 for ($i = 1; $i -le 30; $i++) {
     Start-Sleep -Seconds 2
     try {
-        $response = Invoke-WebRequest -Uri "http://localhost:$BACKEND_PORT/api/docs" -UseBasicParsing -TimeoutSec 3 -ErrorAction SilentlyContinue
+        $response = Invoke-WebRequest -Uri "http://${backendCheckHost}:${BACKEND_PORT}/api/docs" -UseBasicParsing -TimeoutSec 3 -ErrorAction SilentlyContinue
         if ($response.StatusCode -eq 200) {
             $backendReady = $true
             break
@@ -593,42 +583,24 @@ for ($i = 1; $i -le 30; $i++) {
 }
 
 if ($backendReady) {
-    Write-Log "Backend tayyor! -> http://localhost:$BACKEND_PORT" 'OK'
-    Write-Log "Swagger API  -> http://localhost:$BACKEND_PORT/api/docs" 'OK'
+    Write-Log "Backend tayyor! -> http://${backendCheckHost}:${BACKEND_PORT}" 'OK'
+    Write-Log "Swagger API  -> http://${backendCheckHost}:${BACKEND_PORT}/api/docs" 'OK'
 } else {
     Write-Log 'Backend 60 sekund ichida javob bermadi!' 'WARN'
     Write-Log 'Loglarni tekshiring - server hali ishga tushayotgan bo`lishi mumkin.' 'WARN'
 }
 
 # Wait a moment for frontend (Vite is usually faster)
-Start-Sleep -Seconds 3
-Write-Log "Frontend tayyor! -> http://localhost:$FRONTEND_PORT" 'OK'
+Start-Sleep -Seconds 2
+$frontendOpenHost = if ($FRONTEND_HOST -eq '0.0.0.0') { 'localhost' } else { $FRONTEND_HOST }
+Write-Log "Frontend tayyor! -> http://${frontendOpenHost}:${FRONTEND_PORT}" 'OK'
 
-# Cloudflare Tunnel URL ni aniqlash
-if ($tunnelProc) {
-    Write-Log 'Global HTTPS havola olinmoqda (Cloudflare)...' 'STEP'
-    for ($t = 1; $t -le 25; $t++) {
-        Start-Sleep -Seconds 1
-        if (Test-Path $tunnelLog) {
-            $tContent = Get-Content $tunnelLog -Raw -ErrorAction SilentlyContinue
-            if ($tContent -match 'https://(?!api\.)([a-zA-Z0-9-]+)\.trycloudflare\.com') {
-                $tunnelUrl = $Matches[0]
-                break
-            }
-        }
-    }
-    if ($tunnelUrl) {
-        Write-Log "Global HTTPS havola olindi: $tunnelUrl" 'OK'
-        Start-Sleep -Seconds 2
-    } else {
-        Write-Log 'Tunnel ulanishi kutilmoqda (orqa fonda ulanishi bilan brauzerda ochiladi)...' 'INFO'
-    }
+# --- Open browser (Mahalliy tezkor rejim) ---
+$openUrl = "http://${frontendOpenHost}:${FRONTEND_PORT}"
+if (-not $NoBrowser) {
+    Write-Log "Brauzer ochilmoqda -> $openUrl" 'STEP'
+    Start-Process $openUrl
 }
-
-# --- Open browser ---
-$openUrl = if ($tunnelUrl) { $tunnelUrl } else { "http://localhost:$FRONTEND_PORT" }
-Write-Log "Brauzer ochilmoqda -> $openUrl" 'STEP'
-Start-Process $openUrl
 
 # ════════════════════════════════════════════════════════════════════
 #  9. XULOSA
@@ -636,28 +608,21 @@ Start-Process $openUrl
 Write-Host ''
 Write-Host '+========================================================================+' -ForegroundColor Green
 Write-Host '|                                                                        |' -ForegroundColor Green
-Write-Host '|   PLATFORMA MUVAFFAQIYATLI ISHGA TUSHDI!                              |' -ForegroundColor Green
+Write-Host '|   PLATFORMA MUVAFFAQIYATLI ISHGA TUSHDI!                               |' -ForegroundColor Green
 Write-Host '|                                                                        |' -ForegroundColor Green
-Write-Host "|   [1. Kompyuterda]:                                                    |" -ForegroundColor Green
-Write-Host "|       Frontend : http://localhost:$FRONTEND_PORT                                 |" -ForegroundColor Green
-Write-Host "|       Swagger  : http://localhost:$BACKEND_PORT/api/docs                         |" -ForegroundColor Green
+Write-Host '|   [1. Lokal kompyuterda (Tezkor va tavsiya etiladi)]:                 |' -ForegroundColor Green
+Write-Host "|       Frontend : http://${frontendOpenHost}:${FRONTEND_PORT}" -ForegroundColor Green
+Write-Host "|       Swagger  : http://${backendCheckHost}:${BACKEND_PORT}/api/docs" -ForegroundColor Green
 Write-Host '|                                                                        |' -ForegroundColor Green
-if ($tunnelUrl) {
-    Write-Host "|   [2. HAR QANDAY TARMOQDAN / TELEFON / 4G / 5G / WI-FI SIZ]:           |" -ForegroundColor Yellow
-    Write-Host "|       Global HTTPS : $tunnelUrl" -ForegroundColor Cyan
-    Write-Host "|       (Dunyoning istalgan joyidan, hech qanday Wi-Fi siz ochiladi)           |" -ForegroundColor DarkGray
-    Write-Host '|                                                                        |' -ForegroundColor Green
-} else {
-    Write-Host "|   [2. HAR QANDAY TARMOQDAN / TELEFON (Cloudflare Tunnel)]:             |" -ForegroundColor Yellow
-    Write-Host "|       Tunnel ulanmoqda... Qisqa vaqtda pastda havola chiqadi           |" -ForegroundColor Cyan
+if ($localIP -and $localIP -ne '127.0.0.1') {
+    Write-Host "|   [2. Bitta Wi-Fi tarmog'idagi telefon yoki boshqa kompyuterlar uchun]:|" -ForegroundColor Cyan
+    Write-Host "|       Frontend : http://${localIP}:${FRONTEND_PORT}" -ForegroundColor Cyan
+    Write-Host "|       Swagger  : http://${localIP}:${BACKEND_PORT}/api/docs" -ForegroundColor Cyan
     Write-Host '|                                                                        |' -ForegroundColor Green
 }
-Write-Host "|   [3. Bitta Wi-Fi tarmog'idan (Lokal / nip.io)]:                       |" -ForegroundColor Green
-Write-Host "|       Lokal : http://${nipDomain}:$FRONTEND_PORT" -ForegroundColor Cyan
-Write-Host '|                                                                        |' -ForegroundColor Green
 Write-Host "|   Log fayl : logs/start-local_$TIMESTAMP.log             |" -ForegroundColor Green
 Write-Host '|                                                                        |' -ForegroundColor Green
-Write-Host '|   To`xtatish uchun: Ctrl+C                                            |' -ForegroundColor Green
+Write-Host '|   To`xtatish uchun: Ctrl+C                                             |' -ForegroundColor Green
 Write-Host '|                                                                        |' -ForegroundColor Green
 Write-Host '+========================================================================+' -ForegroundColor Green
 Write-Host ''
@@ -672,19 +637,6 @@ Write-Host ''
 
 try {
     while ($true) {
-
-        # Agar tunnel boshida ulgurmagan bo'lsa, endi chiqqan bo'lsa darhol ochish
-        if (-not $tunnelUrl -and $tunnelProc -and (Test-Path $tunnelLog)) {
-            $tContent = Get-Content $tunnelLog -Raw -ErrorAction SilentlyContinue
-            if ($tContent -match 'https://(?!api\.)([a-zA-Z0-9-]+)\.trycloudflare\.com') {
-                $tunnelUrl = $Matches[0]
-                Write-Host ''
-                Write-Host ">>> GLOBAL HTTPS HAVOLA TAYYOR: $tunnelUrl <<<" -ForegroundColor Green
-                Write-Host ">>> Brauzerda ochilmoqda... <<<" -ForegroundColor Yellow
-                Write-Host ''
-                Start-Process $tunnelUrl
-            }
-        }
 
         # Backend logs
         if ($backendJob.HasMoreData) {

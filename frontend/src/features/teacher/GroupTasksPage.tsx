@@ -179,7 +179,7 @@ export function GroupTasksPage() {
                     </TableCell>
                     <TableCell className="w-40 text-right space-x-1">
                       <Button
-                        variant="outline"
+                        variant="default"
                         size="sm"
                         onClick={() => setViewingTaskId(task.id)}
                         className="text-xs"
@@ -238,7 +238,7 @@ export function GroupTasksPage() {
       {viewingTaskId && (
         <IeltsTaskViewer
           taskId={viewingTaskId}
-          mode="review"
+          mode="take"
           onClose={() => setViewingTaskId(null)}
         />
       )}

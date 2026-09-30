@@ -178,7 +178,7 @@ export function AssignTaskDialog({
     {previewTaskId && (
       <IeltsTaskViewer
         taskId={previewTaskId}
-        mode="review"
+        mode="take"
         onClose={() => setPreviewTaskId(null)}
       />
     )}

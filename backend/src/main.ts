@@ -33,6 +33,8 @@ async function bootstrap() {
     }),
   );
   app.useGlobalFilters(new HttpExceptionFilter());
-  await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
+  const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+  const host = process.env.HOST === 'localhost' ? '0.0.0.0' : (process.env.HOST ?? '0.0.0.0');
+  await app.listen(port, host);
 }
 bootstrap();

@@ -31,6 +31,7 @@ describe('AppLayout', () => {
     );
 
     expect(screen.getByText('teacher1')).toBeInTheDocument();
+    expect(screen.getByText('roles.TEACHER')).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /nav.logout/i }));
 

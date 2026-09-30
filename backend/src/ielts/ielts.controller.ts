@@ -122,9 +122,11 @@ export class IeltsController {
   async viewTask(
     @Param('id') id: string,
     @Query('mode') mode: string,
+    @Query('preview') preview: string,
     @Res() res: Response,
   ) {
-    const task = await this.ieltsService.getTask(id, mode);
+    const isPreview = preview === 'true' || preview === '1' || mode === 'review';
+    const task = await this.ieltsService.getTask(id, mode, isPreview);
     res.setHeader('Content-Type', 'text/html');
     res.send(task.contentHtml);
   }

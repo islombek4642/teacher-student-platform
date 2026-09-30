@@ -2,6 +2,11 @@
   "app": {
     "title": "Teacher-Student Platform"
   },
+  "roles": {
+    "SUPER_ADMIN": "Super Admin",
+    "TEACHER": "O'qituvchi",
+    "STUDENT": "O'quvchi"
+  },
   "required": "Bu maydon to'ldirilishi shart",
   "common": {
     "show": "Ko'rsatish",
@@ -244,6 +249,7 @@
     "deleteSuccess": "Topshiriq muvaffaqiyatli o'chirildi",
     "taskAlreadyExists": "Bu nomdagi topshiriq allaqachon mavjud",
     "reviewModeBanner": "Ko'rish rejimi: Xatolarni tahlil qilish (Read-only)",
+    "previewMode": "Ko'rish rejimi",
     "retakeTest": "Qayta yechish",
     "exitReview": "Chiqish"
   },

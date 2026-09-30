@@ -2,6 +2,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   Sidebar,
   SidebarContent,
@@ -47,11 +48,36 @@ const NAV_LINKS_BY_ROLE: Record<Role, NavLinkConfig[]> = {
   ],
 };
 
+const ROLE_CONFIG: Record<Role, { icon: string; labelKey: string; colorClass: string }> = {
+  SUPER_ADMIN: {
+    icon: 'lucide:shield-check',
+    labelKey: 'roles.SUPER_ADMIN',
+    colorClass: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+  },
+  TEACHER: {
+    icon: 'lucide:graduation-cap',
+    labelKey: 'roles.TEACHER',
+    colorClass: 'bg-primary/10 text-primary border-primary/20',
+  },
+  STUDENT: {
+    icon: 'lucide:user',
+    labelKey: 'roles.STUDENT',
+    colorClass: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+  },
+};
+
 export function AppLayout() {
   const { t } = useTranslation();
   const { username, payload, logout } = useAuth();
   const location = useLocation();
   const navLinks = payload?.role ? NAV_LINKS_BY_ROLE[payload.role] : [];
+  const roleConfig = payload?.role
+    ? ROLE_CONFIG[payload.role]
+    : {
+        icon: 'lucide:user',
+        labelKey: 'roles.STUDENT',
+        colorClass: 'bg-muted text-muted-foreground border-border',
+      };
 
   useSidebarKeyboard({ navLinks });
 
@@ -94,10 +120,28 @@ export function AppLayout() {
         </SidebarContent>
         <SidebarFooter>
           <div className="flex items-center justify-between gap-2 px-1 group-data-[collapsible=icon]:flex-col">
-            <span className="truncate text-sm text-muted-foreground group-data-[collapsible=icon]:hidden">
-              {username ?? payload?.sub}
-            </span>
-            <div className="flex items-center gap-1 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-2">
+            <div
+              className="flex items-center gap-2.5 min-w-0"
+              title={`${username ?? payload?.sub ?? ''} (${t(roleConfig.labelKey)})`}
+            >
+              <Avatar
+                size="sm"
+                className={`shrink-0 border ${roleConfig.colorClass}`}
+              >
+                <AvatarFallback className="bg-transparent text-inherit">
+                  <Icon icon={roleConfig.icon} className="size-3.5" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col min-w-0 group-data-[collapsible=icon]:hidden">
+                <span className="truncate text-sm font-medium text-foreground leading-tight">
+                  {username ?? payload?.sub}
+                </span>
+                <span className="truncate text-[11px] text-muted-foreground leading-tight">
+                  {t(roleConfig.labelKey)}
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-2 shrink-0">
               <LanguageSwitcher />
               <Button variant="ghost" size="icon-sm" onClick={logout} aria-label={t('nav.logout')}>
                 <Icon icon="lucide:log-out" />

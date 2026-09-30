@@ -9,14 +9,243 @@ import { IeltsTaskType, Role } from '@prisma/client';
 import { ERROR_CODES } from '../common/constants/error-codes.constant';
 import { JwtPayload } from '../auth/jwt-payload.interface';
 
-export const IELTS_EXIT_BUTTON_HTML = `<button onclick="window.parent.postMessage({type: 'CLOSE_IELTS_TASK'}, '*')" style="display:inline-flex; align-items:center; justify-content:center; padding:8px 16px; border:none; border-radius:6px; background-color:#ef4444; color:white; font-family:inherit; font-weight:500; cursor:pointer; gap:8px;">
-  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+export const IELTS_EXIT_BUTTON_HTML = `<button type="button" class="ielts-exit-btn" onclick="window.parent.postMessage({type: 'CLOSE_IELTS_TASK'}, '*')" style="display:inline-flex; align-items:center; justify-content:center; padding:7px 14px; border:none; border-radius:6px; background-color:#ef4444; color:white; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; gap:6px; transition:background-color 0.2s; box-shadow:0 1px 2px rgba(0,0,0,0.05);" onmouseover="this.style.backgroundColor='#dc2626'" onmouseout="this.style.backgroundColor='#ef4444'">
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
     <polyline points="16 17 21 12 16 7"></polyline>
     <line x1="21" y1="12" x2="9" y2="12"></line>
   </svg>
   Exit
 </button>`;
+
+export const IELTS_HEADER_FIX_STYLES = `<style id="ielts-header-fix">
+  .header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    height: 60px !important;
+    padding: 0 20px !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 100 !important;
+    background-color: #ffffff !important;
+    box-sizing: border-box !important;
+    gap: 12px !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    white-space: nowrap !important;
+  }
+  .header-zone {
+    display: flex !important;
+    align-items: center !important;
+  }
+  .header-left-zone {
+    justify-content: flex-start !important;
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    gap: 10px !important;
+  }
+  .header-center-zone {
+    justify-content: center !important;
+    flex: 0 0 auto !important;
+    gap: 10px !important;
+  }
+  .header-right-zone {
+    justify-content: flex-end !important;
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    gap: 10px !important;
+  }
+  .header-tools {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  .header-tool-btn {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 42px !important;
+    height: 36px !important;
+    border: 1px solid #d5d9e0 !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    cursor: pointer !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    flex-shrink: 0 !important;
+    transition: background 0.15s, border-color 0.15s !important;
+  }
+  .header-tool-btn:hover {
+    background: #f3f4f6 !important;
+    border-color: #9ca3af !important;
+  }
+  .header-tool-btn svg {
+    width: 18px !important;
+    height: 18px !important;
+    fill: #1f2937 !important;
+    display: block !important;
+  }
+  .part-indicator, .timer-container {
+    margin: 0 !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+  .ielts-exit-btn {
+    flex-shrink: 0 !important;
+  }
+  .ielts-preview-badge {
+    flex-shrink: 0 !important;
+  }
+
+  body.theme-dark .header {
+    background-color: #26282d !important;
+    border-color: #3a3d43 !important;
+  }
+  body.theme-dark .header-tool-btn {
+    background: #26282d !important;
+    border-color: #4b5057 !important;
+  }
+  body.theme-dark .header-tool-btn svg {
+    fill: #e5e7eb !important;
+  }
+  body.theme-dark .ielts-preview-badge {
+    background-color: #1e293b !important;
+    color: #60a5fa !important;
+    border-color: #2563eb !important;
+  }
+
+  /* Mobile Responsive adjustments (phones <= 640px) */
+  @media (max-width: 640px) {
+    .header {
+      padding: 0 8px !important;
+      gap: 6px !important;
+    }
+    .header-left-zone {
+      gap: 4px !important;
+    }
+    .header-center-zone {
+      gap: 6px !important;
+    }
+    .header-right-zone {
+      gap: 4px !important;
+    }
+    .header-tools {
+      gap: 4px !important;
+    }
+    .header-tool-btn {
+      width: 34px !important;
+      height: 32px !important;
+      border-radius: 6px !important;
+    }
+    .header-tool-btn svg {
+      width: 16px !important;
+      height: 16px !important;
+    }
+    .ielts-exit-btn {
+      padding: 5px 9px !important;
+      font-size: 11px !important;
+      gap: 4px !important;
+      border-radius: 5px !important;
+    }
+    .ielts-exit-btn svg {
+      width: 13px !important;
+      height: 13px !important;
+    }
+    .ielts-preview-badge {
+      padding: 4px 7px !important;
+      font-size: 11px !important;
+      gap: 4px !important;
+      border-radius: 5px !important;
+    }
+    .ielts-preview-badge svg {
+      width: 13px !important;
+      height: 13px !important;
+    }
+    .timer-container, .part-indicator {
+      font-size: 12px !important;
+    }
+  }
+
+  /* Extra Small Mobile (phones <= 420px) */
+  @media (max-width: 420px) {
+    .header {
+      padding: 0 4px !important;
+      gap: 4px !important;
+    }
+    .header-center-zone {
+      gap: 4px !important;
+    }
+    .header-tools {
+      gap: 3px !important;
+    }
+    .header-tool-btn {
+      width: 30px !important;
+      height: 28px !important;
+    }
+    .header-tool-btn svg {
+      width: 14px !important;
+      height: 14px !important;
+    }
+    .ielts-exit-btn {
+      padding: 4px 7px !important;
+      font-size: 10.5px !important;
+    }
+    .ielts-preview-badge {
+      padding: 3px 5px !important;
+      font-size: 10px !important;
+    }
+  }
+</style>
+`;
+
+export function normalizeIeltsHeader(contentHtml: string, isPreview?: boolean): string {
+  const previewBadgeHtml = isPreview
+    ? `<span class="ielts-preview-badge" style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:6px; background-color:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; font-family:inherit; font-size:12px; font-weight:700; user-select:none; white-space:nowrap;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+        Review Mode
+      </span>`
+    : '';
+
+  const centerZoneHtml = `<div class="header-zone header-center-zone">\n      ${IELTS_EXIT_BUTTON_HTML}\n      ${previewBadgeHtml}\n    </div>`;
+
+  const headerRegex = /<div class=["']header["']>([\s\S]*?)<\/div>\s*(?=<div class=["'](?:audio-player-container|main-container)["'])/i;
+  const match = contentHtml.match(headerRegex);
+  if (!match) {
+    return contentHtml;
+  }
+
+  const innerHtml = match[1];
+  const partMatch = innerHtml.match(/<div class=["']part-indicator["'][\s\S]*?<\/div>/i);
+  const timerMatch = innerHtml.match(/<div class=["']timer-container["'][\s\S]*?<\/div>/i);
+
+  let leftContent = '';
+  if (partMatch) {
+    leftContent += partMatch[0];
+  }
+  if (timerMatch && !leftContent.includes('timer-container')) {
+    leftContent += (leftContent ? ' ' : '') + timerMatch[0];
+  }
+
+  // Preserve existing tools ONLY if they were present in the original task HTML
+  const toolsMatch = innerHtml.match(/<div class=["']header-tools["'][\s\S]*?<\/div>/i);
+  const rightContent = toolsMatch ? toolsMatch[0] : '';
+
+  const leftZoneHtml = `<div class="header-zone header-left-zone">${leftContent}</div>`;
+  const rightZoneHtml = `<div class="header-zone header-right-zone">${rightContent}</div>`;
+
+  const newHeaderHtml = `<div class="header">\n    ${leftZoneHtml}\n    ${centerZoneHtml}\n    ${rightZoneHtml}\n  </div>`;
+
+  return contentHtml.replace(headerRegex, newHeaderHtml);
+}
 
 export const IELTS_ESC_LISTENER_SCRIPT = `<script>
   window.addEventListener('keydown', function(e) {
@@ -132,22 +361,6 @@ export const IELTS_REVIEW_MODE_SCRIPT = `<script>
       submitBtns.forEach(function(b) {
         b.style.display = 'none';
       });
-      // Hide inner exit buttons in review mode so it does not duplicate the outer top bar exit button
-      var exitBtns = document.querySelectorAll('button[onclick*="CLOSE_IELTS_TASK"], #exit-button, .exit-btn');
-      exitBtns.forEach(function(b) {
-        b.style.display = 'none';
-      });
-      // Keep header tools (fullscreen, settings) strictly aligned to the right side
-      var headerTools = document.querySelectorAll('.header-tools');
-      headerTools.forEach(function(tools) {
-        tools.style.marginLeft = 'auto';
-      });
-    }
-
-    var style = document.createElement('style');
-    style.textContent = '.header { justify-content: flex-end !important; } .header-tools { margin-left: auto !important; }';
-    if (document.head) {
-      document.head.appendChild(style);
     }
 
     if (document.readyState === 'loading') {
@@ -329,7 +542,7 @@ export class IeltsService {
     return { id: task.id, title: task.title, type: task.type };
   }
 
-  async getTask(id: string, mode?: string) {
+  async getTask(id: string, mode?: string, preview?: boolean) {
     const task = await this.prisma.ieltsTask.findUnique({
       where: { id },
     });
@@ -340,11 +553,8 @@ export class IeltsService {
       });
     }
 
-    // 1. Dynamically replace ANY existing exit button (including legacy with confirm())
-    task.contentHtml = task.contentHtml.replace(
-      /<button\b[^>]*CLOSE_IELTS_TASK[\s\S]*?<\/button>/gi,
-      IELTS_EXIT_BUTTON_HTML,
-    );
+    // 1. Structure the header cleanly into 3 distinct zones (Left, Center Exit/Badge, Right Tools)
+    task.contentHtml = normalizeIeltsHeader(task.contentHtml, preview);
 
     // 2. Also strip any inline confirm() calls anywhere
     task.contentHtml = task.contentHtml.replace(
@@ -352,18 +562,38 @@ export class IeltsService {
       '',
     );
 
-    // 3. Also replace any remaining <a> tags
+    // 3. Strip any stray telegram links or legacy exit buttons outside header
     task.contentHtml = task.contentHtml.replace(
-      /<a\b[^>]*>([\s\S]*?)<\/a>/gi,
-      IELTS_EXIT_BUTTON_HTML,
+      /<a\b[^>]*href=["'][^"']*t\.me[^"']*["'][^>]*>[\s\S]*?<\/a>/gi,
+      '',
     );
 
     // 4. Inject escape key listener script if not already present
     if (!task.contentHtml.includes('ESCAPE_PRESSED')) {
-      task.contentHtml += IELTS_ESC_LISTENER_SCRIPT;
+      task.contentHtml = task.contentHtml.replace('</body>', `${IELTS_ESC_LISTENER_SCRIPT}</body>`);
+      if (!task.contentHtml.includes('ESCAPE_PRESSED')) {
+        task.contentHtml += IELTS_ESC_LISTENER_SCRIPT;
+      }
     }
 
-    // 5. Always inject latest submission postMessage hook or review script
+    // 5. Ensure header fix styles are injected
+    task.contentHtml = task.contentHtml.replace(
+      /<style id=["']ielts-header-fix["']>[\s\S]*?<\/style>/gi,
+      '',
+    );
+    if (task.contentHtml.includes('</head>')) {
+      task.contentHtml = task.contentHtml.replace('</head>', `${IELTS_HEADER_FIX_STYLES}</head>`);
+    } else {
+      task.contentHtml = IELTS_HEADER_FIX_STYLES + task.contentHtml;
+    }
+
+    // 6. Clean up any leftover synthetic scripts if previously cached
+    task.contentHtml = task.contentHtml.replace(
+      /<script id=["']ielts-tools-runtime["']>[\s\S]*?<\/script>/gi,
+      '',
+    );
+
+    // 8. Always inject latest submission postMessage hook or review script
     task.contentHtml = task.contentHtml.replace(
       /<script>[\s\S]*?IELTS_TEST_SUBMITTED[\s\S]*?<\/script>/gi,
       '',

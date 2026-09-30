@@ -2,6 +2,11 @@
   "app": {
     "title": "Teacher-Student Platform"
   },
+  "roles": {
+    "SUPER_ADMIN": "Super Admin",
+    "TEACHER": "Teacher",
+    "STUDENT": "Student"
+  },
   "required": "This field is required",
   "common": {
     "show": "Show",
@@ -244,6 +249,7 @@
     "deleteSuccess": "Task deleted successfully",
     "taskAlreadyExists": "A task with this title already exists",
     "reviewModeBanner": "Review Mode: Analysing answers & errors (Read-only)",
+    "previewMode": "Preview Mode",
     "retakeTest": "Retake Test",
     "exitReview": "Exit"
   },

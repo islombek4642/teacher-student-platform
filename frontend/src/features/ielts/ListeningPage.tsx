@@ -21,6 +21,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
+// Listening IELTS Tasks Page
 export function ListeningPage() {
   const { t } = useTranslation();
   const { payload } = useAuth();
@@ -34,7 +35,7 @@ export function ListeningPage() {
   } | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
   const { data: tasks, isLoading } = useIeltsTasks();
-  const { data: mySubmissions } = useStudentMySubmissions();
+  const { data: mySubmissions } = useStudentMySubmissions(isStudent);
   const deleteMutation = useDeleteIeltsTask();
 
   const submissionsMap = new Map<string, IeltsSubmission & { bestBand: number }>();
@@ -168,13 +169,13 @@ export function ListeningPage() {
                 </TableCell>
                 <TableCell className="w-44 text-right space-x-2">
                   <Button
-                    variant={isStudent && !submissionsMap.has(task.id) ? 'default' : 'outline'}
+                    variant={isStudent && submissionsMap.has(task.id) ? 'outline' : 'default'}
                     size="sm"
                     onClick={() => {
-                      if (isStudent && !submissionsMap.has(task.id)) {
-                        setViewerState({ taskId: task.id, mode: 'take' });
-                      } else {
+                      if (isStudent && submissionsMap.has(task.id)) {
                         setViewerState({ taskId: task.id, mode: 'review' });
+                      } else {
+                        setViewerState({ taskId: task.id, mode: 'take' });
                       }
                     }}
                   >
