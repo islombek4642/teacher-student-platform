@@ -132,3 +132,32 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes marquee-track {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee-track {
+  display: flex;
+  flex-shrink: 0;
+  animation: marquee-track 35s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-wrapper:hover .animate-marquee-track,
+.animate-marquee-wrapper:focus-within .animate-marquee-track {
+  animation-play-state: paused;
+}

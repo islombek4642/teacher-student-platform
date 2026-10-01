@@ -16,7 +16,7 @@ describe('AuthService', () => {
           passwordHash,
           role: Role.STUDENT,
           isActive: true,
-          studentProfile: { id: 'profile-1' },
+          studentProfile: { id: 'profile-1', firstName: 'Ali', lastName: 'Valiyev' },
           teacherProfile: null,
         }),
       },
@@ -26,7 +26,13 @@ describe('AuthService', () => {
 
     const payload = await service.validateUser('student1', '1234');
 
-    expect(payload).toEqual({ sub: 'user-1', role: Role.STUDENT, profileId: 'profile-1' });
+    expect(payload).toEqual({
+      sub: 'user-1',
+      role: Role.STUDENT,
+      profileId: 'profile-1',
+      firstName: 'Ali',
+      lastName: 'Valiyev',
+    });
   });
 
   it('validateUser rejects an incorrect password', async () => {

@@ -4,19 +4,19 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useAuth } from '@/auth/useAuth';
 import { useSubmitIeltsTask } from './api/ielts.api';
 import { toast } from '@/components/ui/toast';
-import { Icon } from '@iconify/react';
-import { Button } from '@/components/ui/button';
 
 const API_URL = import.meta.env.VITE_API_URL ?? '';
 
 export function IeltsTaskViewer({ 
   taskId, 
   mode = 'take',
+  submissionId,
   onRetake,
   onClose 
 }: { 
   taskId: string;
   mode?: 'take' | 'review';
+  submissionId?: string;
   onRetake?: () => void;
   onClose: () => void;
 }) {
@@ -46,6 +46,12 @@ export function IeltsTaskViewer({
           onClose();
         } else {
           setConfirmOpen(true);
+        }
+      } else if (e.data?.type === 'RETAKE_IELTS_TASK') {
+        if (onRetake) {
+          isSubmittedRef.current = false;
+          setIsSubmitted(false);
+          onRetake();
         }
       } else if (e.data?.type === 'ESCAPE_PRESSED') {
         if (isReviewRef.current || isSubmittedRef.current || !isStudent) {
@@ -103,7 +109,7 @@ export function IeltsTaskViewer({
       window.removeEventListener('message', handleMessage);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [taskId, isStudent, onClose, submitMutation, t]);
+  }, [taskId, isStudent, onClose, onRetake, submitMutation, t]);
 
   const handleConfirmExit = () => {
     setConfirmOpen(false);
@@ -112,53 +118,16 @@ export function IeltsTaskViewer({
 
   const isPreview = !isStudent;
   const iframeSrc = isReview
-    ? `${API_URL}/ielts/${taskId}/view?mode=review`
+    ? `${API_URL}/ielts/${taskId}/view?mode=review${submissionId ? `&submissionId=${encodeURIComponent(submissionId)}` : ''}`
     : isPreview
       ? `${API_URL}/ielts/${taskId}/view?preview=true`
       : `${API_URL}/ielts/${taskId}/view`;
 
   return (
     <div className="fixed inset-0 z-[100] bg-background">
-      {isReview && isStudent && (
-        <div className="flex items-center justify-between border-b border-border/80 bg-muted/90 px-2.5 sm:px-4 py-1.5 sm:py-2 backdrop-blur-sm z-10 shrink-0 gap-2">
-          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2 sm:px-2.5 py-0.5 sm:py-1 text-[11px] sm:text-xs font-bold text-amber-600 dark:text-amber-400 border border-amber-500/20 whitespace-nowrap">
-              <Icon icon="lucide:shield-alert" className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-              <span>{t('ielts.reviewModeBanner')}</span>
-            </span>
-          </div>
-
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {onRetake && (
-              <Button
-                size="sm"
-                onClick={() => {
-                  isSubmittedRef.current = false;
-                  setIsSubmitted(false);
-                  onRetake();
-                }}
-                className="gap-1.5 text-xs bg-primary font-semibold h-8"
-              >
-                <Icon icon="lucide:rotate-ccw" className="h-3.5 w-3.5" />
-                <span>{t('ielts.retakeTest')}</span>
-              </Button>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onClose}
-              className="gap-1 text-xs h-8"
-            >
-              <Icon icon="lucide:x" className="h-3.5 w-3.5" />
-              <span>{t('ielts.exitReview')}</span>
-            </Button>
-          </div>
-        </div>
-      )}
-
       <iframe
         src={iframeSrc}
-        className={isReview && isStudent ? "w-full h-[calc(100%-48px)] border-none" : "w-full h-full border-none"}
+        className="w-full h-full border-none"
         title="IELTS Task"
         allowFullScreen
         allow="fullscreen"

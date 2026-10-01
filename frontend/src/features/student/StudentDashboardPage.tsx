@@ -13,7 +13,7 @@ import { AttemptHistoryDialog } from './AttemptHistoryDialog';
 
 export function StudentDashboardPage() {
   const { t } = useTranslation();
-  const { username } = useAuth();
+  const { username, fullName } = useAuth();
   const [historyDialogTask, setHistoryDialogTask] = useState<{
     id: string;
     title: string;
@@ -22,6 +22,7 @@ export function StudentDashboardPage() {
   const [viewerState, setViewerState] = useState<{
     taskId: string;
     mode: 'take' | 'review';
+    submissionId?: string;
   } | null>(null);
 
   const { data: tasks } = useIeltsTasks();
@@ -30,50 +31,229 @@ export function StudentDashboardPage() {
   const listeningCount = tasks?.filter((tk) => tk.type === 'LISTENING').length;
   const readingCount = tasks?.filter((tk) => tk.type === 'READING').length;
   const totalCompleted = submissions?.length || 0;
+  const bestBand =
+    totalCompleted > 0
+      ? Math.max(...submissions!.map((s) => s.band)).toFixed(1)
+      : '—';
   const avgBand =
     totalCompleted > 0
       ? (
           submissions!.reduce((acc, s) => acc + s.band, 0) / totalCompleted
         ).toFixed(1)
       : '—';
+  const totalTasks = tasks?.length ?? '—';
+
+  // Prepare list of items for continuous seamless marquee
+  const marqueeList = (() => {
+    if (!submissions || submissions.length === 0) return [];
+    let list = submissions.slice(0, 10);
+    while (list.length < 5) {
+      list = [...list, ...list];
+    }
+    return list;
+  })();
+
+  const renderCard = (sub: NonNullable<typeof submissions>[0], key: string) => {
+    const isListening = sub.task?.type === 'LISTENING';
+    return (
+      <div
+        key={key}
+        className="group relative flex w-[285px] sm:w-[320px] shrink-0 flex-col justify-between overflow-hidden rounded-2xl border border-border/70 bg-card p-4 shadow-xs transition-all hover:border-primary/50 hover:shadow-md"
+      >
+        <div className="space-y-2.5">
+          <div className="flex items-center justify-between gap-2">
+            <Badge
+              variant="secondary"
+              className={`gap-1 font-semibold text-[11px] ${
+                isListening
+                  ? 'bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20'
+                  : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20'
+              }`}
+            >
+              <Icon
+                icon={isListening ? 'lucide:headphones' : 'lucide:book-open'}
+                className="h-3 w-3"
+              />
+              <span>{isListening ? t('ielts.listening') : t('ielts.reading')}</span>
+            </Badge>
+            <span className="text-[11px] text-muted-foreground whitespace-nowrap">
+              <span className="font-semibold text-foreground">
+                {new Date(sub.submittedAt).toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </span>
+              <span className="mx-1 text-muted-foreground/40">•</span>
+              <span>
+                {new Date(sub.submittedAt).toLocaleDateString([], {
+                  day: '2-digit',
+                  month: '2-digit',
+                })}
+              </span>
+            </span>
+          </div>
+
+          <div>
+            <h4 className="font-bold text-sm text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+              {sub.task?.title || 'IELTS Test'}
+            </h4>
+          </div>
+        </div>
+
+        <div className="mt-4 flex items-center justify-between border-t border-border/50 pt-3">
+          <div>
+            <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t('studentTasks.scoreHeader')}
+            </div>
+            <div className="text-sm font-extrabold text-foreground">
+              {sub.score} / {sub.total}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-xs font-black text-primary">
+              <Icon icon="lucide:award" className="h-3.5 w-3.5" />
+              <span>Band {sub.band}</span>
+            </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              title={t('studentResults.attemptsHistory', "Urinishlar tarixi")}
+              onClick={() =>
+                setHistoryDialogTask({
+                  id: sub.taskId,
+                  title: sub.task?.title || 'IELTS Test',
+                  type: sub.task?.type,
+                })
+              }
+              className="h-7 w-7 text-muted-foreground hover:text-foreground"
+            >
+              <Icon icon="lucide:line-chart" className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setViewerState({
+                  taskId: sub.taskId,
+                  mode: 'review',
+                  submissionId: sub.id,
+                })
+              }
+              className="h-7 text-xs px-2.5 gap-1 font-semibold"
+            >
+              <Icon icon="lucide:eye" className="h-3.5 w-3.5" />
+              <span>{t('ielts.view')}</span>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const statOrUndef = (count: number | undefined) =>
     count !== undefined && count > 0 ? t('dashboard.tasksCount', { count }) : undefined;
 
   return (
-    <div className="space-y-8 pb-10">
-      {/* Hero banner */}
-      <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-8 md:p-10 shadow-sm">
-        <div className="relative z-10 space-y-2">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-            <Icon icon="lucide:target" className="h-3.5 w-3.5" />
-            <span>{t('dashboard.studentWelcome')}</span>
+    <div className="space-y-6 pb-10 w-full min-w-0 max-w-full overflow-x-hidden">
+      {/* 1. Compact Hero banner */}
+      <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-4 sm:p-5 shadow-xs">
+        <div className="relative z-10 flex flex-col gap-1.5">
+          <div>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+              <Icon icon="lucide:sparkles" className="h-3.5 w-3.5" />
+              <span>{t('dashboard.studentWelcome')}</span>
+            </span>
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
-            {t('dashboard.studentGreeting', { name: username })}
+          <h1 className="flex items-center gap-2 text-xl sm:text-2xl font-black tracking-tight text-foreground">
+            <span>{t('dashboard.studentGreeting', { name: fullName || username })}</span>
+            <Icon icon="lucide:graduation-cap" className="h-5 w-5 text-primary shrink-0" />
           </h1>
-          <p className="text-base text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             {t('dashboard.studentSubtitle')}
           </p>
         </div>
-        {/* Decorative blobs */}
-        <div className="pointer-events-none absolute -right-12 -top-12 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-12 right-24 h-48 w-48 rounded-full bg-emerald-500/10 blur-2xl" />
+        {/* Subtle decorative blob */}
+        <div className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-primary/10 blur-2xl" />
       </div>
 
-      {/* Stat summary row */}
+      {/* 2. Recent Submissions Continuous Smooth Marquee */}
+      <div className="space-y-3 w-full min-w-0 max-w-full">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Icon icon="lucide:history" className="h-5 w-5 text-primary" />
+            <h3 className="text-base sm:text-lg font-bold tracking-tight text-foreground">
+              {t('studentResults.recentTitle')}
+            </h3>
+            {submissions && submissions.length > 0 && (
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-extrabold text-primary">
+                {submissions.length}
+              </span>
+            )}
+          </div>
+
+          {submissions && submissions.length > 0 && (
+            <Link
+              to="/student/results"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-primary transition-colors hover:text-primary/80 hover:underline"
+            >
+              <span>{t('studentResults.viewAll')}</span>
+              <Icon icon="lucide:arrow-right" className="h-3.5 w-3.5" />
+            </Link>
+          )}
+        </div>
+
+        {submissions && submissions.length > 0 ? (
+          <div className="animate-marquee-wrapper relative w-full overflow-hidden rounded-2xl py-1 flex">
+            {/* Subtle fade edges for smooth transition */}
+            <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-8 bg-gradient-to-r from-background to-transparent" />
+            <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-8 bg-gradient-to-l from-background to-transparent" />
+
+            <div
+              className="animate-marquee-track flex gap-4 pr-4"
+              style={{
+                animationDuration: `${Math.max(25, marqueeList.length * 6)}s`,
+              }}
+            >
+              {marqueeList.map((sub, index) => renderCard(sub, `t1-${sub.id}-${index}`))}
+            </div>
+
+            <div
+              className="animate-marquee-track flex gap-4 pr-4"
+              aria-hidden="true"
+              style={{
+                animationDuration: `${Math.max(25, marqueeList.length * 6)}s`,
+              }}
+            >
+              {marqueeList.map((sub, index) => renderCard(sub, `t2-${sub.id}-${index}`))}
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/80 bg-card/50 py-8 px-4 text-center">
+            <Icon icon="lucide:clipboard-check" className="mb-2 h-8 w-8 text-primary opacity-40" />
+            <div className="text-sm font-semibold text-foreground">
+              {t('studentResults.noRecent')}
+            </div>
+            <p className="mt-1 max-w-sm text-xs text-muted-foreground">
+              {t('studentResults.noRecentDesc')}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* 3. Stat summary row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: t('ielts.listening'), value: listeningCount ?? '—', icon: 'lucide:headphones' },
-          { label: t('ielts.reading'), value: readingCount ?? '—', icon: 'lucide:book-open' },
-          { label: t('statistics.tasksCompleted'), value: totalCompleted, icon: 'lucide:check-circle-2' },
-          { label: t('statistics.groupAverageBand'), value: avgBand, icon: 'lucide:award' },
+          { label: t('statistics.tasksCompleted'), value: totalCompleted, icon: 'lucide:check-circle-2', color: 'text-emerald-500' },
+          { label: t('statistics.bestBand'), value: bestBand, icon: 'lucide:award', color: 'text-amber-500' },
+          { label: t('statistics.overallBand'), value: avgBand, icon: 'lucide:trending-up', color: 'text-primary' },
+          { label: t('statistics.availableTasks'), value: totalTasks, icon: 'lucide:layers', color: 'text-indigo-500' },
         ].map((item) => (
           <div
             key={item.label}
             className="flex flex-col items-center justify-center gap-1 rounded-2xl border border-border/60 bg-card px-4 py-5 text-center shadow-sm"
           >
-            <Icon icon={item.icon} className="h-5 w-5 text-muted-foreground" />
+            <Icon icon={item.icon} className={`h-5 w-5 ${item.color || 'text-muted-foreground'}`} />
             <span className="text-2xl font-bold tracking-tight text-foreground">
               {item.value}
             </span>
@@ -82,7 +262,7 @@ export function StudentDashboardPage() {
         ))}
       </div>
 
-      {/* Navigation cards */}
+      {/* 4. Navigation cards */}
       <div className="grid gap-5 sm:grid-cols-2">
         <DashboardCard
           to="/student/ielts/listening"
@@ -124,146 +304,11 @@ export function StudentDashboardPage() {
         />
       </div>
 
-      {/* Recent Submissions Section (Last 3 Cards) */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Icon icon="lucide:history" className="h-5 w-5 text-primary" />
-            <h3 className="text-lg font-bold tracking-tight text-foreground">
-              {t('studentResults.recentTitle')}
-            </h3>
-          </div>
-          {submissions && submissions.length > 0 && (
-            <Link
-              to="/student/results"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary transition-colors hover:text-primary/80 hover:underline"
-            >
-              <span>{t('studentResults.viewAll')}</span>
-              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-extrabold text-primary">
-                {submissions.length}
-              </span>
-              <Icon icon="lucide:arrow-right" className="h-3.5 w-3.5" />
-            </Link>
-          )}
-        </div>
-
-        {submissions && submissions.length > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {submissions.slice(0, 3).map((sub) => {
-              const isListening = sub.task?.type === 'LISTENING';
-              return (
-                <div
-                  key={sub.id}
-                  className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-border/60 bg-card p-5 shadow-sm transition-all hover:border-primary/40 hover:shadow-md"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <Badge
-                        variant="secondary"
-                        className={`gap-1.5 font-semibold text-xs ${
-                          isListening
-                            ? 'bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20'
-                            : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20'
-                        }`}
-                      >
-                        <Icon
-                          icon={isListening ? 'lucide:headphones' : 'lucide:book-open'}
-                          className="h-3 w-3"
-                        />
-                        <span>{isListening ? t('ielts.listening') : t('ielts.reading')}</span>
-                      </Badge>
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        <span className="font-semibold text-foreground">
-                          {new Date(sub.submittedAt).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </span>
-                        <span className="mx-1 text-muted-foreground/40">•</span>
-                        <span>
-                          {new Date(sub.submittedAt).toLocaleDateString([], {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric',
-                          })}
-                        </span>
-                      </span>
-                    </div>
-
-                    <div>
-                      <h4 className="font-bold text-foreground line-clamp-2">
-                        {sub.task?.title || 'IELTS Test'}
-                      </h4>
-                    </div>
-                  </div>
-
-                  <div className="mt-5 flex items-center justify-between border-t border-border/50 pt-4">
-                    <div>
-                      <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                        {t('studentTasks.scoreHeader')}
-                      </div>
-                      <div className="text-base font-extrabold text-foreground">
-                        {sub.score} / {sub.total}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-1.5">
-                      <span className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-xs font-black text-primary">
-                        <Icon icon="lucide:award" className="h-3.5 w-3.5" />
-                        <span>Band {sub.band}</span>
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title={t('studentResults.attemptsHistory', "Urinishlar tarixi")}
-                        onClick={() =>
-                          setHistoryDialogTask({
-                            id: sub.taskId,
-                            title: sub.task?.title || 'IELTS Test',
-                            type: sub.task?.type,
-                          })
-                        }
-                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                      >
-                        <Icon icon="lucide:line-chart" className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setViewerState({
-                            taskId: sub.taskId,
-                            mode: 'review',
-                          })
-                        }
-                        className="h-8 text-xs gap-1"
-                      >
-                        <Icon icon="lucide:eye" className="h-3.5 w-3.5" />
-                        <span>{t('ielts.view')}</span>
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/80 bg-card/50 py-10 px-4 text-center">
-            <Icon icon="lucide:clipboard-check" className="mb-2 h-9 w-9 text-primary opacity-40" />
-            <div className="text-sm font-semibold text-foreground">
-              {t('studentResults.noRecent')}
-            </div>
-            <p className="mt-1 max-w-sm text-xs text-muted-foreground">
-              {t('studentResults.noRecentDesc')}
-            </p>
-          </div>
-        )}
-      </div>
-
       {viewerState && (
         <IeltsTaskViewer
           taskId={viewerState.taskId}
           mode={viewerState.mode}
+          submissionId={viewerState.submissionId}
           onRetake={() => setViewerState({ taskId: viewerState.taskId, mode: 'take' })}
           onClose={() => setViewerState(null)}
         />
@@ -276,9 +321,9 @@ export function StudentDashboardPage() {
           taskId={historyDialogTask.id}
           taskTitle={historyDialogTask.title}
           taskType={historyDialogTask.type}
-          onReviewAttempt={(id) => {
+          onReviewAttempt={(id, submissionId) => {
             setHistoryDialogTask(null);
-            setViewerState({ taskId: id, mode: 'review' });
+            setViewerState({ taskId: id, mode: 'review', submissionId });
           }}
           onRetake={(id) => {
             setHistoryDialogTask(null);

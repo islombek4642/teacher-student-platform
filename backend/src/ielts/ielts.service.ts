@@ -9,13 +9,21 @@ import { IeltsTaskType, Role } from '@prisma/client';
 import { ERROR_CODES } from '../common/constants/error-codes.constant';
 import { JwtPayload } from '../auth/jwt-payload.interface';
 
-export const IELTS_EXIT_BUTTON_HTML = `<button type="button" class="ielts-exit-btn" onclick="window.parent.postMessage({type: 'CLOSE_IELTS_TASK'}, '*')" style="display:inline-flex; align-items:center; justify-content:center; padding:7px 14px; border:none; border-radius:6px; background-color:#ef4444; color:white; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; gap:6px; transition:background-color 0.2s; box-shadow:0 1px 2px rgba(0,0,0,0.05);" onmouseover="this.style.backgroundColor='#dc2626'" onmouseout="this.style.backgroundColor='#ef4444'">
+export const IELTS_EXIT_BUTTON_HTML = `<button type="button" class="ielts-exit-btn" onclick="window.parent.postMessage({type: 'CLOSE_IELTS_TASK'}, '*')" style="display:inline-flex; align-items:center; justify-content:center; padding:7px 14px; border:none; border-radius:6px; background-color:#ef4444; color:white; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; gap:6px; transition:background-color 0.2s; box-shadow:0 1px 2px rgba(0,0,0,0.05); white-space:nowrap; flex-shrink:0;" onmouseover="this.style.backgroundColor='#dc2626'" onmouseout="this.style.backgroundColor='#ef4444'">
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
     <polyline points="16 17 21 12 16 7"></polyline>
     <line x1="21" y1="12" x2="9" y2="12"></line>
   </svg>
   Exit
+</button>`;
+
+export const IELTS_RETAKE_BUTTON_HTML = `<button type="button" class="ielts-retake-btn" onclick="window.parent.postMessage({type: 'RETAKE_IELTS_TASK'}, '*')" style="display:inline-flex; align-items:center; justify-content:center; padding:7px 14px; border:none; border-radius:6px; background-color:#2563eb; color:white; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; gap:6px; transition:background-color 0.2s; box-shadow:0 1px 2px rgba(0,0,0,0.05); white-space:nowrap; flex-shrink:0;" onmouseover="this.style.backgroundColor='#1d4ed8'" onmouseout="this.style.backgroundColor='#2563eb'">
+  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+    <polyline points="3 3 3 8 8 8"></polyline>
+  </svg>
+  Retake
 </button>`;
 
 export const IELTS_HEADER_FIX_STYLES = `<style id="ielts-header-fix">
@@ -147,13 +155,13 @@ export const IELTS_HEADER_FIX_STYLES = `<style id="ielts-header-fix">
       width: 16px !important;
       height: 16px !important;
     }
-    .ielts-exit-btn {
+    .ielts-exit-btn, .ielts-retake-btn {
       padding: 5px 9px !important;
       font-size: 11px !important;
       gap: 4px !important;
       border-radius: 5px !important;
     }
-    .ielts-exit-btn svg {
+    .ielts-exit-btn svg, .ielts-retake-btn svg {
       width: 13px !important;
       height: 13px !important;
     }
@@ -172,50 +180,81 @@ export const IELTS_HEADER_FIX_STYLES = `<style id="ielts-header-fix">
     }
   }
 
-  /* Extra Small Mobile (phones <= 420px) */
-  @media (max-width: 420px) {
+  /* Small Mobile (phones <= 480px) */
+  @media (max-width: 480px) {
     .header {
-      padding: 0 4px !important;
+      padding: 0 6px !important;
       gap: 4px !important;
     }
     .header-center-zone {
       gap: 4px !important;
     }
-    .header-tools {
-      gap: 3px !important;
-    }
-    .header-tool-btn {
-      width: 30px !important;
-      height: 28px !important;
-    }
-    .header-tool-btn svg {
-      width: 14px !important;
-      height: 14px !important;
-    }
-    .ielts-exit-btn {
+    .ielts-exit-btn, .ielts-retake-btn {
       padding: 4px 7px !important;
       font-size: 10.5px !important;
+      gap: 3px !important;
+    }
+    .ielts-preview-badge {
+      padding: 4px 6px !important;
+      font-size: 10.5px !important;
+      gap: 3px !important;
+    }
+  }
+
+  /* Extra Small Mobile (phones <= 420px) */
+  @media (max-width: 420px) {
+    .header {
+      padding: 0 4px !important;
+      gap: 3px !important;
+    }
+    .header-center-zone {
+      gap: 3px !important;
+    }
+    .header-tools {
+      gap: 2px !important;
+    }
+    .header-tool-btn {
+      width: 28px !important;
+      height: 26px !important;
+    }
+    .header-tool-btn svg {
+      width: 13px !important;
+      height: 13px !important;
+    }
+    .ielts-exit-btn, .ielts-retake-btn {
+      padding: 4px 6px !important;
+      font-size: 10px !important;
+      gap: 2px !important;
+    }
+    .ielts-exit-btn svg, .ielts-retake-btn svg {
+      width: 11px !important;
+      height: 11px !important;
     }
     .ielts-preview-badge {
       padding: 3px 5px !important;
       font-size: 10px !important;
     }
+    .ielts-preview-badge .preview-badge-text {
+      display: none !important;
+    }
   }
 </style>
 `;
 
-export function normalizeIeltsHeader(contentHtml: string, isPreview?: boolean): string {
-  const previewBadgeHtml = isPreview
-    ? `<span class="ielts-preview-badge" style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:6px; background-color:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; font-family:inherit; font-size:12px; font-weight:700; user-select:none; white-space:nowrap;">
+export function normalizeIeltsHeader(contentHtml: string, isPreview?: boolean, isReview?: boolean): string {
+  const showReviewUi = isPreview || isReview;
+  const retakeBtnHtml = isReview ? IELTS_RETAKE_BUTTON_HTML : '';
+  const previewBadgeHtml = showReviewUi
+    ? `<span class="ielts-preview-badge" style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:6px; background-color:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; font-family:inherit; font-size:12px; font-weight:700; user-select:none; white-space:nowrap; flex-shrink:0;">
         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
           <circle cx="12" cy="12" r="3"></circle>
         </svg>
-        Review Mode
+        <span class="preview-badge-text">Review Mode</span>
       </span>`
     : '';
 
-  const centerZoneHtml = `<div class="header-zone header-center-zone">\n      ${IELTS_EXIT_BUTTON_HTML}\n      ${previewBadgeHtml}\n    </div>`;
+  const centerZoneHtml = `<div class="header-zone header-center-zone">\n      ${IELTS_EXIT_BUTTON_HTML}\n      ${retakeBtnHtml}\n      ${previewBadgeHtml}\n    </div>`;
 
   const headerRegex = /<div class=["']header["']>([\s\S]*?)<\/div>\s*(?=<div class=["'](?:audio-player-container|main-container)["'])/i;
   const match = contentHtml.match(headerRegex);
@@ -442,24 +481,149 @@ export const IELTS_REVIEW_MODE_SCRIPT = `<script>
     } else {
       lockInputs();
     }
-
-    var checkTimer = setInterval(function() {
-      lockInputs();
-      if (typeof window.checkAnswers === 'function') {
-        try {
-          window.checkAnswers();
-        } catch(e) {}
-        lockInputs();
-        clearInterval(checkTimer);
-      }
-    }, 100);
-
-    setTimeout(function() {
-      clearInterval(checkTimer);
-      lockInputs();
-    }, 3000);
+    setTimeout(lockInputs, 200);
   })();
 </script>`;
+
+export function buildReviewModeScript(submission?: {
+  score: number;
+  total: number;
+  band: number;
+  results: Array<{
+    question: string | number;
+    userAnswer: string;
+    correctAnswer: string;
+    isCorrect: boolean;
+  }>;
+}) {
+  if (!submission) {
+    return IELTS_REVIEW_MODE_SCRIPT;
+  }
+  const safeData = JSON.stringify(submission);
+  return `<script>
+  (function() {
+    var data = ${safeData};
+    if (!data) return;
+
+    function lockAndApply() {
+      // 1. Lock all inputs
+      document.querySelectorAll('input, select, textarea').forEach(function(el) {
+        el.disabled = true;
+      });
+
+      // 2. Put container in results-mode
+      var mainContainer = document.querySelector('.main-container');
+      if (mainContainer) {
+        mainContainer.classList.add('results-mode');
+      }
+
+      // 3. Switch to part 1 if function exists
+      if (typeof window.switchToPart === 'function') {
+        try { window.switchToPart(1); } catch(e) {}
+      }
+
+      // 4. Fill score summary
+      var scoreEl = document.getElementById('score-summary');
+      if (scoreEl) {
+        scoreEl.textContent = 'You scored ' + data.score + ' out of ' + data.total + ' (Band ' + data.band + ').';
+      }
+
+      // 5. Build results details table
+      var resultDetails = document.getElementById('result-details');
+      if (resultDetails && Array.isArray(data.results) && data.results.length > 0) {
+        var html = '<table><thead><tr><th>Question</th><th>Your Answer</th><th>Correct Answer</th><th>Result</th></tr></thead><tbody>';
+        data.results.forEach(function(r) {
+          html += '<tr><td>' + r.question + '</td><td>' + (r.userAnswer || 'No Answer') + '</td><td>' + (r.correctAnswer || '') + '</td><td class="' + (r.isCorrect ? 'result-correct' : 'result-incorrect') + '">' + (r.isCorrect ? '&#10003; Correct' : '&#10007; Incorrect') + '</td></tr>';
+        });
+        html += '</tbody></table>';
+        resultDetails.innerHTML = html;
+      }
+
+      // 6. Deliver / My Results button and click listeners
+      var deliverBtn = document.getElementById('deliver-button');
+      if (deliverBtn) {
+        deliverBtn.style.display = 'inline-flex';
+        deliverBtn.classList.add('success');
+        deliverBtn.innerHTML = '<span>My Results</span>';
+        deliverBtn.onclick = function(e) {
+          if (e) e.preventDefault();
+          var m = document.getElementById('result-modal');
+          if (m) m.style.display = 'flex';
+        };
+      }
+
+      var modalCloseBtn = document.getElementById('modal-close-button');
+      if (modalCloseBtn) {
+        modalCloseBtn.onclick = function(e) {
+          if (e) e.preventDefault();
+          var m = document.getElementById('result-modal');
+          if (m) m.style.display = 'none';
+        };
+      }
+
+      // 7. Automatically open the result modal in review mode
+      var modal = document.getElementById('result-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+      }
+
+      // 8. Populate user answers and visual feedback in the questions
+      if (Array.isArray(data.results)) {
+        data.results.forEach(function(r) {
+          var qKey = 'q' + r.question;
+          var qNum = parseInt(String(r.question).replace('q', ''), 10);
+          if (!isNaN(qNum)) {
+            var navBtn = document.querySelector('.subQuestion[onclick*="goToQuestion(' + qNum + ')"]');
+            if (navBtn) {
+              navBtn.classList.remove('answered');
+              navBtn.classList.add(r.isCorrect ? 'correct' : 'incorrect');
+            }
+          }
+
+          var textInput = document.getElementById(qKey);
+          if (textInput && textInput.type !== 'checkbox' && textInput.type !== 'radio') {
+            if (r.userAnswer && r.userAnswer !== 'No Answer') {
+              textInput.value = r.userAnswer;
+            }
+            textInput.classList.add(r.isCorrect ? 'correct' : 'incorrect');
+            if (!r.isCorrect && r.correctAnswer && !textInput.nextElementSibling?.classList?.contains('correct-inline')) {
+              var sp = document.createElement('span');
+              sp.className = 'correct-inline';
+              sp.textContent = r.correctAnswer;
+              textInput.insertAdjacentElement('afterend', sp);
+            }
+          }
+
+          if (r.userAnswer && r.userAnswer !== 'No Answer') {
+            var radios = document.querySelectorAll('input[type="radio"][name="' + qKey + '"]');
+            radios.forEach(function(rad) {
+              if (rad.value === r.userAnswer) {
+                rad.checked = true;
+              }
+              var wrapper = rad.closest('.multi-choice-option');
+              if (wrapper) {
+                if (rad.value === r.correctAnswer) wrapper.classList.add('correct');
+                else if (rad.checked) wrapper.classList.add('incorrect');
+              }
+            });
+          }
+        });
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', function() {
+        setTimeout(lockAndApply, 50);
+      });
+    } else {
+      setTimeout(lockAndApply, 50);
+    }
+
+    setTimeout(lockAndApply, 300);
+    setTimeout(lockAndApply, 800);
+  })();
+</script>`;
+}
 
 export function detectIeltsTaskType(contentHtml: string): IeltsTaskType | 'UNKNOWN' {
   const hasAudio =
@@ -625,7 +789,7 @@ export class IeltsService {
     return { id: task.id, title: task.title, type: task.type };
   }
 
-  async getTask(id: string, mode?: string, preview?: boolean) {
+  async getTask(id: string, mode?: string, preview?: boolean, submissionId?: string) {
     const task = await this.prisma.ieltsTask.findUnique({
       where: { id },
     });
@@ -636,8 +800,8 @@ export class IeltsService {
       });
     }
 
-    // 1. Structure the header cleanly into 3 distinct zones (Left, Center Exit/Badge, Right Tools)
-    task.contentHtml = normalizeIeltsHeader(task.contentHtml, preview);
+    // 1. Structure the header cleanly into 3 distinct zones (Left, Center Exit/Badge/Retake, Right Tools)
+    task.contentHtml = normalizeIeltsHeader(task.contentHtml, preview, mode === 'review');
 
     // 2. Also strip any inline confirm() calls anywhere
     task.contentHtml = task.contentHtml.replace(
@@ -687,7 +851,29 @@ export class IeltsService {
     );
 
     if (mode === 'review') {
-      task.contentHtml += IELTS_REVIEW_MODE_SCRIPT;
+      let submission: any = null;
+      if (submissionId) {
+        submission = await this.prisma.ieltsSubmission.findUnique({
+          where: { id: submissionId },
+        });
+      }
+      if (!submission) {
+        submission = await this.prisma.ieltsSubmission.findFirst({
+          where: { taskId: id },
+          orderBy: { submittedAt: 'desc' },
+        });
+      }
+
+      if (submission) {
+        task.contentHtml += buildReviewModeScript({
+          score: submission.score,
+          total: submission.total,
+          band: submission.band,
+          results: Array.isArray(submission.answersJson) ? submission.answersJson : [],
+        });
+      } else {
+        task.contentHtml += IELTS_REVIEW_MODE_SCRIPT;
+      }
     } else {
       task.contentHtml += IELTS_SUBMISSION_SCRIPT;
     }

@@ -101,6 +101,12 @@ export type IeltsSubmission = {
   total: number;
   band: number;
   attempt?: number;
+  answersJson?: Array<{
+    question: string | number;
+    userAnswer: string;
+    correctAnswer: string;
+    isCorrect: boolean;
+  }>;
   submittedAt: string;
   task?: {
     id: string;

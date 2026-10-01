@@ -68,7 +68,9 @@ const ROLE_CONFIG: Record<Role, { icon: string; labelKey: string; colorClass: st
 
 export function AppLayout() {
   const { t } = useTranslation();
-  const { username, payload, logout } = useAuth();
+  const { username, fullName, payload, logout } = useAuth();
+  const displayName = fullName || (username ?? payload?.sub);
+  const firstName = payload?.firstName || (fullName ? fullName.split(' ')[0] : (username ?? payload?.sub));
   const location = useLocation();
   const navLinks = payload?.role ? NAV_LINKS_BY_ROLE[payload.role] : [];
   const roleConfig = payload?.role
@@ -122,7 +124,7 @@ export function AppLayout() {
           <div className="flex items-center justify-between gap-2 px-1 group-data-[collapsible=icon]:flex-col">
             <div
               className="flex items-center gap-2.5 min-w-0"
-              title={`${username ?? payload?.sub ?? ''} (${t(roleConfig.labelKey)})`}
+              title={`${displayName ?? ''} (${t(roleConfig.labelKey)})`}
             >
               <Avatar
                 size="sm"
@@ -133,8 +135,8 @@ export function AppLayout() {
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col min-w-0 group-data-[collapsible=icon]:hidden">
-                <span className="truncate text-sm font-medium text-foreground leading-tight">
-                  {username ?? payload?.sub}
+                <span className="truncate text-sm font-semibold text-foreground leading-tight">
+                  {firstName}
                 </span>
                 <span className="truncate text-[11px] text-muted-foreground leading-tight">
                   {t(roleConfig.labelKey)}
@@ -150,11 +152,11 @@ export function AppLayout() {
           </div>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset>
+      <SidebarInset className="min-w-0 max-w-full overflow-x-hidden">
         <header className="flex items-center gap-2 border-b px-4 py-3">
           <SidebarTrigger />
         </header>
-        <main className="p-4">
+        <main className="p-4 min-w-0 max-w-full">
           <Outlet />
         </main>
       </SidebarInset>

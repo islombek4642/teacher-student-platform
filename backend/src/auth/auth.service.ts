@@ -33,11 +33,42 @@ export class AuthService {
       });
     }
 
-    const profileId = user.teacherProfile?.id ?? user.studentProfile?.id ?? null;
-    return { sub: user.id, role: user.role, profileId };
+    const profile = user.teacherProfile ?? user.studentProfile ?? null;
+    const profileId = profile?.id ?? null;
+    const firstName = profile?.firstName ?? null;
+    const lastName = profile?.lastName ?? null;
+    return {
+      sub: user.id,
+      role: user.role,
+      profileId,
+      firstName,
+      lastName,
+    };
   }
 
   login(payload: JwtPayload): { accessToken: string } {
     return { accessToken: this.jwtService.sign(payload) };
+  }
+
+  async getMe(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { teacherProfile: true, studentProfile: true },
+    });
+    if (!user) {
+      throw new UnauthorizedException({
+        errorCode: ERROR_CODES.USER_NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+    const profile = user.teacherProfile ?? user.studentProfile ?? null;
+    return {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+      profileId: profile?.id ?? null,
+      firstName: profile?.firstName ?? null,
+      lastName: profile?.lastName ?? null,
+    };
   }
 }

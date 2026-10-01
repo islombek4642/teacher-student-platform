@@ -18,7 +18,7 @@ interface AttemptHistoryDialogProps {
   taskId: string;
   taskTitle: string;
   taskType?: 'LISTENING' | 'READING' | 'WRITING' | 'SPEAKING';
-  onReviewAttempt: (taskId: string) => void;
+  onReviewAttempt: (taskId: string, submissionId?: string) => void;
   onRetake: (taskId: string) => void;
 }
 
@@ -134,7 +134,7 @@ export function AttemptHistoryDialog({
                           size="sm"
                           onClick={() => {
                             onOpenChange(false);
-                            onReviewAttempt(taskId);
+                            onReviewAttempt(taskId, att.id);
                           }}
                           className="h-7 text-xs"
                         >

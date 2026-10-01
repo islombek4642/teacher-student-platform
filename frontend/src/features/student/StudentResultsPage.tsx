@@ -24,6 +24,7 @@ export function StudentResultsPage() {
   const [viewerState, setViewerState] = useState<{
     taskId: string;
     mode: 'take' | 'review';
+    submissionId?: string;
   } | null>(null);
 
   const allSubmissions = submissions || [];
@@ -377,6 +378,7 @@ export function StudentResultsPage() {
                                           setViewerState({
                                             taskId: group.taskId,
                                             mode: 'review',
+                                            submissionId: att.id,
                                           })
                                         }
                                         className="h-7 text-xs text-primary"
@@ -415,6 +417,7 @@ export function StudentResultsPage() {
         <IeltsTaskViewer
           taskId={viewerState.taskId}
           mode={viewerState.mode}
+          submissionId={viewerState.submissionId}
           onRetake={() =>
             setViewerState({ taskId: viewerState.taskId, mode: 'take' })
           }

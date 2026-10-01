@@ -32,6 +32,7 @@ export function ListeningPage() {
   const [viewerState, setViewerState] = useState<{
     taskId: string;
     mode: 'take' | 'review';
+    submissionId?: string;
   } | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
   const { data: tasks, isLoading } = useIeltsTasks();
@@ -173,7 +174,8 @@ export function ListeningPage() {
                     size="sm"
                     onClick={() => {
                       if (isStudent && submissionsMap.has(task.id)) {
-                        setViewerState({ taskId: task.id, mode: 'review' });
+                        const sub = submissionsMap.get(task.id);
+                        setViewerState({ taskId: task.id, mode: 'review', submissionId: sub?.id });
                       } else {
                         setViewerState({ taskId: task.id, mode: 'take' });
                       }
@@ -254,6 +256,7 @@ export function ListeningPage() {
         <IeltsTaskViewer 
           taskId={viewerState.taskId} 
           mode={viewerState.mode}
+          submissionId={viewerState.submissionId}
           onRetake={() => setViewerState({ taskId: viewerState.taskId, mode: 'take' })}
           onClose={() => setViewerState(null)} 
         />

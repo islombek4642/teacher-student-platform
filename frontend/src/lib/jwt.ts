@@ -5,6 +5,8 @@ export interface AccessTokenPayload {
   sub: string;
   role: Role;
   profileId: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
 }
 
 export function decodeAccessToken(token: string): AccessTokenPayload {

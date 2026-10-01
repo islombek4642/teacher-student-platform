@@ -152,8 +152,8 @@ describe('IeltsService', () => {
         results: [{ question: 1, userAnswer: 'A', correctAnswer: 'A', isCorrect: true }],
       };
 
-      mockPrisma.ieltsTask.findUnique.mockResolvedValueOnce({ id: taskId });
-      mockPrisma.studentProfile.findUnique.mockResolvedValueOnce({ id: 'sp-1', userId: 'u-student' });
+      mockPrisma.ieltsTask.findUnique.mockResolvedValueOnce({ id: taskId, groupId: 'g-1' });
+      mockPrisma.studentProfile.findUnique.mockResolvedValueOnce({ id: 'sp-1', userId: 'u-student', groupId: 'g-1' });
       mockPrisma.ieltsSubmission.findFirst.mockResolvedValueOnce(null);
       mockPrisma.ieltsSubmission.create.mockResolvedValueOnce({
         id: 'sub-1',

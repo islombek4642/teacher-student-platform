@@ -123,10 +123,11 @@ export class IeltsController {
     @Param('id') id: string,
     @Query('mode') mode: string,
     @Query('preview') preview: string,
+    @Query('submissionId') submissionId: string,
     @Res() res: Response,
   ) {
     const isPreview = preview === 'true' || preview === '1' || mode === 'review';
-    const task = await this.ieltsService.getTask(id, mode, isPreview);
+    const task = await this.ieltsService.getTask(id, mode, isPreview, submissionId);
     res.setHeader('Content-Type', 'text/html');
     res.send(task.contentHtml);
   }
