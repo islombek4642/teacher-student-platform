@@ -15,7 +15,18 @@ import {
 import { useUploadIeltsTask, useIeltsTasks } from './api/ielts.api';
 import { extractErrorCode, errorCodeToI18nKey } from '@/lib/error-codes';
 
-export function detectIeltsTaskType(contentHtml: string): 'LISTENING' | 'READING' | 'UNKNOWN' {
+export function detectIeltsTaskType(contentHtml: string): 'LISTENING' | 'READING' | 'WRITING' | 'UNKNOWN' {
+  const hasWritingMarkers =
+    /writing-textarea/i.test(contentHtml) ||
+    /class=["'][^"']*writing-part[^"']*["']/i.test(contentHtml) ||
+    /id=["']part-header-[12]["']/i.test(contentHtml) ||
+    /ielts-writing-part-[12]/i.test(contentHtml) ||
+    /<title>[^<]*writing[^<]*<\/title>/i.test(contentHtml);
+
+  if (hasWritingMarkers) {
+    return 'WRITING';
+  }
+
   const hasAudio =
     /<audio\b/i.test(contentHtml) ||
     /id=["']global-audio-player["']/i.test(contentHtml) ||
@@ -139,6 +150,17 @@ export function extractTaskTitle(contentHtml: string, filename?: string): string
     }
   }
 
+  // 2.5 Check Writing task prompt
+  const writingPromptMatch = contentHtml.match(
+    /class=["'][^"']*task-prompt[^"']*["'][\s\S]*?<(?:strong|b|p)[^>]*>([\s\S]*?)<\/(?:strong|b|p)>/i,
+  );
+  if (writingPromptMatch && writingPromptMatch[1]?.trim()) {
+    const clean = writingPromptMatch[1].replace(/<[^>]+>/g, '').trim();
+    if (clean.length > 5 && !/^(write about|ielts|part\s*[1-4])/i.test(clean)) {
+      return clean.length > 90 ? clean.slice(0, 90).trim() + '...' : clean;
+    }
+  }
+
   // 3. Fallback: Search across entire document
   const fallback = extractTitleFromHtmlBlock(contentHtml);
   if (fallback) return fallback;
@@ -147,7 +169,7 @@ export function extractTaskTitle(contentHtml: string, filename?: string): string
   const titleTag = contentHtml.match(/<title>([^<]*)<\/title>/i)?.[1]?.trim();
   if (
     titleTag &&
-    !/^(ielts\s*cdi.*|ielts\s*full.*|ielts\s*reading.*|ielts\s*listening.*|ielts)$/i.test(
+    !/^(ielts\s*cdi.*|ielts\s*full.*|ielts\s*reading.*|ielts\s*listening.*|ielts\s*writing.*|ielts)$/i.test(
       titleTag,
     )
   ) {
@@ -169,7 +191,7 @@ export interface TaskFileItem {
   id: string;
   file: File;
   title: string;
-  detectedType: 'LISTENING' | 'READING' | 'UNKNOWN';
+  detectedType: 'LISTENING' | 'READING' | 'WRITING' | 'UNKNOWN';
   typeMismatchError?: string;
 }
 
@@ -186,7 +208,7 @@ export function UploadIeltsDialog({
   const [title, setTitle] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
-  const [detectedType, setDetectedType] = useState<'LISTENING' | 'READING' | 'UNKNOWN' | null>(null);
+  const [detectedType, setDetectedType] = useState<'LISTENING' | 'READING' | 'WRITING' | 'UNKNOWN' | null>(null);
   
   // Multiple files state
   const [items, setItems] = useState<TaskFileItem[]>([]);
@@ -264,10 +286,7 @@ export function UploadIeltsDialog({
         setDetectedType(detected);
 
         // Check if uploaded file contradicts the section
-        if (
-          (type === 'LISTENING' && detected === 'READING') ||
-          (type === 'READING' && detected === 'LISTENING')
-        ) {
+        if (detected !== 'UNKNOWN' && detected !== type) {
           setFileError(
             t('ielts.typeMismatch', {
               expected: t(`ielts.${type.toLowerCase()}`),
@@ -308,10 +327,7 @@ export function UploadIeltsDialog({
         const detected = detectIeltsTaskType(text);
         let mismatchErr: string | undefined;
 
-        if (
-          (type === 'LISTENING' && detected === 'READING') ||
-          (type === 'READING' && detected === 'LISTENING')
-        ) {
+        if (detected !== 'UNKNOWN' && detected !== type) {
           mismatchErr = t('ielts.typeMismatch', {
             expected: t(`ielts.${type.toLowerCase()}`),
             detected: t(`ielts.${detected.toLowerCase()}`),

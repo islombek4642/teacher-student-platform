@@ -228,4 +228,62 @@ describe('UploadIeltsDialog', () => {
       expect(onOpenChange).toHaveBeenCalledWith(false);
     });
   });
+
+  describe('detectIeltsTaskType and WRITING handling', () => {
+    it('detects WRITING from writing-textarea or writing-part', async () => {
+      const { detectIeltsTaskType } = await import('./UploadIeltsDialog');
+      const html = `<html><head><title>IELTS Writing Test</title></head><body><div class="writing-part"><textarea class="writing-textarea" id="writingTextarea"></textarea></div></body></html>`;
+      expect(detectIeltsTaskType(html)).toBe('WRITING');
+    });
+
+    it('shows type mismatch error when uploading WRITING file to READING dialog', async () => {
+      render(
+        <UploadIeltsDialog
+          open={true}
+          onOpenChange={vi.fn()}
+          type="READING"
+        />
+      );
+
+      const user = userEvent.setup();
+      const writingFile = new File(
+        [`<html><head><title>IELTS Writing Test</title></head><body><div class="writing-part"><textarea id="writingTextarea" class="writing-textarea"></textarea></div></body></html>`],
+        'writing-01.html',
+        { type: 'text/html' }
+      );
+
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      await user.upload(fileInput, writingFile);
+
+      await waitFor(() => {
+        expect(screen.getByText('ielts.typeMismatch')).toBeInTheDocument();
+      });
+    });
+
+    it('accepts WRITING file when dialog type is WRITING', async () => {
+      render(
+        <UploadIeltsDialog
+          open={true}
+          onOpenChange={vi.fn()}
+          type="WRITING"
+        />
+      );
+
+      const user = userEvent.setup();
+      const writingFile = new File(
+        [`<html><head><title>IELTS Writing Test</title></head><body><div class="writing-part"><div class="task-prompt"><p><strong>The provided chart illustrates the percentage...</strong></p></div><textarea id="writingTextarea" class="writing-textarea"></textarea></div></body></html>`],
+        '01-writing.html',
+        { type: 'text/html' }
+      );
+
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      await user.upload(fileInput, writingFile);
+
+      await waitFor(() => {
+        expect(screen.queryByText('ielts.typeMismatch')).not.toBeInTheDocument();
+        expect(screen.getByDisplayValue(/The provided chart illustrates/i)).toBeInTheDocument();
+      });
+    });
+  });
 });
+
