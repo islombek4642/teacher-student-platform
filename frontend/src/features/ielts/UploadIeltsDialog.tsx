@@ -155,7 +155,14 @@ export function extractTaskTitle(contentHtml: string, filename?: string): string
     /class=["'][^"']*task-prompt[^"']*["'][\s\S]*?<(?:strong|b|p)[^>]*>([\s\S]*?)<\/(?:strong|b|p)>/i,
   );
   if (writingPromptMatch && writingPromptMatch[1]?.trim()) {
-    const clean = writingPromptMatch[1].replace(/<[^>]+>/g, '').trim();
+    const clean = writingPromptMatch[1]
+      .replace(/<[^>]+>/g, '')
+      .replace(/&amp;/g, '&')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .trim();
     if (clean.length > 5 && !/^(write about|ielts|part\s*[1-4])/i.test(clean)) {
       return clean.length > 90 ? clean.slice(0, 90).trim() + '...' : clean;
     }
