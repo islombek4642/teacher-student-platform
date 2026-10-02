@@ -116,7 +116,7 @@ export function AssignTaskDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={handleDialogChange}>
-        <DialogContent className="sm:max-w-[540px]">
+        <DialogContent className="sm:max-w-xl w-full flex flex-col overflow-hidden max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl font-bold">
               <Icon icon="lucide:plus-circle" className="h-5 w-5 text-primary" />
@@ -124,7 +124,7 @@ export function AssignTaskDialog({
             </DialogTitle>
           </DialogHeader>
 
-          <div className="py-2 space-y-3">
+          <div className="py-2 space-y-3 min-w-0 w-full flex-1 flex flex-col overflow-hidden">
             {isLoading ? (
               <div className="py-12 text-center text-sm text-muted-foreground">
                 {t('common.loading')}
@@ -140,7 +140,7 @@ export function AssignTaskDialog({
             ) : (
               <>
                 {/* Search & Filter bar */}
-                <div className="space-y-2">
+                <div className="space-y-2 min-w-0 w-full">
                   <div className="relative">
                     <Icon
                       icon="lucide:search"
@@ -150,12 +150,12 @@ export function AssignTaskDialog({
                       placeholder={t('tasks.searchTasksPlaceholder')}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-8 text-xs h-9"
+                      className="pl-8 text-xs h-9 w-full"
                     />
                   </div>
 
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2 min-w-0">
+                    <div className="flex flex-wrap items-center gap-1.5 min-w-0">
                       {(['ALL', 'LISTENING', 'READING', 'WRITING'] as const).map((type) => (
                         <Button
                           key={type}
@@ -163,7 +163,7 @@ export function AssignTaskDialog({
                           variant={filterType === type ? 'default' : 'outline'}
                           size="sm"
                           onClick={() => setFilterType(type)}
-                          className="h-7 px-2.5 text-xs font-medium"
+                          className="h-7 px-2.5 text-xs font-medium shrink-0"
                         >
                           {type === 'ALL'
                             ? t('tasks.allTypes')
@@ -179,7 +179,7 @@ export function AssignTaskDialog({
                     </div>
 
                     {selectedTaskIds.length > 0 && (
-                      <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                      <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full shrink-0">
                         {t('tasks.selectedCount', { count: selectedTaskIds.length })}
                       </span>
                     )}
@@ -188,14 +188,14 @@ export function AssignTaskDialog({
 
                 {/* Select All Row */}
                 {filteredTasks.length > 0 && (
-                  <div className="flex items-center justify-between px-1 py-1 text-xs border-b border-border/40">
+                  <div className="flex items-center justify-between px-1 py-1 text-xs border-b border-border/40 min-w-0">
                     <button
                       type="button"
                       onClick={toggleSelectAll}
                       className="flex items-center gap-2 font-medium text-foreground hover:text-primary transition-colors cursor-pointer select-none"
                     >
                       <div
-                        className={`h-4 w-4 rounded border flex items-center justify-center transition-colors ${
+                        className={`h-4 w-4 rounded border flex items-center justify-center transition-colors shrink-0 ${
                           allFilteredSelected
                             ? 'bg-primary border-primary text-primary-foreground'
                             : selectedTaskIds.some((id) =>
@@ -233,7 +233,7 @@ export function AssignTaskDialog({
                 )}
 
                 {/* Tasks List */}
-                <div className="space-y-1.5 max-h-[320px] overflow-y-auto pr-1">
+                <div className="space-y-1.5 max-h-[340px] overflow-y-auto overflow-x-hidden pr-1 min-w-0 w-full">
                   {filteredTasks.length === 0 ? (
                     <div className="py-8 text-center text-xs text-muted-foreground">
                       {t('common.noResults', { defaultValue: 'Topshiriq topilmadi' })}
@@ -245,13 +245,13 @@ export function AssignTaskDialog({
                         <div
                           key={task.id}
                           onClick={() => toggleTask(task.id)}
-                          className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer transition-all ${
+                          className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer transition-all min-w-0 w-full ${
                             isSelected
                               ? 'border-primary bg-primary/5 ring-1 ring-primary/80'
                               : 'border-border/60 hover:bg-muted/40'
                           }`}
                         >
-                          <div className="flex items-center gap-3 min-w-0 pr-2">
+                          <div className="flex items-center gap-3 min-w-0 flex-1 pr-2 overflow-hidden">
                             <div
                               className={`h-4 w-4 rounded border flex items-center justify-center transition-colors shrink-0 ${
                                 isSelected
@@ -283,8 +283,11 @@ export function AssignTaskDialog({
                                 className="h-4 w-4"
                               />
                             </div>
-                            <div className="min-w-0">
-                              <div className="text-sm font-medium text-foreground leading-tight truncate">
+                            <div className="min-w-0 flex-1">
+                              <div
+                                className="text-sm font-medium text-foreground leading-tight truncate"
+                                title={task.title}
+                              >
                                 {task.title}
                               </div>
                               <div className="text-xs text-muted-foreground capitalize mt-0.5">
@@ -297,7 +300,7 @@ export function AssignTaskDialog({
                               type="button"
                               variant="ghost"
                               size="sm"
-                              className="h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg"
+                              className="h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg shrink-0"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setPreviewTaskId(task.id);
@@ -316,7 +319,7 @@ export function AssignTaskDialog({
             )}
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-border/40">
+          <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-border/40 mt-auto min-w-0 w-full">
             <Button
               type="button"
               variant="outline"
