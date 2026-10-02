@@ -744,7 +744,188 @@ export function buildReviewModeScript(submission?: {
 </script>`;
 }
 
+export const IELTS_WRITING_SUBMISSION_SCRIPT = `<script>
+  (function() {
+    var hasDispatched = false;
+
+    function extractAndDispatchWriting() {
+      if (hasDispatched) return;
+
+      var currentText = '';
+      var textarea = document.getElementById('writingTextarea');
+      if (textarea) {
+        currentText = textarea.value;
+      }
+
+      var part1 = localStorage.getItem('ielts-writing-part-1') || '';
+      var part2 = localStorage.getItem('ielts-writing-part-2') || '';
+
+      var part2El = document.getElementById('part-2');
+      var isPart2 = part2El && !part2El.classList.contains('hidden');
+      if (isPart2) {
+        part2 = currentText || part2;
+      } else {
+        part1 = currentText || part1;
+      }
+
+      var p1Words = part1.trim() === '' ? 0 : part1.trim().split(/\\s+/).length;
+      var p2Words = part2.trim() === '' ? 0 : part2.trim().split(/\\s+/).length;
+      var totalWords = p1Words + p2Words;
+
+      hasDispatched = true;
+
+      try {
+        window.parent.postMessage({
+          type: 'IELTS_TEST_SUBMITTED',
+          payload: {
+            score: totalWords,
+            total: 400,
+            band: 0,
+            results: [
+              {
+                question: 'Task 1',
+                userAnswer: part1,
+                wordCount: p1Words,
+                targetWords: 150,
+                isCompleted: p1Words >= 150
+              },
+              {
+                question: 'Task 2',
+                userAnswer: part2,
+                wordCount: p2Words,
+                targetWords: 250,
+                isCompleted: p2Words >= 250
+              }
+            ]
+          }
+        }, '*');
+      } catch(err) {
+        console.error('Failed to dispatch IELTS writing submission', err);
+      }
+    }
+
+    // Override global saveWritingToFile to dispatch directly instead of download
+    window.saveWritingToFile = function(p1, p2) {
+      extractAndDispatchWriting();
+    };
+
+    // Override submitTest
+    if (typeof window.submitTest === 'function') {
+      var origSubmit = window.submitTest;
+      window.submitTest = function() {
+        extractAndDispatchWriting();
+      };
+    }
+
+    // Intercept submit click
+    document.addEventListener('click', function(e) {
+      var target = e.target;
+      if (!target) return;
+      var isSubmit =
+        target.id === 'deliver-button' ||
+        target.closest('#deliver-button') ||
+        target.classList.contains('footer__deliverButton___3FM07') ||
+        target.closest('.footer__deliverButton___3FM07');
+
+      if (isSubmit) {
+        setTimeout(extractAndDispatchWriting, 50);
+      }
+    }, true);
+  })();
+</script>`;
+
+export function buildWritingReviewModeScript(submission?: {
+  score: number;
+  total: number;
+  band: number;
+  answersJson: any;
+}) {
+  const safeData = JSON.stringify(submission?.answersJson || []);
+  return `<script>
+  (function() {
+    var results = ${safeData};
+    var part1Answer = '';
+    var part2Answer = '';
+
+    if (Array.isArray(results)) {
+      results.forEach(function(r) {
+        if (r.question === 'Task 1' || r.task === 1) {
+          part1Answer = r.userAnswer || '';
+        } else if (r.question === 'Task 2' || r.task === 2) {
+          part2Answer = r.userAnswer || '';
+        }
+      });
+    }
+
+    function lockAndPopulate() {
+      var textarea = document.getElementById('writingTextarea');
+      if (textarea) {
+        textarea.disabled = true;
+        textarea.readOnly = true;
+      }
+
+      var deliverBtn = document.getElementById('deliver-button');
+      if (deliverBtn) {
+        deliverBtn.style.display = 'none';
+      }
+
+      var part2 = document.getElementById('part-2');
+      var isPart2 = part2 && !part2.classList.contains('hidden');
+      if (textarea) {
+        textarea.value = isPart2 ? part2Answer : part1Answer;
+        if (typeof window.updateWordCount === 'function') {
+          try { window.updateWordCount(); } catch(e) {}
+        }
+      }
+
+      try {
+        localStorage.setItem('ielts-writing-part-1', part1Answer);
+        localStorage.setItem('ielts-writing-part-2', part2Answer);
+        if (typeof window.updateCompletionIndicators === 'function') {
+          window.updateCompletionIndicators();
+        }
+      } catch(e) {}
+    }
+
+    if (typeof window.switchPart === 'function') {
+      var origSwitch = window.switchPart;
+      window.switchPart = function(partNum) {
+        origSwitch(partNum);
+        var textarea = document.getElementById('writingTextarea');
+        if (textarea) {
+          textarea.value = (partNum === 2) ? part2Answer : part1Answer;
+          textarea.disabled = true;
+          textarea.readOnly = true;
+          if (typeof window.updateWordCount === 'function') {
+            try { window.updateWordCount(); } catch(e) {}
+          }
+        }
+      };
+    }
+
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', lockAndPopulate);
+    } else {
+      lockAndPopulate();
+    }
+    setTimeout(lockAndPopulate, 100);
+    setTimeout(lockAndPopulate, 500);
+  })();
+</script>`;
+}
+
 export function detectIeltsTaskType(contentHtml: string): IeltsTaskType | 'UNKNOWN' {
+  const hasWritingMarkers =
+    /writing-textarea/i.test(contentHtml) ||
+    /class=["'][^"']*writing-part[^"']*["']/i.test(contentHtml) ||
+    /id=["']part-header-[12]["']/i.test(contentHtml) ||
+    /ielts-writing-part-[12]/i.test(contentHtml) ||
+    /<title>[^<]*writing[^<]*<\/title>/i.test(contentHtml);
+
+  if (hasWritingMarkers) {
+    return IeltsTaskType.WRITING;
+  }
+
   const hasAudio =
     /<audio\b/i.test(contentHtml) ||
     /id=["']global-audio-player["']/i.test(contentHtml) ||
@@ -916,8 +1097,8 @@ export class IeltsService {
 
     const detectedType = detectIeltsTaskType(contentHtml);
     if (
-      (type === IeltsTaskType.LISTENING && detectedType === IeltsTaskType.READING) ||
-      (type === IeltsTaskType.READING && detectedType === IeltsTaskType.LISTENING)
+      detectedType !== 'UNKNOWN' &&
+      detectedType !== type
     ) {
       throw new BadRequestException({
         errorCode: ERROR_CODES.TASK_TYPE_MISMATCH,
@@ -1065,32 +1246,55 @@ export class IeltsService {
       '',
     );
 
-    if (mode === 'review') {
-      let submission: any = null;
-      if (submissionId) {
-        submission = await this.prisma.ieltsSubmission.findUnique({
-          where: { id: submissionId },
-        });
-      }
-      if (!submission) {
-        submission = await this.prisma.ieltsSubmission.findFirst({
-          where: { taskId: id },
-          orderBy: { submittedAt: 'desc' },
-        });
-      }
+    if (task.type === IeltsTaskType.WRITING) {
+      task.contentHtml = task.contentHtml.replace(/body::after\s*\{[\s\S]*?\}/gi, '');
+      task.contentHtml = task.contentHtml.replace(/@MINDLESS_WRITER/g, '');
 
-      if (submission) {
-        task.contentHtml += buildReviewModeScript({
-          score: submission.score,
-          total: submission.total,
-          band: submission.band,
-          results: Array.isArray(submission.answersJson) ? submission.answersJson : [],
-        });
+      if (mode === 'review') {
+        let submission: any = null;
+        if (submissionId) {
+          submission = await this.prisma.ieltsSubmission.findUnique({
+            where: { id: submissionId },
+          });
+        }
+        if (!submission) {
+          submission = await this.prisma.ieltsSubmission.findFirst({
+            where: { taskId: id },
+            orderBy: { submittedAt: 'desc' },
+          });
+        }
+        task.contentHtml += buildWritingReviewModeScript(submission);
       } else {
-        task.contentHtml += IELTS_REVIEW_MODE_SCRIPT;
+        task.contentHtml += IELTS_WRITING_SUBMISSION_SCRIPT;
       }
     } else {
-      task.contentHtml += IELTS_SUBMISSION_SCRIPT;
+      if (mode === 'review') {
+        let submission: any = null;
+        if (submissionId) {
+          submission = await this.prisma.ieltsSubmission.findUnique({
+            where: { id: submissionId },
+          });
+        }
+        if (!submission) {
+          submission = await this.prisma.ieltsSubmission.findFirst({
+            where: { taskId: id },
+            orderBy: { submittedAt: 'desc' },
+          });
+        }
+
+        if (submission) {
+          task.contentHtml += buildReviewModeScript({
+            score: submission.score,
+            total: submission.total,
+            band: submission.band,
+            results: Array.isArray(submission.answersJson) ? submission.answersJson : [],
+          });
+        } else {
+          task.contentHtml += IELTS_REVIEW_MODE_SCRIPT;
+        }
+      } else {
+        task.contentHtml += IELTS_SUBMISSION_SCRIPT;
+      }
     }
 
     return task;

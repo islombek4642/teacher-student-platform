@@ -41,6 +41,11 @@ describe('IeltsService', () => {
       ],
     }).compile();
 
+    mockPrisma.ieltsTask.create.mockResolvedValue({
+      id: 't1',
+      title: 'Test',
+      type: IeltsTaskType.READING,
+    });
     service = module.get<IeltsService>(IeltsService);
   });
 
@@ -64,7 +69,17 @@ describe('IeltsService', () => {
       expect(detectIeltsTaskType(html)).toBe(IeltsTaskType.READING);
     });
 
-    it('should return UNKNOWN when neither audio nor reading markers exist', () => {
+    it('should detect WRITING when writing markers or textarea are present', () => {
+      const html = '<html><head><title>IELTS Writing Test</title></head><body><div class="writing-part" id="part-1"><textarea id="writingTextarea" class="writing-textarea"></textarea></div></body></html>';
+      expect(detectIeltsTaskType(html)).toBe(IeltsTaskType.WRITING);
+    });
+
+    it('should detect WRITING when part-header and localStorage part markers exist', () => {
+      const html = '<html><body><div id="part-header-1" class="part-header"><p>Part 1</p></div><script>localStorage.getItem("ielts-writing-part-1")</script></body></html>';
+      expect(detectIeltsTaskType(html)).toBe(IeltsTaskType.WRITING);
+    });
+
+    it('should return UNKNOWN when neither audio, reading nor writing markers exist', () => {
       const html = '<html><body>Generic content without markers</body></html>';
       expect(detectIeltsTaskType(html)).toBe('UNKNOWN');
     });
@@ -111,6 +126,32 @@ describe('IeltsService', () => {
 
       await expect(
         service.uploadTask(user, 'Test', IeltsTaskType.READING, file),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should reject when uploading a WRITING file to a READING task', async () => {
+      const writingHtml = '<html><head><title>IELTS Writing Test</title></head><body><div class="writing-part"><textarea class="writing-textarea"></textarea></div></body></html>';
+      const file = {
+        buffer: Buffer.from(writingHtml, 'utf-8'),
+      } as Express.Multer.File;
+
+      const user = { sub: 'u1', profileId: 'tp1', role: 'TEACHER' as any };
+
+      await expect(
+        service.uploadTask(user, 'Test', IeltsTaskType.READING, file),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should reject when uploading a READING file to a WRITING task', async () => {
+      const readingHtml = '<html><head><title>IELTS Reading Test</title></head><body><div class="reading-passage">Passage 1</div></body></html>';
+      const file = {
+        buffer: Buffer.from(readingHtml, 'utf-8'),
+      } as Express.Multer.File;
+
+      const user = { sub: 'u1', profileId: 'tp1', role: 'TEACHER' as any };
+
+      await expect(
+        service.uploadTask(user, 'Test', IeltsTaskType.WRITING, file),
       ).rejects.toThrow(BadRequestException);
     });
 
