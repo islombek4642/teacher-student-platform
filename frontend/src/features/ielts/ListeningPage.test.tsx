@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { ListeningPage } from './ListeningPage';
-import { useIeltsTasks, useDeleteIeltsTask } from './api/ielts.api';
+import { useIeltsTasks, useDeleteIeltsTask, useBulkDeleteIeltsTasks } from './api/ielts.api';
 import { useAuth } from '@/auth/useAuth';
 
 import { useStudentMySubmissions } from '@/features/student/api/student-results.api';
@@ -38,6 +38,12 @@ vi.mock('react-i18next', async (importOriginal) => {
 });
 
 describe('ListeningPage', () => {
+  beforeEach(() => {
+    vi.mocked(useBulkDeleteIeltsTasks).mockReturnValue({
+      mutate: vi.fn(),
+      isPending: false,
+    } as any);
+  });
   it('renders table headers with # numbering column and sequential numbers', () => {
     vi.mocked(useAuth).mockReturnValue({
       payload: { role: 'TEACHER', userId: 't1' },

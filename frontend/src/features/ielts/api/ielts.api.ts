@@ -7,6 +7,10 @@ export type IeltsTask = {
   title: string;
   type: 'LISTENING' | 'READING' | 'WRITING' | 'SPEAKING';
   createdAt: string;
+  _count?: {
+    groupTasks: number;
+    submissions: number;
+  };
 };
 
 export function useIeltsTasks() {
@@ -74,6 +78,19 @@ export function useDeleteIeltsTask() {
   return useMutation({
     mutationFn: async (id: string) => {
       const res = await apiClient.delete('/ielts/' + id);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ielts-tasks'] });
+    },
+  });
+}
+
+export function useBulkDeleteIeltsTasks() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (taskIds: string[]) => {
+      const res = await apiClient.post('/ielts/bulk-delete', { taskIds });
       return res.data;
     },
     onSuccess: () => {

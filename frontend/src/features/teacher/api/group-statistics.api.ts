@@ -6,8 +6,11 @@ export type GroupOverviewStats = {
   totalStudents: number;
   totalSubmissions: number;
   averageBand: number;
+  maxBand?: number;
   listeningAverageBand: number;
+  listeningMaxBand?: number;
   readingAverageBand: number;
+  readingMaxBand?: number;
   completionRate: number;
 };
 

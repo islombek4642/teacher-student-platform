@@ -168,4 +168,64 @@ describe('UploadIeltsDialog', () => {
     const uploadButton = screen.getByRole('button', { name: 'ielts.upload' });
     expect(uploadButton).toBeDisabled();
   });
+
+  it('renders multiple selected files and allows uploading them', async () => {
+    const mutateAsyncMock = vi.fn().mockResolvedValue({});
+    vi.mocked(useUploadIeltsTask).mockReturnValue({
+      mutate: vi.fn(),
+      mutateAsync: mutateAsyncMock,
+      isPending: false,
+    } as any);
+
+    vi.mocked(useIeltsTasks).mockReturnValue({
+      data: [],
+    } as any);
+
+    const onOpenChange = vi.fn();
+
+    render(
+      <UploadIeltsDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        type="READING"
+      />
+    );
+
+    const user = userEvent.setup();
+    const file1 = new File(
+      [
+        `<html><body><div class="reading-passage"><p class="passage-title">Whales Story</p></div></body></html>`,
+      ],
+      'whales.html',
+      { type: 'text/html' }
+    );
+    const file2 = new File(
+      [
+        `<html><body><div class="reading-passage"><p class="passage-title">Dolphins Story</p></div></body></html>`,
+      ],
+      'dolphins.html',
+      { type: 'text/html' }
+    );
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    await user.upload(fileInput, [file1, file2]);
+
+    await waitFor(() => {
+      expect(screen.getByText('ielts.selectedFilesCount')).toBeInTheDocument();
+    });
+
+    // Check that both titles are extracted and displayed
+    expect(screen.getByDisplayValue('Whales Story')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Dolphins Story')).toBeInTheDocument();
+
+    const uploadButton = screen.getByRole('button', { name: /ielts\.upload/i });
+    expect(uploadButton).toBeEnabled();
+
+    await user.click(uploadButton);
+
+    await waitFor(() => {
+      expect(mutateAsyncMock).toHaveBeenCalledTimes(2);
+      expect(onOpenChange).toHaveBeenCalledWith(false);
+    });
+  });
 });

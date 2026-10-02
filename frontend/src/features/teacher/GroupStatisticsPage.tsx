@@ -31,20 +31,20 @@ export function GroupStatisticsPage() {
     <div className="space-y-6">
       {/* Overview Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Overall Band */}
+        {/* Group Max Band */}
         <Card className="relative overflow-hidden border-border/60 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent shadow-sm">
           <CardContent className="p-5 flex flex-col justify-between h-full">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                {t('statistics.groupAverageBand')}
+                {t('statistics.groupMaxBand')}
               </span>
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-300">
-                <Icon icon="lucide:award" className="h-5 w-5" />
+                <Icon icon="lucide:trophy" className="h-5 w-5" />
               </div>
             </div>
             <div className="mt-4 flex items-baseline gap-2">
               <span className="text-3xl font-extrabold tracking-tight text-foreground">
-                {overview?.averageBand ? overview.averageBand.toFixed(1) : '0.0'}
+                {overview?.maxBand ? overview.maxBand.toFixed(1) : '0.0'}
               </span>
               <span className="text-xs font-semibold text-muted-foreground">
                 Band
@@ -53,12 +53,12 @@ export function GroupStatisticsPage() {
           </CardContent>
         </Card>
 
-        {/* Listening Band */}
+        {/* Listening Max Band */}
         <Card className="relative overflow-hidden border-border/60 bg-gradient-to-br from-purple-500/10 via-purple-500/5 to-transparent shadow-sm">
           <CardContent className="p-5 flex flex-col justify-between h-full">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                {t('statistics.listeningAverageBand')}
+                {t('statistics.listeningMaxBand')}
               </span>
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-500/20 text-purple-700 dark:text-purple-300">
                 <Icon icon="lucide:headphones" className="h-5 w-5" />
@@ -66,8 +66,8 @@ export function GroupStatisticsPage() {
             </div>
             <div className="mt-4 flex items-baseline gap-2">
               <span className="text-3xl font-extrabold tracking-tight text-foreground">
-                {overview?.listeningAverageBand
-                  ? overview.listeningAverageBand.toFixed(1)
+                {overview?.listeningMaxBand
+                  ? overview.listeningMaxBand.toFixed(1)
                   : '0.0'}
               </span>
               <span className="text-xs font-semibold text-muted-foreground">
@@ -77,12 +77,12 @@ export function GroupStatisticsPage() {
           </CardContent>
         </Card>
 
-        {/* Reading Band */}
+        {/* Reading Max Band */}
         <Card className="relative overflow-hidden border-border/60 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent shadow-sm">
           <CardContent className="p-5 flex flex-col justify-between h-full">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                {t('statistics.readingAverageBand')}
+                {t('statistics.readingMaxBand')}
               </span>
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
                 <Icon icon="lucide:book-open" className="h-5 w-5" />
@@ -90,8 +90,8 @@ export function GroupStatisticsPage() {
             </div>
             <div className="mt-4 flex items-baseline gap-2">
               <span className="text-3xl font-extrabold tracking-tight text-foreground">
-                {overview?.readingAverageBand
-                  ? overview.readingAverageBand.toFixed(1)
+                {overview?.readingMaxBand
+                  ? overview.readingMaxBand.toFixed(1)
                   : '0.0'}
               </span>
               <span className="text-xs font-semibold text-muted-foreground">

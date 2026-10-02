@@ -380,7 +380,16 @@ export class GroupsService {
           )
         : 0;
 
+    const maxBand =
+      uniqueCompleted.length > 0
+        ? Math.max(...uniqueCompleted.map((s) => s.band))
+        : 0;
+
     const listeningScores = uniqueCompleted.filter((s) => s.type === 'LISTENING');
+    const listeningMaxBand =
+      listeningScores.length > 0
+        ? Math.max(...listeningScores.map((s) => s.band))
+        : 0;
     const listeningAverageBand =
       listeningScores.length > 0
         ? Number(
@@ -392,6 +401,10 @@ export class GroupsService {
         : 0;
 
     const readingScores = uniqueCompleted.filter((s) => s.type === 'READING');
+    const readingMaxBand =
+      readingScores.length > 0
+        ? Math.max(...readingScores.map((s) => s.band))
+        : 0;
     const readingAverageBand =
       readingScores.length > 0
         ? Number(
@@ -412,8 +425,11 @@ export class GroupsService {
       totalStudents,
       totalSubmissions,
       averageBand,
+      maxBand,
       listeningAverageBand,
+      listeningMaxBand,
       readingAverageBand,
+      readingMaxBand,
       completionRate,
     };
   }

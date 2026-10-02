@@ -16,9 +16,7 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { IeltsTaskViewer } from '@/features/ielts/IeltsTaskViewer';
 import {
   useGroupTasks,
-  useAssignGroupTask,
   useAssignMultipleGroupTasks,
-  type GroupTaskItem,
 } from './api/group-tasks.api';
 import { AssignTaskDialog } from './AssignTaskDialog';
 import { toast } from '@/components/ui/toast';
@@ -28,12 +26,10 @@ export function GroupTasksPage() {
   const { t } = useTranslation();
 
   const { data: tasks, isLoading } = useGroupTasks(groupId || '');
-  const assignMutation = useAssignGroupTask();
   const assignMultipleMutation = useAssignMultipleGroupTasks();
 
   const [assignOpen, setAssignOpen] = useState(false);
   const [viewingTaskId, setViewingTaskId] = useState<string | null>(null);
-  const [taskToUnassign, setTaskToUnassign] = useState<GroupTaskItem | null>(null);
   const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
   const [isBulkUnassignOpen, setIsBulkUnassignOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState<'ALL' | 'LISTENING' | 'READING'>('ALL');
@@ -70,30 +66,6 @@ export function GroupTasksPage() {
     );
   };
 
-  const handleConfirmUnassign = () => {
-    if (!groupId || !taskToUnassign) return;
-
-    assignMutation.mutate(
-      { groupId, taskId: taskToUnassign.id, assign: false },
-      {
-        onSuccess: () => {
-          toast.add({
-            type: 'success',
-            description: t('tasks.unassignSuccess'),
-          });
-          setSelectedRowIds((prev) => prev.filter((id) => id !== taskToUnassign.id));
-          setTaskToUnassign(null);
-        },
-        onError: (err: any) => {
-          const msg = err?.response?.data?.message || err?.message || t('common.error');
-          toast.add({
-            type: 'error',
-            description: msg,
-          });
-        },
-      },
-    );
-  };
 
   const handleConfirmBulkUnassign = () => {
     if (!groupId || selectedRowIds.length === 0) return;
@@ -196,7 +168,7 @@ export function GroupTasksPage() {
               <TableHead className="w-44">{t('ielts.name')}</TableHead>
               <TableHead className="w-32 text-center">{t('tasks.averageBand')}</TableHead>
               <TableHead className="w-32">{t('ielts.date')}</TableHead>
-              <TableHead className="w-40 text-right" />
+              <TableHead className="w-28 text-right" />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -294,7 +266,7 @@ export function GroupTasksPage() {
                     <TableCell className="w-32 text-xs text-muted-foreground">
                       {new Date(task.createdAt).toLocaleDateString()}
                     </TableCell>
-                    <TableCell className="w-40 text-right space-x-1">
+                    <TableCell className="w-28 text-right">
                       <Button
                         variant="default"
                         size="sm"
@@ -302,15 +274,6 @@ export function GroupTasksPage() {
                         className="text-xs"
                       >
                         {t('ielts.view')}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setTaskToUnassign(task)}
-                        className="text-xs text-destructive hover:bg-destructive/10"
-                        title={t('tasks.unassign')}
-                      >
-                        <Icon icon="lucide:unlink" className="h-4 w-4" />
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -364,17 +327,6 @@ export function GroupTasksPage() {
         />
       )}
 
-      <ConfirmDialog
-        open={!!taskToUnassign}
-        onOpenChange={(open) => !open && setTaskToUnassign(null)}
-        title={t('tasks.unassign')}
-        description={t('tasks.confirmUnassign')}
-        confirmText={t('common.confirm')}
-        cancelText={t('common.cancel')}
-        variant="destructive"
-        isLoading={assignMutation.isPending}
-        onConfirm={handleConfirmUnassign}
-      />
 
       <ConfirmDialog
         open={isBulkUnassignOpen}

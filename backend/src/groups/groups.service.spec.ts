@@ -154,9 +154,38 @@ describe('GroupsService', () => {
 
       const stats = await (service as any).getGroupOverviewStatistics('t1', 'g1');
       expect(stats.averageBand).toBe(0);
+      expect(stats.maxBand).toBe(0);
+      expect(stats.listeningMaxBand).toBe(0);
+      expect(stats.readingMaxBand).toBe(0);
       expect(stats.totalStudents).toBe(0);
       expect(stats.totalSubmissions).toBe(0);
       expect(stats.completionRate).toBe(0);
+    });
+
+    it('calculates maxBand, listeningMaxBand, and readingMaxBand correctly', async () => {
+      const prisma = {
+        group: {
+          findUnique: jest.fn().mockResolvedValue({ id: 'g1', name: 'Group 1', teacherId: 't1' }),
+        },
+        studentProfile: {
+          count: jest.fn().mockResolvedValue(2),
+        },
+        ieltsSubmission: {
+          findMany: jest.fn().mockResolvedValue([
+            { studentId: 's1', taskId: 't1', band: 6.5, task: { id: 't1', type: 'LISTENING' } },
+            { studentId: 's2', taskId: 't1', band: 8.0, task: { id: 't1', type: 'LISTENING' } },
+            { studentId: 's1', taskId: 't2', band: 7.0, task: { id: 't2', type: 'READING' } },
+            { studentId: 's2', taskId: 't2', band: 8.5, task: { id: 't2', type: 'READING' } },
+          ]),
+        },
+      } as unknown as PrismaService;
+      const service = new GroupsService(prisma);
+
+      const stats = await (service as any).getGroupOverviewStatistics('t1', 'g1');
+      expect(stats.maxBand).toBe(8.5);
+      expect(stats.listeningMaxBand).toBe(8.0);
+      expect(stats.readingMaxBand).toBe(8.5);
+      expect(stats.totalSubmissions).toBe(4);
     });
   });
 

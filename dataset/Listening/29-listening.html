@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IELTS CDI Listening Practice</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            line-height: 1.4;
+            font-size: 16px;
+            padding-bottom: 90px;
+        }
+
+        body::after {
+            content: "@MINDLESS_WRITER";
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) rotate(-20deg);
+            font-size: 72px;
+            font-weight: 800;
+            color: #000000;
+            opacity: 0.02;
+            pointer-events: none;
+            z-index: 0;
+            white-space: nowrap;
+        }
+
+        .header {
+            background-color: #ffffff;
+            padding: 12px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            height: 60px;
+        }
+
+        .telegram-link {
+            color: #3e3e3e;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border: 2px solid #3e3e3e;
+            border-radius: 9999px;
+            background-color: #ffffff;
+            line-height: 1;
+        }
+
+        .telegram-link:hover {
+            background-color: #f6f6f6;
+        }
+
+        .telegram-link::before {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background-color: currentColor;
+            -webkit-mask-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.78 18.65l.28-4.23l7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3L3.64 12c-.88-.25-.89-1.37.2-1.64l16.56-6.4c.75-.29 1.4.22 1.2.94l-2.67 12.61c-.22.95-1.13 1.18-1.78.73l-4.5-3.32l-2.23 2.15c-.47.44-1.29.21-1.48-.37z"/></svg>');
+            mask-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.78 18.65l.28-4.23l7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3L3.64 12c-.88-.25-.89-1.37.2-1.64l16.56-6.4c.75-.29 1.4.22 1.2.94l-2.67 12.61c-.22.95-1.13 1.18-1.78.73l-4.5-3.32l-2.23 2.15c-.47.44-1.29.21-1.48-.37z"/></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+
+        .audio-player-container {
+            position: fixed;
+            top: 65px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 500px;
+            max-width: 90%;
+            height: 40px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            z-index: 99;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .player-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .player-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: #333;
+        }
+
+        .progress-container {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #progress-bar {
+            flex-grow: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            background: #ddd;
+            outline: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        #progress-bar::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4a90e2;
+            cursor: pointer;
+        }
+
+        #current-time,
+        #total-duration {
+            font-size: 12px;
+            color: #555;
+            min-width: 35px;
+            text-align: center;
+        }
+
+        .controls-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #new-volume-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 60px;
+            height: 3px;
+            background: #ccc;
+            outline: none;
+            border-radius: 2px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+
+        #new-volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #333;
+        }
+
+        #speed-btn {
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            padding: 4px 8px;
+            cursor: pointer;
+        }
+
+        #speed-options {
+            position: absolute;
+            top: calc(100% + 5px);
+            right: 0;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+
+        #speed-options div {
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+
+        #speed-options div:hover {
+            background-color: #f0f0f0;
+        }
+
+        .speed-container {
+            position: relative;
+        }
+
+        .main-container {
+            margin-top: 115px;
+            display: flex;
+            background: #ffffff;
+            padding-bottom: 100px;
+        }
+
+        .main-container.results-mode .left-panel {
+            width: 75%;
+            overflow-y: auto;
+            height: calc(100vh - 195px);
+        }
+
+        .main-container.results-mode .right-panel {
+            display: block;
+            width: 25%;
+            border-left: 1px solid #e0e0e0;
+            height: calc(100vh - 195px);
+            overflow-y: auto;
+        }
+
+        .left-panel {
+            width: 100%;
+            padding: 20px;
+        }
+
+        .questions-container {
+            max-width: 50%;
+        }
+
+        .right-panel {
+            display: none;
+            padding: 20px;
+            border-left: 1px solid #e0e0e0;
+        }
+
+        #transcription-text {
+            white-space: pre-wrap;
+            font-family: inherit;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        .t-hl {
+            background: #fff3a0;
+            border-radius: 3px;
+            padding: 0 2px;
+            scroll-margin-top: 80px;
+        }
+
+        .t-hl.active {
+            background: #ffd34d;
+            box-shadow: 0 0 0 2px #f0a500;
+        }
+
+        .t-qmark {
+            font-size: 10px;
+            font-weight: 700;
+            color: #fff;
+            background: #4a90e2;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            min-width: 16px;
+            vertical-align: super;
+            margin-right: 2px;
+            line-height: 1;
+        }
+
+        .part-header {
+            background-color: #f1f2ec;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .question {
+            margin-bottom: 40px;
+        }
+
+        .question p {
+            margin-bottom: 10px;
+        }
+
+        .question-prompt {
+            margin-bottom: 20px;
+        }
+
+        .centered-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .answer-input {
+            border: 1px solid #9aa3ad;
+            border-radius: 4px;
+            background-color: #fff;
+            padding: 4px 8px;
+            font-size: 16px;
+            width: 140px;
+            height: 28px;
+            line-height: 1.2;
+            vertical-align: middle;
+            transition: border-color 0.15s ease;
+            position: relative;
+            z-index: 10;
+        }
+
+        .answer-input::placeholder {
+            color: #999;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: #2c6bed;
+            border-width: 2px;
+        }
+
+        .answer-input.correct {
+            border-color: #28a745;
+            background-color: #e9f7ef;
+        }
+
+        .answer-input.incorrect {
+            border-color: #dc3545;
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .correct-inline {
+            color: #28a745;
+            font-weight: 700;
+            margin-left: 10px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .correct-inline::before {
+            content: "\2192  ";
+        }
+
+        .multi-choice-option {
+            display: block;
+            width: 100%;
+            padding: 10px 14px;
+            background-color: #fff;
+            border: 1px solid transparent;
+            transition: background-color 0.2s;
+        }
+
+        .multi-choice-option:hover {
+            background-color: #f1f7ff;
+            border-color: #c6dcfb;
+        }
+
+        .multi-choice-option:has(input[type="radio"]:checked) {
+            background-color: #cfe3f9;
+        }
+
+        .multi-choice-option.correct {
+            background-color: #d4edda !important;
+        }
+
+        .multi-choice-option.incorrect {
+            background-color: #f8d7da !important;
+        }
+
+        .multi-choice-option label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        .multi-choice-option input[type="radio"] {
+            transform: scale(1.2);
+        }
+
+        .matching-options-box {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 15px;
+            background: #f9f9f9;
+            margin-bottom: 20px;
+            display: inline-block;
+            min-width: 300px;
+        }
+
+        .matching-options-box p {
+            margin-bottom: 5px;
+        }
+
+        .matching-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .matching-item span {
+            min-width: 240px;
+            font-size: 16px;
+        }
+
+        .flow-step {
+            border: 1px solid #555;
+            padding: 12px 16px;
+            margin: 0 auto;
+            max-width: 620px;
+            background: #fff;
+        }
+
+        .flow-arrow {
+            text-align: center;
+            font-size: 26px;
+            font-weight: bold;
+            margin: 6px 0;
+        }
+
+        .notes-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .notes-table th,
+        .notes-table td {
+            border: 1px solid #888;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .notes-table th {
+            background: #f1f2ec;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .nav-arrows {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            display: flex;
+            gap: 5px;
+            z-index: 101;
+        }
+
+        .nav-arrow {
+            width: 50px;
+            height: 50px;
+            background: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .nav-arrow:hover {
+            background: #555;
+        }
+
+        .nav-arrow:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .nav-row {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            height: 80px;
+            z-index: 100;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+        }
+
+        .footer__questionWrapper___1tZ46 {
+            display: flex;
+            align-items: center;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+
+        .footer__questionNo___3WNct {
+            background: none;
+            border: none;
+            padding: 10px 15px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .footer__questionNo___3WNct:hover {
+            background-color: #f8f9fa;
+        }
+
+        .attemptedCount {
+            font-size: 14px;
+            color: #666;
+            margin-left: 5px;
+            font-weight: 400;
+        }
+
+        .footer__subquestionWrapper___9GgoP {
+            display: none;
+            gap: 2px;
+            margin-left: 10px;
+        }
+
+        .footer__questionWrapper___1tZ46.selected .footer__subquestionWrapper___9GgoP {
+            display: flex;
+        }
+
+        .footer__questionWrapper___1tZ46.selected .attemptedCount {
+            display: none;
+        }
+
+        .subQuestion {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #ccc;
+            background: white;
+            color: #333;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            border-radius: 2px;
+        }
+
+        .subQuestion.answered {
+            background-color: #e9ecef;
+            border-color: #ddd;
+        }
+
+        .subQuestion.correct {
+            background-color: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+
+        .subQuestion.incorrect {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+
+        .subQuestion:hover {
+            background-color: #f0f0f0;
+            border-color: #999;
+        }
+
+        .subQuestion.active {
+            background-color: #4a90e2;
+            color: white;
+            border-color: #4a90e2;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .footer__deliverButton___3FM07 {
+            margin-left: auto;
+            margin-right: 20px;
+            background-color: #f0f0f0;
+            color: #333;
+            border: 1px solid #ccc;
+            padding: 12px 20px;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 170px;
+            justify-content: center;
+        }
+
+        .footer__deliverButton___3FM07:hover {
+            background-color: #e0e0e0;
+            border-color: #bbb;
+        }
+
+        .footer__deliverButton___3FM07.success {
+            background-color: #28a745;
+            color: #fff;
+            border-color: #28a745;
+        }
+
+        .highlight {
+            background-color: #ffff00;
+        }
+
+        .comment-highlight {
+            background-color: #90EE90;
+            position: relative;
+            cursor: help;
+        }
+
+        .comment-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            white-space: nowrap;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .comment-highlight:hover .comment-tooltip {
+            opacity: 1;
+        }
+
+        .context-menu {
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            display: none;
+            min-width: 140px;
+        }
+
+        .context-menu-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            font-size: 16px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .context-menu-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .context-menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            font-size: 24px;
+            color: #333;
+        }
+
+        .modal-close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #888;
+        }
+
+        .modal-close-btn:hover {
+            color: #333;
+        }
+
+        #score-summary {
+            font-size: 16px;
+            font-weight: 600;
+            color: #111827;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            padding: 10px 12px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        #result-details table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        #result-details th,
+        #result-details td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        #result-details th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .result-correct {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .result-incorrect {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .timer-container {
+            display: none;
+        }
+
+        @keyframes flash {
+            0% {
+                background-color: #e6f4ff;
+            }
+
+            100% {
+                background-color: transparent;
+            }
+        }
+
+        .question.flash {
+            animation: flash 1s ease-out;
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                flex-direction: column;
+            }
+
+            .right-panel,
+            .main-container.results-mode .right-panel {
+                display: none;
+            }
+
+            .left-panel,
+            .main-container.results-mode .left-panel {
+                width: 100%;
+                padding: 20px 10px;
+                height: auto;
+            }
+
+            .questions-container {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <div class="timer-container"><span class="timer-display">60:00</span></div>
+        <a href="https://t.me/+SoPpY9nBi3U0NTE1" target="_blank" class="telegram-link">MINDLESS WRITER</a>
+        <div></div>
+    </div>
+
+    <div class="audio-player-container">
+        <button id="play-pause-btn" class="player-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+            </svg>
+        </button>
+        <div class="progress-container">
+            <span id="current-time">0:00</span>
+            <input type="range" id="progress-bar" value="0" step="1" style="width:100%;">
+            <span id="total-duration">0:00</span>
+        </div>
+        <div class="controls-container">
+            <div style="display:flex;align-items:center;">
+                <button id="volume-btn" class="player-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    </svg>
+                </button>
+                <input type="range" id="new-volume-slider" min="0" max="1" step="0.01" value="1">
+            </div>
+            <div class="speed-container">
+                <button id="speed-btn" class="player-btn">1x</button>
+                <div id="speed-options" class="hidden">
+                    <div data-speed="0.5">0.5x</div>
+                    <div data-speed="0.75">0.75x</div>
+                    <div data-speed="1">1x</div>
+                    <div data-speed="1.25">1.25x</div>
+                    <div data-speed="1.5">1.5x</div>
+                    <div data-speed="2">2x</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="left-panel">
+
+            <!-- ======================== PART 1 ======================== -->
+            <div id="part-1" class="question-part">
+                <div class="part-header">
+                    <p><strong>Part 1</strong></p>
+                    <p>Listen and answer questions 1–10.</p>
+                </div>
+                <div class="questions-container">
+
+                    <div class="question">
+                        <div class="question-prompt">
+                            <p><strong>Questions 1–6</strong></p>
+                            <p class="centered-title" style="margin-top:10px;">Birthday party arrangements</p>
+                            <p>Which hotel offers the following facilities?</p>
+                            <p>Write the correct letter, <strong>A, B, C</strong> or <strong>D</strong>, next to
+                                questions 1–6.</p>
+                        </div>
+                        <div class="matching-options-box">
+                            <p><strong>A</strong> &nbsp; Royal Hotel</p>
+                            <p><strong>B</strong> &nbsp; Star Hotel</p>
+                            <p><strong>C</strong> &nbsp; Winchester Hotel</p>
+                            <p><strong>D</strong> &nbsp; all three hotels</p>
+                        </div>
+                        <ul style="list-style:none;padding-left:0;">
+                            <li class="matching-item"><span><em>Example</em> &nbsp; online booking</span>
+                                <strong>B</strong></li>
+                            <li class="matching-item"><span><strong>1</strong> &nbsp; sea view</span>
+                                <input type="text" id="q1" class="answer-input" placeholder="1" style="width:80px;">
+                            </li>
+                            <li class="matching-item"><span><strong>2</strong> &nbsp; disabled access</span>
+                                <input type="text" id="q2" class="answer-input" placeholder="2" style="width:80px;">
+                            </li>
+                            <li class="matching-item"><span><strong>3</strong> &nbsp; indoor play area</span>
+                                <input type="text" id="q3" class="answer-input" placeholder="3" style="width:80px;">
+                            </li>
+                            <li class="matching-item"><span><strong>4</strong> &nbsp; choice of food</span>
+                                <input type="text" id="q4" class="answer-input" placeholder="4" style="width:80px;">
+                            </li>
+                            <li class="matching-item"><span><strong>5</strong> &nbsp; private dining room</span>
+                                <input type="text" id="q5" class="answer-input" placeholder="5" style="width:80px;">
+                            </li>
+                            <li class="matching-item"><span><strong>6</strong> &nbsp; group discount</span>
+                                <input type="text" id="q6" class="answer-input" placeholder="6" style="width:80px;">
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="question">
+                        <div class="question-prompt">
+                            <p><strong>Questions 7–10</strong></p>
+                            <p>Complete the notes below.</p>
+                            <p>Write <strong>ONE WORD ONLY</strong> for each answer.</p>
+                        </div>
+                        <div style="border:1px solid #ccc;border-radius:5px;padding:20px;background:#fafafa;">
+                            <p style="font-weight:700;margin-bottom:10px;">Things to do immediately</p>
+                            <ul style="list-style:none;padding-left:0;margin-bottom:18px;">
+                                <li style="margin-bottom:10px;">Send a <input type="text" id="q7" class="answer-input"
+                                        placeholder="7" style="width:150px;"> to the Winchester Hotel</li>
+                                <li style="margin-bottom:10px;">Make the <input type="text" id="q8" class="answer-input"
+                                        placeholder="8" style="width:150px;"></li>
+                            </ul>
+                            <p style="font-weight:700;margin-bottom:10px;">Things to do later</p>
+                            <ul style="list-style:none;padding-left:0;">
+                                <li style="margin-bottom:10px;">Find out who needs help with <input type="text"
+                                        id="q9" class="answer-input" placeholder="9" style="width:150px;"></li>
+                                <li style="margin-bottom:10px;">Tell people not to bring any <input type="text"
+                                        id="q10" class="answer-input" placeholder="10" style="width:150px;"></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ======================== PART 2 ======================== -->
+            <div id="part-2" class="question-part hidden">
+                <div class="part-header">
+                    <p><strong>Part 2</strong></p>
+                    <p>Listen and answer questions 11–20.</p>
+                </div>
+                <div class="questions-container">
+
+                    <div class="question">
+                        <div class="question-prompt">
+                            <p><strong>Questions 11–16</strong></p>
+                            <p>Complete the sentences below.</p>
+                            <p>Write <strong>NO MORE THAN TWO WORDS</strong> for each answer.</p>
+                            <p class="centered-title" style="margin-top:10px;">The game of curling</p>
+                        </div>
+                        <ul style="list-style:none;padding-left:0;">
+                            <li style="margin-bottom:16px;"><strong>11</strong> &nbsp; The four players on the team
+                                are called the <input type="text" id="q11" class="answer-input" placeholder="11"
+                                    style="width:150px;">, the Second, the Third and the Skip.</li>
+                            <li style="margin-bottom:16px;"><strong>12</strong> &nbsp; The length of ice on which
+                                curling is played is called the <input type="text" id="q12" class="answer-input"
+                                    placeholder="12" style="width:150px;">.</li>
+                            <li style="margin-bottom:16px;"><strong>13</strong> &nbsp; The target area is called the
+                                <input type="text" id="q13" class="answer-input" placeholder="13"
+                                    style="width:150px;">.</li>
+                            <li style="margin-bottom:16px;list-style:none;">&#8226;&nbsp; The main pieces of equipment
+                                used are stones and brushes.</li>
+                            <li style="margin-bottom:16px;"><strong>14</strong> &nbsp; Scottish brushes are usually
+                                made from <input type="text" id="q14" class="answer-input" placeholder="14"
+                                    style="width:150px;">.</li>
+                            <li style="margin-bottom:16px;"><strong>15</strong> &nbsp; One shoe needs to have a sole
+                                made of <input type="text" id="q15" class="answer-input" placeholder="15"
+                                    style="width:150px;">.</li>
+                            <li style="margin-bottom:16px;"><strong>16</strong> &nbsp; The captain of the team often
+                                carries a <input type="text" id="q16" class="answer-input" placeholder="16"
+                                    style="width:150px;">.</li>
+                        </ul>
+                    </div>
+
+                    <div class="question" style="margin-top:40px;">
+                        <div class="question-prompt">
+                            <p><strong>Questions 17–20</strong></p>
+                            <p>Choose the correct letter, <strong>A, B</strong> or <strong>C</strong>.</p>
+                        </div>
+                        <div style="margin-bottom:18px;">
+                            <p style="font-weight:600;margin-bottom:10px;">17 &nbsp; Montreal Curling Club is famous
+                                as</p>
+                            <div class="multi-choice-option"><label><input type="radio" name="q17" value="A"> A
+                                    &nbsp; the champion club of the local league.</label></div>
+                            <div class="multi-choice-option"><label><input type="radio" name="q17" value="B"> B
+                                    &nbsp; the oldest sports club in the region.</label></div>
+                            <div class="multi-choice-option"><label><input type="radio" name="q17" value="C"> C
+                                    &nbsp; the most influential club in winter sports.</label></div>
+                        </div>
+                        <div style="margin-bottom:18px;">
+                            <p style="font-weight:600;margin-bottom:10px;">18 &nbsp; The Caledonian Curling Club was
+                                formed in order to</p>
+                            <div class="multi-choice-option"><label><input type="radio" name="q18" value="A"> A
+                                    &nbsp; attract interest in the sport.</label></div>
+                            <div class="multi-choice-option"><label><input type="radio" name="q18" value="B"> B
+                                    &nbsp; train young players.</label></div>
+                            <div class="multi-choice-option"><label><input type="radio" name="q18" value="C"> C
+                                    &nbsp; fix regulations for the game.</label></div>
+                        </div>
+                        <div style="margin-bottom:18px;">
+                            <p style="font-weight:600;margin-bottom:10px;">19 &nbsp; In the 16th century, curling
+                                avoided being banned because</p>
+                            <div class="multi-choice-option"><label><input type="radio" name="q19" value="A"> A
+                                    &nbsp; it was already so popular.</label></div>
+                            <div class="multi-choice-option"><label><input type="radio" name="q19" value="B"> B
+                                    &nbsp; it was good training for battle.</label></div>
+                            <div class="multi-choice-option"><label><input type="radio" name="q19" value="C"> C
+                                    &nbsp; it was only played by children.</label></div>
+                        </div>
+                        <div style="margin-bottom:18px;">
+                            <p style="font-weight:600;margin-bottom:10px;">20 &nbsp; Early curling games in Canada
+                                used implements made of</p>
+                            <div class="multi-choice-option"><label><input type="radio" name="q20" value="A"> A
+                                    &nbsp; local material.</label></div>
+                            <div class="multi-choice-option"><label><input type="radio" name="q20" value="B"> B
+                                    &nbsp; imported stone.</label></div>
+                            <div class="multi-choice-option"><label><input type="radio" name="q20" value="C"> C
+                                    &nbsp; cast iron.</label></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ======================== PART 3 ======================== -->
+            <div id="part-3" class="question-part hidden">
+                <div class="part-header">
+                    <p><strong>Part 3</strong></p>
+                    <p>Listen and answer questions 21–30.</p>
+                </div>
+                <div class="questions-container">
+
+                    <div class="question">
+                        <div class="question-prompt">
+                            <p><strong>Questions 21–24</strong></p>
+                            <p>Choose the correct letter, <strong>A, B</strong> or <strong>C</strong>.</p>
+                            <p class="centered-title" style="margin-top:10px;">Using scientific techniques to
+                                investigate works of art</p>
+                        </div>
+                        <div style="margin-bottom:18px;">
+                            <p style="font-weight:600;margin-bottom:10px;">21 &nbsp; What does Josh think about Jackson
+                                Pollock's paintings?</p>
+                            <div class="multi-choice-option"><label><input type="radio" name="q21" value="A"> A
+                                    &nbsp; They are easy to copy.</label></div>
+                            <div class="multi-choice-option"><label><input type="radio" name="q21" value="B"> B
+                                    &nbsp; They are complex.</label></div>
+                            <div class="multi-choice-option"><label><input type="radio" name="q21" value="C"> C
+                                    &nbsp; They are childish.</label></div>
+                        </div>
+                        <div style="margin-bottom:18px;">
+                            <p style="font-weight:600;margin-bottom:10px;">22 &nbsp; The $5 painting was considered to
+                                be a fake because</p>
+                            <div class="multi-choice-option"><label><input type="radio" name="q22" value="A"> A
+                                    &nbsp; it lacked documentation.</label></div>
+                            <div class="multi-choice-option"><label><input type="radio" name="q22" value="B"> B
+                                    &nbsp; it was too cheap.</label></div>
+                            <div class="multi-choice-option"><label><input type="radio" name="q22" value="C"> C
+                                    &nbsp; it featured the wrong colours.</label></div>
+                        </div>
+                        <div style="margin-bottom:18px;">
+                            <p style="font-weight:600;margin-bottom:10px;">23 &nbsp; What made the International
+                                Foundation for Art Research reject the $5 painting?</p>
+                            <div class="multi-choice-option"><label><input type="radio" name="q23" value="A"> A
+                                    &nbsp; what was on the back of the painting</label></div>
+                            <div class="multi-choice-option"><label><input type="radio" name="q23" value="B"> B
+                                    &nbsp; the type of paint used</label></div>
+                            <div class="multi-choice-option"><label><input type="radio" name="q23" value="C"> C
+                                    &nbsp; how the paint was applied</label></div>
+                        </div>
+                        <div style="margin-bottom:18px;">
+                            <p style="font-weight:600;margin-bottom:10px;">24 &nbsp; What do Josh and Emily agree about
+                                art evaluation?</p>
+                            <div class="multi-choice-option"><label><input type="radio" name="q24" value="A"> A
+                                    &nbsp; Only an experienced critic can evaluate a painting's authenticity.</label>
+                            </div>
+                            <div class="multi-choice-option"><label><input type="radio" name="q24" value="B"> B
+                                    &nbsp; Modern scientific methods have replaced the traditional approach.</label>
+                            </div>
+                            <div class="multi-choice-option"><label><input type="radio" name="q24" value="C"> C
+                                    &nbsp; Experts from the science and art worlds should work together.</label></div>
+                        </div>
+                    </div>
+
+                    <div class="question" style="margin-top:40px;">
+                        <div class="question-prompt">
+                            <p><strong>Questions 25–30</strong></p>
+                            <p>Complete the flow-chart below.</p>
+                            <p>Choose <strong>SIX</strong> answers from the box and write the correct letter,
+                                <strong>A–H</strong>, next to questions 25–30.</p>
+                        </div>
+                        <div class="matching-options-box">
+                            <p style="margin-bottom:5px;"><strong>A</strong> &nbsp; ultrasound</p>
+                            <p style="margin-bottom:5px;"><strong>B</strong> &nbsp; gamma-ray technology</p>
+                            <p style="margin-bottom:5px;"><strong>C</strong> &nbsp; stone</p>
+                            <p style="margin-bottom:5px;"><strong>D</strong> &nbsp; a laser scanner</p>
+                            <p style="margin-bottom:5px;"><strong>E</strong> &nbsp; a radar machine</p>
+                            <p style="margin-bottom:5px;"><strong>F</strong> &nbsp; glass</p>
+                            <p style="margin-bottom:5px;"><strong>G</strong> &nbsp; a thermographic camera</p>
+                            <p style="margin-bottom:5px;"><strong>H</strong> &nbsp; brick</p>
+                        </div>
+                        <p class="centered-title">Seracini's search for Leonardo Da Vinci's <em>Battle of
+                                Anghiari</em></p>
+                        <div class="flow-step">Seracini used <input type="text" id="q25" class="answer-input"
+                                placeholder="25" style="width:90px;"> to help make a model of the building.</div>
+                        <div class="flow-arrow">&#8595;</div>
+                        <div class="flow-step">Seracini used <input type="text" id="q26" class="answer-input"
+                                placeholder="26" style="width:90px;"> to reveal different materials in the walls. He
+                            found the original architecture.</div>
+                        <div class="flow-arrow">&#8595;</div>
+                        <div class="flow-step">Seracini guessed that Da Vinci painted his masterpiece on the east
+                            wall, in a space that used to hold <input type="text" id="q27" class="answer-input"
+                                placeholder="27" style="width:90px;">.</div>
+                        <div class="flow-arrow">&#8595;</div>
+                        <div class="flow-step">Seracini analysed the wall using <input type="text" id="q28"
+                                class="answer-input" placeholder="28" style="width:90px;"> and discovered a second
+                            wall behind it.</div>
+                        <div class="flow-arrow">&#8595;</div>
+                        <div class="flow-step">Seracini hypothesised that the Da Vinci painting is still there on the
+                            original <input type="text" id="q29" class="answer-input" placeholder="29"
+                                style="width:90px;"> wall.</div>
+                        <div class="flow-arrow">&#8595;</div>
+                        <div class="flow-step">Seracini is using <input type="text" id="q30" class="answer-input"
+                                placeholder="30" style="width:90px;"> to prove his theory.</div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ======================== PART 4 ======================== -->
+            <div id="part-4" class="question-part hidden">
+                <div class="part-header">
+                    <p><strong>Part 4</strong></p>
+                    <p>Listen and answer questions 31–40.</p>
+                </div>
+                <div class="questions-container">
+                    <div class="question">
+                        <div class="question-prompt">
+                            <p><strong>Questions 31–40</strong></p>
+                            <p>Complete the notes below.</p>
+                            <p>Write <strong>ONE WORD ONLY</strong> for each answer.</p>
+                            <p class="centered-title" style="margin-top:10px;">Sustainability</p>
+                        </div>
+                        <div style="border:1px solid #ccc;border-radius:5px;padding:20px;background:#fafafa;">
+                            <table style="width:100%;border-collapse:collapse;margin-bottom:18px;">
+                                <tr>
+                                    <td style="padding:6px 8px;font-weight:600;width:200px;vertical-align:top;">
+                                        Sustainability:</td>
+                                    <td style="padding:6px 8px;">Term first used in 1987 by writers of United Nations
+                                        report</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:6px 8px;font-weight:600;vertical-align:top;">Lecture aim:</td>
+                                    <td style="padding:6px 8px;">Analysis of the <input type="text" id="q31"
+                                            class="answer-input" placeholder="31" style="width:140px;"> surrounding
+                                        sustainability</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:6px 8px;font-weight:600;vertical-align:top;">Sustainable
+                                        development:</td>
+                                    <td style="padding:6px 8px;">Development that will meet the needs of both present
+                                        and future <input type="text" id="q32" class="answer-input" placeholder="32"
+                                            style="width:140px;"></td>
+                                </tr>
+                            </table>
+
+                            <p style="font-weight:700;margin-bottom:10px;">Myth 1:</p>
+                            <ul style="list-style:none;padding-left:0;margin-bottom:18px;">
+                                <li style="margin-bottom:10px;">&#8226;&nbsp; No mention of the <input type="text"
+                                        id="q33" class="answer-input" placeholder="33" style="width:140px;"> in
+                                    original definition</li>
+                                <li style="margin-bottom:10px;">&#8226;&nbsp; Original focus: poorer nations should
+                                    have the same <input type="text" id="q34" class="answer-input" placeholder="34"
+                                        style="width:140px;"> to natural resources as richer nations</li>
+                                <li style="margin-bottom:10px;margin-left:16px;">This would help them achieve better
+                                    <input type="text" id="q35" class="answer-input" placeholder="35"
+                                        style="width:140px;"> conditions</li>
+                            </ul>
+
+                            <p style="font-weight:700;margin-bottom:10px;">Myth 2: 'Green' vs Sustainable</p>
+                            <ul style="list-style:none;padding-left:0;margin-bottom:18px;">
+                                <li style="margin-bottom:10px;">&#8226;&nbsp; Key difference: unlike 'green',
+                                    'sustainable' is not always associated with things that are natural</li>
+                                <li style="margin-bottom:10px;">&#8226;&nbsp; For the sustainability lobby, the key
+                                    problem is finding <input type="text" id="q36" class="answer-input"
+                                        placeholder="36" style="width:140px;"> to develop technology</li>
+                                <li style="margin-bottom:10px;">&#8226;&nbsp; Sustainability lobby is prepared to
+                                    <input type="text" id="q37" class="answer-input" placeholder="37"
+                                        style="width:140px;"> nuclear energy</li>
+                            </ul>
+
+                            <p style="font-weight:700;margin-bottom:10px;">Myth 3: Role of technology</p>
+                            <ul style="list-style:none;padding-left:0;">
+                                <li style="margin-bottom:10px;">&#8226;&nbsp; Introduction of battery stations on
+                                    <input type="text" id="q38" class="answer-input" placeholder="38"
+                                        style="width:140px;"> is an example of new business thinking, not new
+                                    technology</li>
+                                <li style="margin-bottom:10px;">&#8226;&nbsp; Agriculture: some farmers plant crops
+                                    like sunflowers which don't use much water, unlike <input type="text" id="q39"
+                                        class="answer-input" placeholder="39" style="width:140px;"></li>
+                                <li style="margin-bottom:10px;">&#8226;&nbsp; Greater use of water is a result of
+                                    changes in our <input type="text" id="q40" class="answer-input" placeholder="40"
+                                        style="width:140px;"></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- end left-panel -->
+
+        <div class="right-panel">
+            <div id="transcription-container">
+                <h2 style="font-size:18px;font-weight:bold;margin-bottom:10px;">Transcription</h2>
+                <div id="transcription-text"></div>
+            </div>
+        </div>
+    </div><!-- end main-container -->
+
+    <!-- Transcription data -->
+    <div id="transcription-data" style="display:none;">
+        <div data-part="1">
+            <p>Section 1. You will hear a brother and sister talking on the phone about arrangements for their father's 80th birthday party.</p>
+            <p>Hello? — Hello Rob, Margaret here. I'm just calling about the arrangements for Dad's 80th birthday party. — Right. Have you made any progress with the venue? — Yes, there are three possible hotels: the Royal, the Star and the Winchester. — If we can make a decision now, you can probably book straight away on the internet, can't you? — Well, only the Star. I'd have to make a telephone booking at the others. <em>(Example: online booking → B)</em></p>
+            <p>They're all in really nice locations. <span class="t-hl" data-q="1"><span class="t-qmark">1</span>The Star looks right out over the bay. It's on a cliff top (sea view → B — Star)</span>. Then the Winchester is in lovely countryside — in the valley.</p>
+            <p>What about Mum's wheelchair? — Well, I know that <span class="t-hl" data-q="2"><span class="t-qmark">2</span>the Winchester would be fine, and the Star... and the Royal... it's had ramps installed recently, so there wouldn't be any problem there either (disabled access → D — all three)</span>.</p>
+            <p>And what about the kids? Have they got play areas? — <span class="t-hl" data-q="3"><span class="t-qmark">3</span>The Royal hasn't got anything, but the Winchester has one, on the ground floor. The Star's got one too, but it isn't undercover (indoor play area → C — Winchester)</span>.</p>
+            <p>Then there's the birthday meal. <span class="t-hl" data-q="4"><span class="t-qmark">4</span>The Royal's the only one where there'd be a choice. The other two have a set menu (choice of food → A — Royal)</span>.</p>
+            <p>I think we need to have our own room. — <span class="t-hl" data-q="5"><span class="t-qmark">5</span>The only one that can provide that is the Royal. The Winchester and the Star only have one dining room (private dining room → A — Royal)</span>.</p>
+            <p>The other thing to consider is the price. Perhaps the Star's slightly cheaper, but <span class="t-hl" data-q="6"><span class="t-qmark">6</span>the Winchester is offering quite a good reduction because there's so many of us. The Star and the Royal would just charge their standard rates (group discount → C — Winchester)</span>. — So which one? — The Winchester. — Okay, that's fine by me.</p>
+            <p>You've done nearly all the work, so what can I do to help? — Well, could you manage the finances? Do they want the whole amount in advance? — Just a <span class="t-hl" data-q="7"><span class="t-qmark">7</span>deposit</span>. If you could send that straight away to secure the booking. — Fine. And I'll go and buy some invitations. — Oh, don't do that. <span class="t-hl" data-q="8"><span class="t-qmark">8</span>I can produce them (make the invitations). I've got a program on my computer</span>.</p>
+            <p>Then once we've had the replies, I'll call everyone who's coming to find out if they want <span class="t-hl" data-q="9"><span class="t-qmark">9</span>transport</span>. — Great. I can help out with that. Pick people up from the station. — And could you stress that Dad doesn't want <span class="t-hl" data-q="10"><span class="t-qmark">10</span>presents</span>? He keeps reminding me. — Okay. I'll try to discourage them.</p>
+        </div>
+        <div data-part="2">
+            <p>Section 2. You will hear the director of a club giving a talk about an ancient game played on ice called curling.</p>
+            <p>It gives me great pleasure to welcome you to the Montreal Curling Club. So first let's take a look at the game of curling. There are four people in each team. <span class="t-hl" data-q="11"><span class="t-qmark">11</span>The first is called the lead</span>. The next is called the second, the next the third, and the final player functions as the captain but is always called the skip.</p>
+            <p>The area of play on the ice, whether on a rink or a frozen lake, <span class="t-hl" data-q="12"><span class="t-qmark">12</span>is called the sheet</span>. This long thin area is 42.15 metres by only 4.25 metres. At either end of this are the two zones for the targets. <span class="t-hl" data-q="13"><span class="t-qmark">13</span>This one is known as a house</span>.</p>
+            <p>A little about the equipment. The stones are made from granite. The other distinctive implement is the brush or broom, used to clean the ice and to warm it. You can use your own brush. There are two main types, Scottish and Canadian. The <span class="t-hl" data-q="14"><span class="t-qmark">14</span>former are normally made out of horse hair</span>, and the latter are made of synthetic materials.</p>
+            <p>Apart from stones and brushes, the only other piece of equipment you would need as a beginner is a <span class="t-hl" data-q="15"><span class="t-qmark">15</span>rubber sole on one of your shoes</span>, depending on which shoe you lead from. The captain will often carry a <span class="t-hl" data-q="16"><span class="t-qmark">16</span>stopwatch</span> to gauge when the ice needs to be changed.</p>
+            <p>A quick word about Montreal Curling Club. It's renowned — not only because it often wins championships, but <span class="t-hl" data-q="17"><span class="t-qmark">17</span>because it was the first club for any sport in the whole of the North American continent (B — oldest sports club)</span>.</p>
+            <p>It's now well established that curling started in Scotland at least as early as the 16th century. Queen Victoria's patronage attracted interest, and this was enhanced when she granted a royal title to <span class="t-hl" data-q="18"><span class="t-qmark">18</span>the Caledonian Curling Club, which had been set up in the early 19th century to create standard rules for the game (C — fix regulations)</span>.</p>
+            <p>In the 16th century, the Scottish Parliament banned golf and football; local men should spend free time practising archery for self-defence. But <span class="t-hl" data-q="19"><span class="t-qmark">19</span>curling wasn't included in the ban. The art of throwing stones was thought to be just as useful as shooting arrows (B — good training for battle)</span>.</p>
+            <p>Back to Canada. Because of the difficulty in importing granite stones from Scotland, <span class="t-hl" data-q="20"><span class="t-qmark">20</span>cast iron was used instead, obtained from melted-down cannon balls (C — cast iron)</span>. Now Canada is regarded as the most successful curling nation in the world.</p>
+        </div>
+        <div data-part="3">
+            <p>Section 3. You will hear two students called Josh and Emily discussing an assignment on applying scientific techniques to art.</p>
+            <p>Well, I'm a big fan of Jackson Pollock. — The modern American artist. Didn't he paint those really huge abstract paintings? — I guess it would be pretty easy to fake one of those. — No way, Emily. A lot of people think even a child could paint one. <span class="t-hl" data-q="21"><span class="t-qmark">21</span>To the untrained eye they might look simple but they're incredibly intricate works of art (B — complex)</span>.</p>
+            <p>What did Biro find out? — Biro found evidence that a $5 painting was a genuine Pollock, but the art world didn't accept his findings. — Why? — One critic said the white and yellow lines were too straight. — That's not convincing. — You're right, it's weak. But <span class="t-hl" data-q="22"><span class="t-qmark">22</span>the strongest argument was that there were no records of previous owners. You should be able to trace the painting back to the artist's studio (A — lacked documentation)</span>.</p>
+            <p>The International Foundation for Art Research got involved. They saw a similarity in the painting techniques, and noted the dirt and paint marks on the back which all Pollock's paintings have. But <span class="t-hl" data-q="23"><span class="t-qmark">23</span>the foundation were worried about the acrylic paint that was used. It was quite common now, but very unusual back in Pollock's day (B — the type of paint used)</span>. So it was probably painted much later.</p>
+            <p>So whose side are we on? — You can see the art critic's point... — Art historians have always judged paintings, but if we have modern scientific techniques, why not use them? — <span class="t-hl" data-q="24"><span class="t-qmark">24</span>Well, maybe we need a combination. — I think you're right (C — experts from science and art should work together)</span>.</p>
+            <p>Have you heard of a painting called The Battle of Anghiari? It's the lost masterpiece by Leonardo da Vinci. An Italian art analyst called Seracini thinks he knows where it is. Art historians knew it was last seen in the Hall of the 500 in Florence. <span class="t-hl" data-q="25"><span class="t-qmark">25</span>He scanned every inch of the hall with a laser in order to make a really accurate 3D model of the building (D — a laser scanner)</span>.</p>
+            <p>Then, to find out what the hall looked like in Leonardo's time, <span class="t-hl" data-q="26"><span class="t-qmark">26</span>he took pictures of it with a thermographic camera. Different building materials produce different amounts of radiation (G — a thermographic camera)</span> — so brick looks different from wood or glass.</p>
+            <p>Seracini worked out what the building looked like when first built. He found that <span class="t-hl" data-q="27"><span class="t-qmark">27</span>two large glass windows on the east wall had been removed and filled in, leaving a space big enough for the painting (F — glass)</span>.</p>
+            <p>Why hasn't the painting been seen for 400 years? He needed to study that wall more closely. — Did he use the thermographic camera again? — No. This time <span class="t-hl" data-q="28"><span class="t-qmark">28</span>he used another kind of technology, radar. It showed there were, in fact, two walls (E — a radar machine)</span>, an older one and a newer one built in front.</p>
+            <p>Does Seracini believe the painting is on the concealed wall? — Yes. <span class="t-hl" data-q="29"><span class="t-qmark">29</span>On a stone wall concealed by the newer brick wall (C — stone)</span>.</p>
+            <p>What's the next stage? — He isn't allowed to remove any plaster or bricks, so <span class="t-hl" data-q="30"><span class="t-qmark">30</span>he's now experimenting with a gamma ray camera to try and verify his theory (B — gamma-ray technology)</span>.</p>
+        </div>
+        <div data-part="4">
+            <p>Section 4. You will hear a lecturer talking on the topic of sustainability.</p>
+            <p>The term sustainability is not new. It was first coined in 1987 in a report for the United Nations World Commission on Environment and Development. My specific focus: I want to analyse what seems to me to be the <span class="t-hl" data-q="31"><span class="t-qmark">31</span>confusion</span> that surrounds sustainability.</p>
+            <p>That UN document defines sustainable development as development that allows both the present and all future <span class="t-hl" data-q="32"><span class="t-qmark">32</span>generations</span> to meet their needs.</p>
+            <p>Here is the first myth. Sustainability is not simply about the environment. In fact, <span class="t-hl" data-q="33"><span class="t-qmark">33</span>the original definition says nothing about [the environment] at all</span>. The original focus was on finding ways to help poor nations catch up with richer nations, which primarily meant giving them similar <span class="t-hl" data-q="34"><span class="t-qmark">34</span>rights</span> to natural resources — water, food, and energy. The ultimate goal was improving <span class="t-hl" data-q="35"><span class="t-qmark">35</span>living</span> standards for all.</p>
+            <p>Another myth is that sustainability is a synonym for green. The lobby for sustainability acknowledge that the situation is desperate. <span class="t-hl" data-q="36"><span class="t-qmark">36</span>The main problem they state correctly is time</span>, with 6 billion people on the planet and a billion more expected in the next 30 years.</p>
+            <p>Electric cars, wind turbines and solar cells are key examples. <span class="t-hl" data-q="37"><span class="t-qmark">37</span>Nuclear power, too, is something the sustainability lobby has come to accept</span>, unlike most greens.</p>
+            <p>And here's the third myth — the role of technology. Take electric cars. New technology is being developed to make better batteries, but a better way of thinking is perhaps to have <span class="t-hl" data-q="38"><span class="t-qmark">38</span>battery stations for drivers to use on roads</span>. When the battery is low, they swap it for a fully charged one — new business thinking, not new technology.</p>
+            <p>There are similarities in agriculture. Some crops are very thirsty. So many farmers who believe in sustainability are now <span class="t-hl" data-q="39"><span class="t-qmark">39</span>planting crops like sunflowers and wheat, instead of corn</span>, which are happy with much less water.</p>
+            <p>In terms of water consumption, one of the biggest problems is that our <span class="t-hl" data-q="40"><span class="t-qmark">40</span>diet</span> is changing. As people become richer, they aspire to a diet with more meat.</p>
+        </div>
+    </div>
+
+    <audio id="global-audio-player" class="hidden"></audio>
+
+    <!-- Nav Arrows -->
+    <div class="nav-arrows">
+        <button class="nav-arrow" onclick="previousPart()" id="prevBtn">&#8249;</button>
+        <button class="nav-arrow" onclick="nextPart()" id="nextBtn">&#8250;</button>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="nav-row" aria-label="Questions">
+        <div class="footer__questionWrapper___1tZ46 selected multiple" role="tablist">
+            <button role="tab" class="footer__questionNo___3WNct" onclick="switchToPart(1)">
+                <span><span class="section-prefix">Part </span><span class="sectionNr">1</span><span
+                        class="attemptedCount">0 of 10</span></span>
+            </button>
+            <div class="footer__subquestionWrapper___9GgoP">
+                <button class="subQuestion" onclick="goToQuestion(1)"><span
+                        class="sr-only">Q1</span><span>1</span></button>
+                <button class="subQuestion" onclick="goToQuestion(2)"><span
+                        class="sr-only">Q2</span><span>2</span></button>
+                <button class="subQuestion" onclick="goToQuestion(3)"><span
+                        class="sr-only">Q3</span><span>3</span></button>
+                <button class="subQuestion" onclick="goToQuestion(4)"><span
+                        class="sr-only">Q4</span><span>4</span></button>
+                <button class="subQuestion" onclick="goToQuestion(5)"><span
+                        class="sr-only">Q5</span><span>5</span></button>
+                <button class="subQuestion" onclick="goToQuestion(6)"><span
+                        class="sr-only">Q6</span><span>6</span></button>
+                <button class="subQuestion" onclick="goToQuestion(7)"><span
+                        class="sr-only">Q7</span><span>7</span></button>
+                <button class="subQuestion" onclick="goToQuestion(8)"><span
+                        class="sr-only">Q8</span><span>8</span></button>
+                <button class="subQuestion" onclick="goToQuestion(9)"><span
+                        class="sr-only">Q9</span><span>9</span></button>
+                <button class="subQuestion" onclick="goToQuestion(10)"><span
+                        class="sr-only">Q10</span><span>10</span></button>
+            </div>
+        </div>
+        <div class="footer__questionWrapper___1tZ46 multiple" role="tablist">
+            <button role="tab" class="footer__questionNo___3WNct" onclick="switchToPart(2)">
+                <span><span class="section-prefix">Part </span><span class="sectionNr">2</span><span
+                        class="attemptedCount">0 of 10</span></span>
+            </button>
+            <div class="footer__subquestionWrapper___9GgoP">
+                <button class="subQuestion" onclick="goToQuestion(11)"><span>11</span></button>
+                <button class="subQuestion" onclick="goToQuestion(12)"><span>12</span></button>
+                <button class="subQuestion" onclick="goToQuestion(13)"><span>13</span></button>
+                <button class="subQuestion" onclick="goToQuestion(14)"><span>14</span></button>
+                <button class="subQuestion" onclick="goToQuestion(15)"><span>15</span></button>
+                <button class="subQuestion" onclick="goToQuestion(16)"><span>16</span></button>
+                <button class="subQuestion" onclick="goToQuestion(17)"><span>17</span></button>
+                <button class="subQuestion" onclick="goToQuestion(18)"><span>18</span></button>
+                <button class="subQuestion" onclick="goToQuestion(19)"><span>19</span></button>
+                <button class="subQuestion" onclick="goToQuestion(20)"><span>20</span></button>
+            </div>
+        </div>
+        <div class="footer__questionWrapper___1tZ46 multiple" role="tablist">
+            <button role="tab" class="footer__questionNo___3WNct" onclick="switchToPart(3)">
+                <span><span class="section-prefix">Part </span><span class="sectionNr">3</span><span
+                        class="attemptedCount">0 of 10</span></span>
+            </button>
+            <div class="footer__subquestionWrapper___9GgoP">
+                <button class="subQuestion" onclick="goToQuestion(21)"><span>21</span></button>
+                <button class="subQuestion" onclick="goToQuestion(22)"><span>22</span></button>
+                <button class="subQuestion" onclick="goToQuestion(23)"><span>23</span></button>
+                <button class="subQuestion" onclick="goToQuestion(24)"><span>24</span></button>
+                <button class="subQuestion" onclick="goToQuestion(25)"><span>25</span></button>
+                <button class="subQuestion" onclick="goToQuestion(26)"><span>26</span></button>
+                <button class="subQuestion" onclick="goToQuestion(27)"><span>27</span></button>
+                <button class="subQuestion" onclick="goToQuestion(28)"><span>28</span></button>
+                <button class="subQuestion" onclick="goToQuestion(29)"><span>29</span></button>
+                <button class="subQuestion" onclick="goToQuestion(30)"><span>30</span></button>
+            </div>
+        </div>
+        <div class="footer__questionWrapper___1tZ46 multiple" role="tablist">
+            <button role="tab" class="footer__questionNo___3WNct" onclick="switchToPart(4)">
+                <span><span class="section-prefix">Part </span><span class="sectionNr">4</span><span
+                        class="attemptedCount">0 of 10</span></span>
+            </button>
+            <div class="footer__subquestionWrapper___9GgoP">
+                <button class="subQuestion" onclick="goToQuestion(31)"><span>31</span></button>
+                <button class="subQuestion" onclick="goToQuestion(32)"><span>32</span></button>
+                <button class="subQuestion" onclick="goToQuestion(33)"><span>33</span></button>
+                <button class="subQuestion" onclick="goToQuestion(34)"><span>34</span></button>
+                <button class="subQuestion" onclick="goToQuestion(35)"><span>35</span></button>
+                <button class="subQuestion" onclick="goToQuestion(36)"><span>36</span></button>
+                <button class="subQuestion" onclick="goToQuestion(37)"><span>37</span></button>
+                <button class="subQuestion" onclick="goToQuestion(38)"><span>38</span></button>
+                <button class="subQuestion" onclick="goToQuestion(39)"><span>39</span></button>
+                <button class="subQuestion" onclick="goToQuestion(40)"><span>40</span></button>
+            </div>
+        </div>
+        <button id="deliver-button" class="footer__deliverButton___3FM07"><span>Check Answers</span></button>
+    </nav>
+
+    <!-- Context Menu -->
+    <div id="contextMenu" class="context-menu">
+        <div class="context-menu-item" onclick="highlightText()">Highlight</div>
+        <div class="context-menu-item" onclick="addComment()">Comment</div>
+        <div class="context-menu-item" id="clear-item" onclick="clearHighlight()" style="display:none;">Clear</div>
+        <div class="context-menu-item" onclick="clearAllHighlights()">Clear All</div>
+    </div>
+
+    <!-- Result Modal -->
+    <div id="result-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Your Results</h2>
+                <button id="modal-close-button" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="score-summary"></p>
+                <div id="result-details"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const correctAnswers = {
+            'q1': ['B'],
+            'q2': ['D'],
+            'q3': ['C'],
+            'q4': ['A'],
+            'q5': ['A'],
+            'q6': ['C'],
+            'q7': ['deposit'],
+            'q8': ['invitations'],
+            'q9': ['transport'],
+            'q10': ['presents'],
+            'q11': ['lead'],
+            'q12': ['sheet'],
+            'q13': ['house'],
+            'q14': ['horse hair', 'horsehair'],
+            'q15': ['rubber'],
+            'q16': ['stopwatch', 'stop watch'],
+            'q17': 'B',
+            'q18': 'C',
+            'q19': 'B',
+            'q20': 'C',
+            'q21': 'B',
+            'q22': 'A',
+            'q23': 'B',
+            'q24': 'C',
+            'q25': ['D'],
+            'q26': ['G'],
+            'q27': ['F'],
+            'q28': ['E'],
+            'q29': ['C'],
+            'q30': ['B'],
+            'q31': ['confusion'],
+            'q32': ['generations'],
+            'q33': ['environment'],
+            'q34': ['right', 'rights'],
+            'q35': ['living'],
+            'q36': ['time'],
+            'q37': ['accept'],
+            'q38': ['roads'],
+            'q39': ['corn'],
+            'q40': ['diet']
+        };
+
+        const questionTypes = {
+            'q1': 'text', 'q2': 'text', 'q3': 'text', 'q4': 'text', 'q5': 'text', 'q6': 'text',
+            'q7': 'text', 'q8': 'text', 'q9': 'text', 'q10': 'text',
+            'q11': 'text', 'q12': 'text', 'q13': 'text', 'q14': 'text', 'q15': 'text', 'q16': 'text',
+            'q17': 'mcq', 'q18': 'mcq', 'q19': 'mcq', 'q20': 'mcq',
+            'q21': 'mcq', 'q22': 'mcq', 'q23': 'mcq', 'q24': 'mcq',
+            'q25': 'text', 'q26': 'text', 'q27': 'text', 'q28': 'text', 'q29': 'text', 'q30': 'text',
+            'q31': 'text', 'q32': 'text', 'q33': 'text', 'q34': 'text', 'q35': 'text',
+            'q36': 'text', 'q37': 'text', 'q38': 'text', 'q39': 'text', 'q40': 'text'
+        };
+
+        let currentPart = 1;
+        let currentQuestion = 1;
+        let selectedRange = null;
+        let contextElement = null;
+
+        const audioSource = 'https://ia600407.us.archive.org/17/items/mix-31m-09s-audio-joiner.com/mix_31m09s%20%28audio-joiner.com%29.mp3';
+        const audioPlayer = document.getElementById('global-audio-player');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const currentTimeEl = document.getElementById('current-time');
+        const totalDurationEl = document.getElementById('total-duration');
+        const speedBtn = document.getElementById('speed-btn');
+        const speedOptions = document.getElementById('speed-options');
+        const volumeSlider = document.getElementById('new-volume-slider');
+
+        if (audioSource) audioPlayer.src = audioSource;
+
+        function formatTime(s) {
+            const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+            return m + ':' + (sec < 10 ? '0' : '') + sec;
+        }
+
+        playPauseBtn.addEventListener('click', () => {
+            if (!audioSource) { alert('Audio URL qo\'shilmagan. Script ichida audioSource ni to\'ldiring.'); return; }
+            if (audioPlayer.paused) audioPlayer.play(); else audioPlayer.pause();
+        });
+        audioPlayer.addEventListener('play', () => { playPauseBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>'; });
+        audioPlayer.addEventListener('pause', () => { playPauseBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>'; });
+        audioPlayer.addEventListener('loadedmetadata', () => { progressBar.max = audioPlayer.duration; totalDurationEl.textContent = formatTime(audioPlayer.duration); });
+        audioPlayer.addEventListener('timeupdate', () => { progressBar.value = audioPlayer.currentTime; currentTimeEl.textContent = formatTime(audioPlayer.currentTime); });
+        progressBar.addEventListener('input', () => { audioPlayer.currentTime = progressBar.value; });
+        volumeSlider.addEventListener('input', (e) => { audioPlayer.volume = e.target.value; });
+        speedBtn.addEventListener('click', (e) => { e.stopPropagation(); speedOptions.classList.toggle('hidden'); });
+        speedOptions.addEventListener('click', (e) => {
+            if (e.target.dataset.speed) { audioPlayer.playbackRate = parseFloat(e.target.dataset.speed); speedBtn.textContent = e.target.dataset.speed + 'x'; speedOptions.classList.add('hidden'); }
+        });
+        document.addEventListener('click', () => speedOptions.classList.add('hidden'));
+
+        function switchToPart(partNumber) {
+            currentPart = partNumber;
+            document.querySelectorAll('.question-part').forEach(p => p.classList.add('hidden'));
+            const part = document.getElementById('part-' + partNumber);
+            if (part) part.classList.remove('hidden');
+            document.querySelectorAll('.footer__questionWrapper___1tZ46').forEach((w, i) => w.classList.toggle('selected', i + 1 === partNumber));
+            const partStart = (partNumber - 1) * 10 + 1;
+            const partEnd = partNumber * 10;
+            if (currentQuestion < partStart || currentQuestion > partEnd) {
+                currentQuestion = partStart;
+                document.querySelectorAll('.subQuestion').forEach(b => b.classList.remove('active'));
+                const activeBtn = document.querySelector('.subQuestion[onclick="goToQuestion(' + partStart + ')"]');
+                if (activeBtn) activeBtn.classList.add('active');
+            }
+            if (document.querySelector('.main-container.results-mode')) {
+                const src = document.querySelector('#transcription-data [data-part="' + partNumber + '"]');
+                const tgt = document.getElementById('transcription-text');
+                if (src && tgt) tgt.innerHTML = src.innerHTML;
+            }
+            updateAttemptedCount(partNumber);
+            document.getElementById('prevBtn').disabled = currentQuestion <= 1;
+            document.getElementById('nextBtn').disabled = currentQuestion >= 40;
+        }
+
+        function goToQuestion(qNum) {
+            currentQuestion = qNum;
+            let part = 1;
+            if (qNum > 10 && qNum <= 20) part = 2;
+            else if (qNum > 20 && qNum <= 30) part = 3;
+            else if (qNum > 30) part = 4;
+            if (currentPart !== part) switchToPart(part);
+            document.querySelectorAll('.subQuestion').forEach(b => b.classList.remove('active'));
+            const btn = document.querySelector(`.subQuestion[onclick="goToQuestion(${qNum})"]`);
+            if (btn) btn.classList.add('active');
+            let el = document.getElementById('q' + qNum) || document.querySelector('input[name="q' + qNum + '"]');
+            if (el) {
+                const container = el.closest('.question');
+                if (container) {
+                    container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    container.classList.add('flash');
+                    setTimeout(() => container.classList.remove('flash'), 1000);
+                }
+            }
+            document.getElementById('prevBtn').disabled = qNum <= 1;
+            document.getElementById('nextBtn').disabled = qNum >= 40;
+        }
+
+        function nextPart() { if (currentQuestion < 40) goToQuestion(currentQuestion + 1); }
+        function previousPart() { if (currentQuestion > 1) goToQuestion(currentQuestion - 1); }
+
+        function updateAttemptedCount(partNumber) {
+            const start = (partNumber - 1) * 10 + 1;
+            const end = partNumber * 10;
+            let count = 0;
+            for (let i = start; i <= end; i++) {
+                const txt = document.getElementById('q' + i);
+                const rad = document.querySelector('input[name="q' + i + '"]:checked');
+                if ((txt && txt.value.trim()) || rad) count++;
+            }
+            const wrapper = document.querySelectorAll('.footer__questionWrapper___1tZ46')[partNumber - 1];
+            if (wrapper) {
+                const span = wrapper.querySelector('.attemptedCount');
+                if (span) span.textContent = count + ' of 10';
+            }
+        }
+
+        function updateAnsweredIndicators() {
+            for (let qNum = 1; qNum <= 40; qNum++) {
+                const btn = document.querySelector(`.subQuestion[onclick="goToQuestion(${qNum})"]`);
+                if (!btn || btn.classList.contains('correct') || btn.classList.contains('incorrect')) continue;
+                const txt = document.getElementById('q' + qNum);
+                const rad = document.querySelector('input[name="q' + qNum + '"]:checked');
+                const answered = (txt && txt.value.trim() !== '') || !!rad;
+                btn.classList.toggle('answered', answered);
+            }
+            [1, 2, 3, 4].forEach(p => updateAttemptedCount(p));
+        }
+
+        document.querySelectorAll('.answer-input, input[type="radio"]').forEach(inp => {
+            inp.addEventListener('input', updateAnsweredIndicators);
+            inp.addEventListener('change', updateAnsweredIndicators);
+        });
+
+        function checkAnswers() {
+            let score = 0;
+            const resultsData = [];
+
+            document.querySelectorAll('.correct-inline').forEach(el => el.remove());
+            document.querySelectorAll('.answer-input').forEach(el => el.classList.remove('correct', 'incorrect'));
+            document.querySelectorAll('.multi-choice-option').forEach(el => el.classList.remove('correct', 'incorrect'));
+
+            Object.keys(correctAnswers).forEach(key => {
+                const correct = correctAnswers[key];
+                const qNum = parseInt(key.replace('q', ''));
+                const type = questionTypes[key];
+                let userAnswer = '', isCorrect = false;
+
+                if (type === 'text') {
+                    const el = document.getElementById(key);
+                    userAnswer = el ? el.value.trim() : '';
+                    const accepted = Array.isArray(correct) ? correct : [correct];
+                    if (accepted[0] === '???') {
+                        isCorrect = false;
+                    } else {
+                        isCorrect = accepted.some(a => a.toLowerCase() === userAnswer.toLowerCase());
+                    }
+                    if (el) {
+                        el.classList.add(isCorrect ? 'correct' : 'incorrect');
+                        if (!isCorrect && accepted[0] !== '???') {
+                            const sp = document.createElement('span');
+                            sp.className = 'correct-inline';
+                            sp.textContent = accepted[0];
+                            el.insertAdjacentElement('afterend', sp);
+                        }
+                    }
+                } else if (type === 'mcq') {
+                    const checked = document.querySelector('input[name="' + key + '"]:checked');
+                    userAnswer = checked ? checked.value : 'No Answer';
+                    isCorrect = correct !== '???' && userAnswer === correct;
+                    document.querySelectorAll('input[name="' + key + '"]').forEach(r => {
+                        const wrapper = r.closest('.multi-choice-option');
+                        if (!wrapper) return;
+                        if (correct !== '???' && r.value === correct) wrapper.classList.add('correct');
+                        else if (r.checked) wrapper.classList.add('incorrect');
+                    });
+                }
+
+                if (isCorrect) score++;
+                const navBtn = document.querySelector(`.subQuestion[onclick="goToQuestion(${qNum})"]`);
+                if (navBtn) { navBtn.classList.remove('answered'); navBtn.classList.add(isCorrect ? 'correct' : 'incorrect'); }
+                resultsData.push({ question: qNum, userAnswer: userAnswer || 'No Answer', correctAnswer: Array.isArray(correct) ? correct[0] : correct, isCorrect });
+            });
+
+            document.querySelectorAll('.answer-input, input[type="radio"]').forEach(el => el.disabled = true);
+
+            const band = (function (r) {
+                if (r >= 39) return 9; if (r >= 37) return 8.5; if (r >= 35) return 8; if (r >= 32) return 7.5;
+                if (r >= 30) return 7; if (r >= 26) return 6.5; if (r >= 23) return 6; if (r >= 18) return 5.5;
+                if (r >= 16) return 5; if (r >= 13) return 4.5; if (r >= 10) return 4; if (r >= 8) return 3.5;
+                if (r >= 6) return 3; if (r >= 4) return 2.5; if (r >= 2) return 2; if (r === 1) return 1.5; return 0;
+            })(score);
+
+            document.querySelector('.main-container').classList.add('results-mode');
+            switchToPart(currentPart);
+
+            document.getElementById('score-summary').textContent = 'You scored ' + score + ' out of 40 (Band ' + band + ').';
+
+            const resultDetails = document.getElementById('result-details');
+            let html = '<table><thead><tr><th>Question</th><th>Your Answer</th><th>Correct Answer</th><th>Result</th></tr></thead><tbody>';
+            resultsData.sort((a, b) => a.question - b.question).forEach(r => {
+                html += '<tr><td>' + r.question + '</td><td>' + r.userAnswer + '</td><td>' + r.correctAnswer + '</td><td class="' + (r.isCorrect ? 'result-correct' : 'result-incorrect') + '">' + (r.isCorrect ? '&#10003; Correct' : '&#10007; Incorrect') + '</td></tr>';
+            });
+            html += '</tbody></table>';
+            resultDetails.innerHTML = html;
+
+            const deliverButton = document.getElementById('deliver-button');
+            deliverButton.classList.add('success');
+            deliverButton.innerHTML = '<span>My Results</span>';
+            const newBtn = deliverButton.cloneNode(true);
+            deliverButton.parentNode.replaceChild(newBtn, deliverButton);
+            newBtn.addEventListener('click', () => { document.getElementById('result-modal').style.display = 'flex'; });
+            document.getElementById('result-modal').style.display = 'flex';
+        }
+
+        document.getElementById('deliver-button').addEventListener('click', checkAnswers);
+        document.getElementById('modal-close-button').addEventListener('click', () => { document.getElementById('result-modal').style.display = 'none'; });
+
+        document.addEventListener('selectionchange', () => {
+            const sel = window.getSelection();
+            if (sel && sel.rangeCount > 0 && !sel.isCollapsed) selectedRange = sel.getRangeAt(0);
+        });
+        document.body.addEventListener('contextmenu', function (e) {
+            const text = window.getSelection().toString();
+            if (!text) return;
+            e.preventDefault();
+            const menu = document.getElementById('contextMenu');
+            menu.style.left = e.pageX + 'px';
+            menu.style.top = e.pageY + 'px';
+            menu.style.display = 'block';
+            contextElement = e.target.closest('.highlight, .comment-highlight');
+            document.getElementById('clear-item').style.display = contextElement ? 'block' : 'none';
+        });
+        document.body.addEventListener('click', function (e) {
+            if (!e.target.closest('.context-menu')) document.getElementById('contextMenu').style.display = 'none';
+        });
+        function highlightText() {
+            if (!selectedRange || selectedRange.collapsed) return;
+            try { const span = document.createElement('span'); span.className = 'highlight'; selectedRange.surroundContents(span); } catch (e) { }
+            window.getSelection().removeAllRanges();
+            document.getElementById('contextMenu').style.display = 'none';
+        }
+        function addComment() {
+            const t = prompt('Enter your comment:');
+            if (!t || !selectedRange) return;
+            try {
+                const span = document.createElement('span'); span.className = 'comment-highlight';
+                const tip = document.createElement('span'); tip.className = 'comment-tooltip'; tip.textContent = t;
+                span.appendChild(tip); selectedRange.surroundContents(span);
+            } catch (e) { }
+            window.getSelection().removeAllRanges();
+            document.getElementById('contextMenu').style.display = 'none';
+        }
+        function clearHighlight() {
+            if (contextElement) {
+                const parent = contextElement.parentNode;
+                while (contextElement.firstChild) parent.insertBefore(contextElement.firstChild, contextElement);
+                parent.removeChild(contextElement); parent.normalize();
+            }
+            document.getElementById('contextMenu').style.display = 'none';
+        }
+        function clearAllHighlights() {
+            document.querySelectorAll('.highlight, .comment-highlight').forEach(el => {
+                const parent = el.parentNode;
+                while (el.firstChild) parent.insertBefore(el.firstChild, el);
+                parent.removeChild(el); parent.normalize();
+            });
+            document.getElementById('contextMenu').style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            switchToPart(1);
+            goToQuestion(1);
+        });
+    </script>
+</body>
+
+</html>

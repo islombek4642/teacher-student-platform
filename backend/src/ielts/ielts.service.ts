@@ -238,8 +238,126 @@ export const IELTS_HEADER_FIX_STYLES = `<style id="ielts-header-fix">
       display: none !important;
     }
   }
+
+  /* Audio icons and volume slider in header */
+  .header-icons {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin: 0 !important;
+  }
+  .header-icons .icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    border: none !important;
+    background: transparent !important;
+    padding: 4px !important;
+    border-radius: 6px !important;
+    color: #374151 !important;
+    transition: background-color 0.15s, color 0.15s !important;
+  }
+  .header-icons .icon:hover {
+    background-color: #f3f4f6 !important;
+    color: #111827 !important;
+  }
+  .header-icons .icon svg {
+    width: 20px !important;
+    height: 20px !important;
+    display: block !important;
+  }
+  .header-icons #play-pause-btn {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 8px !important;
+    background: #2563eb !important;
+    color: #ffffff !important;
+    border: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: background-color 0.15s !important;
+  }
+  .header-icons #play-pause-btn:hover {
+    background: #1d4ed8 !important;
+  }
+  .header-icons #play-pause-btn svg {
+    fill: #ffffff !important;
+    width: 18px !important;
+    height: 18px !important;
+  }
+  .header-icons #volume-slider {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    width: 80px !important;
+    height: 6px !important;
+    background: #e5e7eb !important;
+    outline: none !important;
+    border-radius: 3px !important;
+    cursor: pointer !important;
+  }
+  .header-icons #volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    width: 14px !important;
+    height: 14px !important;
+    border-radius: 50% !important;
+    background: #2563eb !important;
+    cursor: pointer !important;
+    border: 2px solid #ffffff !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
+  }
+  .header-icons #volume-slider::-moz-range-thumb {
+    width: 14px !important;
+    height: 14px !important;
+    border-radius: 50% !important;
+    background: #2563eb !important;
+    cursor: pointer !important;
+    border: 2px solid #ffffff !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
+  }
+  body.theme-dark .header-icons .icon {
+    color: #9ca3af !important;
+  }
+  body.theme-dark .header-icons .icon:hover {
+    background-color: #374151 !important;
+    color: #f9fafb !important;
+  }
+  body.theme-dark .header-icons .icon svg {
+    color: #d1d5db !important;
+    stroke: #d1d5db !important;
+  }
+  body.theme-dark .header-icons #volume-slider {
+    background: #4b5563 !important;
+  }
 </style>
 `;
+
+export function extractBalancedDiv(html: string, className: string): string | null {
+  const startRegex = new RegExp(`<div[^>]*class=["'][^"']*\\b${className}\\b[^"']*["'][^>]*>`, 'i');
+  const match = html.match(startRegex);
+  if (!match || match.index === undefined) return null;
+  const startIndex = match.index;
+  let depth = 0;
+  let i = startIndex;
+  while (i < html.length) {
+    if (html.slice(i, i + 4).toLowerCase() === '<div') {
+      depth++;
+      i += 4;
+    } else if (html.slice(i, i + 6).toLowerCase() === '</div>') {
+      depth--;
+      i += 6;
+      if (depth === 0) {
+        return html.slice(startIndex, i);
+      }
+    } else {
+      i++;
+    }
+  }
+  return null;
+}
 
 export function normalizeIeltsHeader(contentHtml: string, isPreview?: boolean, isReview?: boolean): string {
   const showReviewUi = isPreview || isReview;
@@ -256,34 +374,35 @@ export function normalizeIeltsHeader(contentHtml: string, isPreview?: boolean, i
 
   const centerZoneHtml = `<div class="header-zone header-center-zone">\n      ${IELTS_EXIT_BUTTON_HTML}\n      ${retakeBtnHtml}\n      ${previewBadgeHtml}\n    </div>`;
 
-  const headerRegex = /<div class=["']header["']>([\s\S]*?)<\/div>\s*(?=<div class=["'](?:audio-player-container|main-container)["'])/i;
-  const match = contentHtml.match(headerRegex);
-  if (!match) {
+  const headerHtml = extractBalancedDiv(contentHtml, 'header');
+  if (!headerHtml) {
     return contentHtml;
   }
 
-  const innerHtml = match[1];
-  const partMatch = innerHtml.match(/<div class=["']part-indicator["'][\s\S]*?<\/div>/i);
-  const timerMatch = innerHtml.match(/<div class=["']timer-container["'][\s\S]*?<\/div>/i);
+  const partIndicator = extractBalancedDiv(headerHtml, 'part-indicator') || '';
+  const timerContainer = extractBalancedDiv(headerHtml, 'timer-container') || '';
+  const headerTools = extractBalancedDiv(headerHtml, 'header-tools') || '';
+  const headerIcons = extractBalancedDiv(headerHtml, 'header-icons') || '';
 
-  let leftContent = '';
-  if (partMatch) {
-    leftContent += partMatch[0];
-  }
-  if (timerMatch && !leftContent.includes('timer-container')) {
-    leftContent += (leftContent ? ' ' : '') + timerMatch[0];
+  let leftContent = partIndicator;
+  if (timerContainer && !leftContent.includes('timer-container')) {
+    leftContent += (leftContent ? ' ' : '') + timerContainer;
   }
 
-  // Preserve existing tools ONLY if they were present in the original task HTML
-  const toolsMatch = innerHtml.match(/<div class=["']header-tools["'][\s\S]*?<\/div>/i);
-  const rightContent = toolsMatch ? toolsMatch[0] : '';
+  let rightContent = '';
+  if (headerIcons) {
+    rightContent += headerIcons;
+  }
+  if (headerTools) {
+    rightContent += (rightContent ? ' ' : '') + headerTools;
+  }
 
   const leftZoneHtml = `<div class="header-zone header-left-zone">${leftContent}</div>`;
   const rightZoneHtml = `<div class="header-zone header-right-zone">${rightContent}</div>`;
 
   const newHeaderHtml = `<div class="header">\n    ${leftZoneHtml}\n    ${centerZoneHtml}\n    ${rightZoneHtml}\n  </div>`;
 
-  return contentHtml.replace(headerRegex, newHeaderHtml);
+  return contentHtml.replace(headerHtml, newHeaderHtml);
 }
 
 export const IELTS_ESC_LISTENER_SCRIPT = `<script>
@@ -634,38 +753,97 @@ export function detectIeltsTaskType(contentHtml: string): IeltsTaskType | 'UNKNO
   const titleMatch = contentHtml.match(/<title>([^<]*)<\/title>/i);
   const title = titleMatch ? titleMatch[1].toLowerCase() : '';
 
-  const hasPassage = /passage\s*[1-3]/i.test(contentHtml);
-  const hasPart = /part\s*[1-4]/i.test(contentHtml);
+  const hasReadingMarkers =
+    /reading-passage/i.test(contentHtml) ||
+    /passage-panel/i.test(contentHtml) ||
+    /passage-title/i.test(contentHtml) ||
+    /passage\s*[1-3]/i.test(contentHtml) ||
+    title.includes('reading');
 
-  if (hasAudio || title.includes('listening') || (hasPart && !hasPassage)) {
+  const hasListeningMarkers =
+    hasAudio ||
+    title.includes('listening');
+
+  if (hasListeningMarkers && !hasReadingMarkers) {
     return IeltsTaskType.LISTENING;
   }
-  if (hasPassage || title.includes('reading')) {
+  if (hasReadingMarkers && !hasListeningMarkers) {
+    return IeltsTaskType.READING;
+  }
+  if (hasAudio) {
+    return IeltsTaskType.LISTENING;
+  }
+  if (hasReadingMarkers) {
     return IeltsTaskType.READING;
   }
   return 'UNKNOWN';
 }
 
 export function extractTaskTitle(contentHtml: string, filename?: string): string {
-  // 1. Reading passage title
-  const passageTitleMatch = contentHtml.match(/class=["']passage-title["'][^>]*>([^<]+)<\/p>/i);
+  // 1. Reading passage title class
+  const passageTitleMatch = contentHtml.match(
+    /class=["'][^"']*passage-title[^"']*["'][^>]*>([^<]+)<\/[a-z0-9]+>/i,
+  );
   if (passageTitleMatch && passageTitleMatch[1]?.trim()) {
     return passageTitleMatch[1].trim();
   }
 
-  // 2. Listening centered title
-  const centeredTitleMatch = contentHtml.match(/class=["']centered-title["'][^>]*>([^<]+)<\/p>/i);
+  // 2. Reading centered heading (e.g. <h4 class="text-center">)
+  const h4Match = contentHtml.match(
+    /<h4[^>]*class=["'][^"']*text-center[^"']*["'][^>]*>([^<]+)<\/h4>/i,
+  );
+  if (h4Match && h4Match[1]?.trim()) {
+    return h4Match[1].trim();
+  }
+
+  // 3. Listening centered title
+  const centeredTitleMatch = contentHtml.match(
+    /class=["'][^"']*centered-title[^"']*["'][^>]*>([^<]+)<\/[a-z0-9]+>/i,
+  );
   if (centeredTitleMatch && centeredTitleMatch[1]?.trim()) {
     return centeredTitleMatch[1].trim();
   }
 
-  // 3. Fallback to <title> tag if not generic
+  // 4. Other prominent headings, excluding generic terms
+  const headings = Array.from(contentHtml.matchAll(/<h[1-4][^>]*>([^<]+)<\/h[1-4]>/gi))
+    .map((m) => m[1].trim())
+    .filter(
+      (t) =>
+        !/^(ielts|results?|your\s*results?|transcription|correct\s*answers?:?|part\s*[1-4]|passage\s*[1-3]|questions?\s*\d+.*)$/i.test(
+          t,
+        ),
+    );
+  if (headings.length > 0) {
+    return headings[0];
+  }
+
+  // 5. Form/Notes title in <strong> or <b> (e.g. in Listening Section 1)
+  const strongs = Array.from(
+    contentHtml.matchAll(/<(strong|b)[^>]*>([^<]{5,60})<\/(strong|b)>/gi),
+  )
+    .map((m) => m[2].trim())
+    .filter(
+      (t) =>
+        !/^(ielts|results?|your\s*results?|transcription|correct\s*answers?:?|part\s*[1-4]|passage\s*[1-3]|questions?\s*\d+.*|one\s*word.*|no\s*more\s*than.*|write\s*no\s*more.*|name:?|date:?|address:?|choose.*|letters?.*)$/i.test(
+          t,
+        ) && !/^[A-E](?:\s*,\s*[A-E])*(?:\s+or\s+[A-E])?$/i.test(t),
+    );
+  if (strongs.length > 0) {
+    return strongs[0];
+  }
+
+  // 6. Title tag if NOT generic
   const titleTag = contentHtml.match(/<title>([^<]*)<\/title>/i)?.[1]?.trim();
-  if (titleTag && !/^ielts\s+cdi/i.test(titleTag)) {
+  if (
+    titleTag &&
+    !/^(ielts\s*cdi.*|ielts\s*full.*|ielts\s*reading.*|ielts\s*listening.*|ielts)$/i.test(
+      titleTag,
+    )
+  ) {
     return titleTag;
   }
 
-  // 4. Fallback to clean filename
+  // 7. Clean filename
   if (filename) {
     return filename
       .replace(/\.html?$/i, '')
@@ -815,6 +993,43 @@ export class IeltsService {
       '',
     );
 
+    // 3.5. Guard broken or missing listeners from crashing page JS
+    task.contentHtml = task.contentHtml.replace(
+      /gotoBtn\.addEventListener/g,
+      'if (typeof gotoBtn !== "undefined" && gotoBtn) gotoBtn.addEventListener',
+    );
+    task.contentHtml = task.contentHtml.replace(
+      /volumeSlider\.addEventListener/g,
+      'if (typeof volumeSlider !== "undefined" && volumeSlider) volumeSlider.addEventListener',
+    );
+
+    // 3.6. Ensure initial test synchronization (reset to Part 1 cleanly on take/preview)
+    if (mode !== 'review') {
+      const syncScript = `<script id="ielts-init-sync">
+        (function() {
+          function initSync() {
+            if (typeof window.switchToPart === 'function') {
+              try { window.switchToPart(1); } catch(e) {}
+            }
+          }
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initSync);
+          } else {
+            setTimeout(initSync, 0);
+          }
+        })();
+      </script>`;
+      task.contentHtml = task.contentHtml.replace(
+        /<script id=["']ielts-init-sync["']>[\s\S]*?<\/script>/gi,
+        '',
+      );
+      if (task.contentHtml.includes('</body>')) {
+        task.contentHtml = task.contentHtml.replace('</body>', `${syncScript}</body>`);
+      } else {
+        task.contentHtml += syncScript;
+      }
+    }
+
     // 4. Inject escape key listener script if not already present
     if (!task.contentHtml.includes('ESCAPE_PRESSED')) {
       task.contentHtml = task.contentHtml.replace('</body>', `${IELTS_ESC_LISTENER_SCRIPT}</body>`);
@@ -911,6 +1126,40 @@ export class IeltsService {
     return { success: true };
   }
 
+  async deleteTasks(ids: string[], user: JwtPayload) {
+    if (!ids || ids.length === 0) {
+      return { success: true, count: 0 };
+    }
+
+    const whereClause: any = {
+      id: { in: ids },
+    };
+
+    if (user.role === Role.TEACHER) {
+      const teacherProfile = await this.prisma.teacherProfile.findUnique({
+        where: { userId: user.sub },
+      });
+      if (!teacherProfile) {
+        throw new ForbiddenException({
+          errorCode: ERROR_CODES.FORBIDDEN_RESOURCE,
+          message: 'Teacher profile not found',
+        });
+      }
+      whereClause.teacherId = teacherProfile.id;
+    } else if (user.role !== Role.SUPER_ADMIN) {
+      throw new ForbiddenException({
+        errorCode: ERROR_CODES.FORBIDDEN_RESOURCE,
+        message: 'Forbidden',
+      });
+    }
+
+    const result = await this.prisma.ieltsTask.deleteMany({
+      where: whereClause,
+    });
+
+    return { success: true, count: result.count };
+  }
+
   async getTasksByGroup(groupId: string) {
     return this.prisma.ieltsTask.findMany({
       where: {
@@ -947,6 +1196,12 @@ export class IeltsService {
         title: true,
         type: true,
         createdAt: true,
+        _count: {
+          select: {
+            groupTasks: true,
+            submissions: true,
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -985,6 +1240,12 @@ export class IeltsService {
         title: true,
         type: true,
         createdAt: true,
+        _count: {
+          select: {
+            groupTasks: true,
+            submissions: true,
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });

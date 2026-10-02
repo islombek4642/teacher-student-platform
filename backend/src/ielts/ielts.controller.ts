@@ -132,6 +132,16 @@ export class IeltsController {
     res.send(task.contentHtml);
   }
 
+  @Post('bulk-delete')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.TEACHER, Role.SUPER_ADMIN)
+  async deleteTasks(
+    @Body('taskIds') taskIds: string[],
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.ieltsService.deleteTasks(taskIds, user);
+  }
+
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.TEACHER, Role.SUPER_ADMIN)
