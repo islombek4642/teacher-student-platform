@@ -33,7 +33,7 @@ export function AssignTaskDialog({
   const assignMutation = useAssignMultipleGroupTasks();
   const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([]);
   const [previewTaskId, setPreviewTaskId] = useState<string | null>(null);
-  const [filterType, setFilterType] = useState<'ALL' | 'LISTENING' | 'READING'>('ALL');
+  const [filterType, setFilterType] = useState<'ALL' | 'LISTENING' | 'READING' | 'WRITING'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
   const assignedTaskIds = useMemo(
@@ -156,7 +156,7 @@ export function AssignTaskDialog({
 
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5">
-                      {(['ALL', 'LISTENING', 'READING'] as const).map((type) => (
+                      {(['ALL', 'LISTENING', 'READING', 'WRITING'] as const).map((type) => (
                         <Button
                           key={type}
                           type="button"
@@ -171,6 +171,8 @@ export function AssignTaskDialog({
                             ? t('ielts.listening')
                             : type === 'READING'
                             ? t('ielts.reading')
+                            : type === 'WRITING'
+                            ? t('ielts.writing')
                             : type}
                         </Button>
                       ))}
@@ -265,6 +267,8 @@ export function AssignTaskDialog({
                               className={`flex h-8 w-8 items-center justify-center rounded-lg shrink-0 ${
                                 task.type === 'LISTENING'
                                   ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
+                                  : task.type === 'WRITING'
+                                  ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
                                   : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                               }`}
                             >
@@ -272,6 +276,8 @@ export function AssignTaskDialog({
                                 icon={
                                   task.type === 'LISTENING'
                                     ? 'lucide:headphones'
+                                    : task.type === 'WRITING'
+                                    ? 'lucide:pen-tool'
                                     : 'lucide:book-open'
                                 }
                                 className="h-4 w-4"

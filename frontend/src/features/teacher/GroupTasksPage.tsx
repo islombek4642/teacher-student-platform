@@ -32,7 +32,7 @@ export function GroupTasksPage() {
   const [viewingTaskId, setViewingTaskId] = useState<string | null>(null);
   const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
   const [isBulkUnassignOpen, setIsBulkUnassignOpen] = useState(false);
-  const [typeFilter, setTypeFilter] = useState<'ALL' | 'LISTENING' | 'READING'>('ALL');
+  const [typeFilter, setTypeFilter] = useState<'ALL' | 'LISTENING' | 'READING' | 'WRITING'>('ALL');
 
   const assignedTasks = useMemo(
     () => (tasks || []).filter((task) => task.isAssigned),
@@ -97,7 +97,7 @@ export function GroupTasksPage() {
       {/* Action bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-2">
-          {(['ALL', 'LISTENING', 'READING'] as const).map((filter) => (
+          {(['ALL', 'LISTENING', 'READING', 'WRITING'] as const).map((filter) => (
             <Button
               key={filter}
               variant={typeFilter === filter ? 'default' : 'outline'}
@@ -109,7 +109,9 @@ export function GroupTasksPage() {
                 ? t('tasks.allTypes')
                 : filter === 'LISTENING'
                 ? t('ielts.listening')
-                : t('ielts.reading')}
+                : filter === 'READING'
+                ? t('ielts.reading')
+                : t('ielts.writing')}
             </Button>
           ))}
         </div>
@@ -219,6 +221,8 @@ export function GroupTasksPage() {
                         className={`gap-1.5 font-semibold text-xs ${
                           task.type === 'LISTENING'
                             ? 'bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20'
+                            : task.type === 'WRITING'
+                            ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20'
                             : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20'
                         }`}
                       >
@@ -226,6 +230,8 @@ export function GroupTasksPage() {
                           icon={
                             task.type === 'LISTENING'
                               ? 'lucide:headphones'
+                              : task.type === 'WRITING'
+                              ? 'lucide:pen-tool'
                               : 'lucide:book-open'
                           }
                           className="h-3 w-3"
@@ -233,6 +239,8 @@ export function GroupTasksPage() {
                         <span>
                           {task.type === 'LISTENING'
                             ? t('ielts.listening')
+                            : task.type === 'WRITING'
+                            ? t('ielts.writing')
                             : t('ielts.reading')}
                         </span>
                       </Badge>

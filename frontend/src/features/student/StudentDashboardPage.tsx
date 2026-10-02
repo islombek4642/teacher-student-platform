@@ -30,6 +30,7 @@ export function StudentDashboardPage() {
 
   const listeningCount = tasks?.filter((tk) => tk.type === 'LISTENING').length;
   const readingCount = tasks?.filter((tk) => tk.type === 'READING').length;
+  const writingCount = tasks?.filter((tk) => tk.type === 'WRITING').length;
   const totalCompleted = submissions?.length || 0;
   const bestBand =
     totalCompleted > 0
@@ -55,6 +56,7 @@ export function StudentDashboardPage() {
 
   const renderCard = (sub: NonNullable<typeof submissions>[0], key: string) => {
     const isListening = sub.task?.type === 'LISTENING';
+    const isWriting = sub.task?.type === 'WRITING';
     return (
       <div
         key={key}
@@ -67,14 +69,28 @@ export function StudentDashboardPage() {
               className={`gap-1 font-semibold text-[11px] ${
                 isListening
                   ? 'bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20'
+                  : isWriting
+                  ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20'
                   : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20'
               }`}
             >
               <Icon
-                icon={isListening ? 'lucide:headphones' : 'lucide:book-open'}
+                icon={
+                  isListening
+                    ? 'lucide:headphones'
+                    : isWriting
+                    ? 'lucide:pen-tool'
+                    : 'lucide:book-open'
+                }
                 className="h-3 w-3"
               />
-              <span>{isListening ? t('ielts.listening') : t('ielts.reading')}</span>
+              <span>
+                {isListening
+                  ? t('ielts.listening')
+                  : isWriting
+                  ? t('ielts.writing')
+                  : t('ielts.reading')}
+              </span>
             </Badge>
             <span className="text-[11px] text-muted-foreground whitespace-nowrap">
               <span className="font-semibold text-foreground">
@@ -103,18 +119,25 @@ export function StudentDashboardPage() {
         <div className="mt-4 flex items-center justify-between border-t border-border/50 pt-3">
           <div>
             <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-              {t('studentTasks.scoreHeader')}
+              {isWriting ? t('ielts.words', 'so\'z') : t('studentTasks.scoreHeader')}
             </div>
             <div className="text-sm font-extrabold text-foreground">
-              {sub.score} / {sub.total}
+              {isWriting ? `${sub.total || 0} so'z` : `${sub.score} / ${sub.total}`}
             </div>
           </div>
 
           <div className="flex items-center gap-1.5">
-            <span className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-xs font-black text-primary">
-              <Icon icon="lucide:award" className="h-3.5 w-3.5" />
-              <span>Band {sub.band}</span>
-            </span>
+            {isWriting ? (
+              <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/20 bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-600">
+                <Icon icon="lucide:check-circle-2" className="h-3.5 w-3.5" />
+                <span>{t('ielts.submittedBadge', 'Topshirildi')}</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-xs font-black text-primary">
+                <Icon icon="lucide:award" className="h-3.5 w-3.5" />
+                <span>Band {sub.band}</span>
+              </span>
+            )}
             <Button
               variant="ghost"
               size="icon"
@@ -287,10 +310,9 @@ export function StudentDashboardPage() {
           title={t('ielts.writing')}
           description={t('dashboard.writingDesc')}
           icon="lucide:pen-tool"
-          badge={t('dashboard.comingSoon')}
+          stat={statOrUndef(writingCount)}
           colorScheme="amber"
-          disabled
-          ctaLabel={t('dashboard.comingSoon')}
+          ctaLabel={t('dashboard.start')}
         />
         <DashboardCard
           to="/student/ielts/speaking"

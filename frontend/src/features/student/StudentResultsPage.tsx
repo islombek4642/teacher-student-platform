@@ -19,7 +19,7 @@ import type { IeltsSubmission } from '@/features/ielts/api/ielts.api';
 export function StudentResultsPage() {
   const { t } = useTranslation();
   const { data: submissions, isLoading } = useStudentMySubmissions();
-  const [selectedType, setSelectedType] = useState<'ALL' | 'LISTENING' | 'READING'>('ALL');
+  const [selectedType, setSelectedType] = useState<'ALL' | 'LISTENING' | 'READING' | 'WRITING'>('ALL');
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
   const [viewerState, setViewerState] = useState<{
     taskId: string;
@@ -164,6 +164,11 @@ export function StudentResultsPage() {
               label: t('studentResults.filterReading'),
               count: taskGroups.filter((g) => g.type === 'READING').length,
             },
+            {
+              id: 'WRITING',
+              label: t('ielts.writing'),
+              count: taskGroups.filter((g) => g.type === 'WRITING').length,
+            },
           ] as const
         ).map((tab) => (
           <button
@@ -255,15 +260,27 @@ export function StudentResultsPage() {
                           className={`gap-1.5 font-semibold text-xs ${
                             isListening
                               ? 'bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20'
+                              : group.type === 'WRITING'
+                              ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20'
                               : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20'
                           }`}
                         >
                           <Icon
-                            icon={isListening ? 'lucide:headphones' : 'lucide:book-open'}
+                            icon={
+                              isListening
+                                ? 'lucide:headphones'
+                                : group.type === 'WRITING'
+                                ? 'lucide:pen-tool'
+                                : 'lucide:book-open'
+                            }
                             className="h-3 w-3"
                           />
                           <span>
-                            {isListening ? t('ielts.listening') : t('ielts.reading')}
+                            {isListening
+                              ? t('ielts.listening')
+                              : group.type === 'WRITING'
+                              ? t('ielts.writing')
+                              : t('ielts.reading')}
                           </span>
                         </Badge>
                       </TableCell>
@@ -275,10 +292,17 @@ export function StudentResultsPage() {
                         </span>
                       </TableCell>
                       <TableCell className="w-32 text-center">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-extrabold text-primary border border-primary/20">
-                          <Icon icon="lucide:award" className="h-3 w-3" />
-                          <span>Band {group.bestBand}</span>
-                        </span>
+                        {group.type === 'WRITING' ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-600 border border-amber-500/20">
+                            <Icon icon="lucide:check-circle-2" className="h-3 w-3" />
+                            <span>{t('ielts.submittedBadge', 'Topshirildi')}</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-extrabold text-primary border border-primary/20">
+                            <Icon icon="lucide:award" className="h-3 w-3" />
+                            <span>Band {group.bestBand}</span>
+                          </span>
+                        )}
                       </TableCell>
                       <TableCell className="w-44 text-right text-xs whitespace-nowrap">
                         <span className="font-semibold text-foreground">
@@ -347,12 +371,22 @@ export function StudentResultsPage() {
                                           <span className="font-bold text-xs text-foreground">
                                             #{att.attempt || group.attempts.length - idx}
                                           </span>
-                                          <span className="text-[11px] font-semibold text-primary">
-                                            Band {att.band}
-                                          </span>
+                                          {group.type === 'WRITING' ? (
+                                            <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                                              {t('ielts.submittedBadge', 'Topshirildi')}
+                                            </span>
+                                          ) : (
+                                            <span className="text-[11px] font-semibold text-primary">
+                                              Band {att.band}
+                                            </span>
+                                          )}
                                         </div>
                                         <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 flex-wrap">
-                                          <span>{att.score}/{att.total} {t('studentResults.pointsSuffix')}</span>
+                                          {group.type === 'WRITING' ? (
+                                            <span>{att.total || 0} {t('ielts.words', 'so\'z')}</span>
+                                          ) : (
+                                            <span>{att.score}/{att.total} {t('studentResults.pointsSuffix')}</span>
+                                          )}
                                           <span className="text-muted-foreground/40">•</span>
                                           <span className="font-semibold text-foreground">
                                             {new Date(att.submittedAt).toLocaleTimeString([], {

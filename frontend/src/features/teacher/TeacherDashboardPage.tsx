@@ -15,6 +15,7 @@ export function TeacherDashboardPage() {
   const { data: tasks } = useIeltsTasks();
   const listeningCount = tasks?.filter((tk) => tk.type === 'LISTENING').length;
   const readingCount = tasks?.filter((tk) => tk.type === 'READING').length;
+  const writingCount = tasks?.filter((tk) => tk.type === 'WRITING').length;
 
   const statOrUndef = (count: number | undefined) =>
     count !== undefined && count > 0 ? t('dashboard.tasksCount', { count }) : undefined;
@@ -41,11 +42,12 @@ export function TeacherDashboardPage() {
       </div>
 
       {/* Stat summary row */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           { label: t('groups.title'), value: totalGroups ?? '—', icon: 'lucide:users' },
           { label: t('ielts.listening'), value: listeningCount ?? '—', icon: 'lucide:headphones' },
           { label: t('ielts.reading'), value: readingCount ?? '—', icon: 'lucide:book-open' },
+          { label: t('ielts.writing'), value: writingCount ?? '—', icon: 'lucide:pen-tool' },
         ].map((item) => (
           <div
             key={item.label}
@@ -98,10 +100,9 @@ export function TeacherDashboardPage() {
           title={t('ielts.writing')}
           description={t('dashboard.writingDesc')}
           icon="lucide:pen-tool"
-          badge={t('dashboard.comingSoon')}
+          stat={statOrUndef(writingCount)}
           colorScheme="amber"
-          disabled
-          ctaLabel={t('dashboard.comingSoon')}
+          ctaLabel={t('dashboard.goIn')}
         />
         <DashboardCard
           to="/teacher/ielts/speaking"

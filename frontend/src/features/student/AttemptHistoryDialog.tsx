@@ -50,20 +50,40 @@ export function AttemptHistoryDialog({
                 className={`gap-1 font-semibold text-xs ${
                   isListening
                     ? 'bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20'
+                    : taskType === 'WRITING'
+                    ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20'
                     : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20'
                 }`}
               >
                 <Icon
-                  icon={isListening ? 'lucide:headphones' : 'lucide:book-open'}
+                  icon={
+                    isListening
+                      ? 'lucide:headphones'
+                      : taskType === 'WRITING'
+                      ? 'lucide:pen-tool'
+                      : 'lucide:book-open'
+                  }
                   className="h-3 w-3"
                 />
-                <span>{isListening ? t('ielts.listening') : t('ielts.reading')}</span>
+                <span>
+                  {isListening
+                    ? t('ielts.listening')
+                    : taskType === 'WRITING'
+                    ? t('ielts.writing')
+                    : t('ielts.reading')}
+                </span>
               </Badge>
             )}
-            {bestBand > 0 && (
+            {taskType !== 'WRITING' && bestBand > 0 && (
               <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-black text-primary border border-primary/20">
                 <Icon icon="lucide:award" className="h-3 w-3" />
                 <span>{t('studentResults.bestBand', { band: bestBand })}</span>
+              </span>
+            )}
+            {taskType === 'WRITING' && attemptsList.length > 0 && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-600 border border-amber-500/20">
+                <Icon icon="lucide:check-circle-2" className="h-3 w-3" />
+                <span>{t('ielts.submittedBadge', 'Topshirildi')}</span>
               </span>
             )}
           </div>
@@ -104,7 +124,7 @@ export function AttemptHistoryDialog({
                         </div>
                         <div>
                           <div className="text-xs font-bold text-foreground">
-                            {att.score} / {att.total}
+                            {taskType === 'WRITING' ? `${att.total || 0} so'z` : `${att.score} / ${att.total}`}
                           </div>
                           <div className="text-[11px] text-muted-foreground flex items-center gap-1.5">
                             <span className="font-semibold text-foreground">
@@ -126,9 +146,15 @@ export function AttemptHistoryDialog({
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-black text-primary border border-primary/20">
-                          Band {att.band}
-                        </span>
+                        {taskType === 'WRITING' ? (
+                          <span className="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-600 border border-amber-500/20">
+                            {t('ielts.submittedBadge', 'Topshirildi')}
+                          </span>
+                        ) : (
+                          <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-black text-primary border border-primary/20">
+                            Band {att.band}
+                          </span>
+                        )}
                         <Button
                           variant="outline"
                           size="sm"
