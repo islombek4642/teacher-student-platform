@@ -91,8 +91,8 @@ function extractTitleFromHtmlBlock(blockHtml: string): string {
     .map((m) => m[1].trim())
     .filter(
       (t) =>
-        !/^(ielts|results?|your\s*results?|transcription|correct\s*answers?:?|part\s*[1-4]|passage\s*[1-3]|section\s*[1-4]|questions?\s*\d+.*)$/i.test(
-          t,
+        !/^(ielts|results?|your\s*results?|transcription|correct\s*answers?:?|part\s*[1-4]|passage\s*[1-3]|section\s*[1-4]|questions?\s*\d+.*|.*writing\s*saved.*|.*successfully.*)$/i.test(
+          t.replace(/^[^\w\s]+/, '').trim(),
         ),
     );
   if (headings.length > 0) {
@@ -118,6 +118,46 @@ function extractTitleFromHtmlBlock(blockHtml: string): string {
 }
 
 export function extractTaskTitle(contentHtml: string, filename?: string): string {
+  // 0. Prioritize Writing task extraction
+  if (detectIeltsTaskType(contentHtml, filename) === 'WRITING') {
+    const writingPromptMatch =
+      contentHtml.match(
+        /<div[^>]*id=["']part-1["'][\s\S]*?class=["'][^"']*task-prompt[^"']*["'][\s\S]*?<(?:strong|b|p)[^>]*>([\s\S]*?)<\/(?:strong|b|p)>/i,
+      ) ||
+      contentHtml.match(
+        /class=["'][^"']*task-prompt[^"']*["'][\s\S]*?<(?:strong|b|p)[^>]*>([\s\S]*?)<\/(?:strong|b|p)>/i,
+      );
+    if (writingPromptMatch && writingPromptMatch[1]?.trim()) {
+      const clean = writingPromptMatch[1]
+        .replace(/<[^>]+>/g, '')
+        .replace(/&amp;/g, '&')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (clean.length > 5 && !/^(write about|ielts|part\s*[1-4])/i.test(clean)) {
+        const prefix = filename
+          ? filename
+              .replace(/\.html?$/i, '')
+              .replace(/[-_]+/g, ' ')
+              .replace(/\b\w/g, (c) => c.toUpperCase())
+              .trim()
+          : '';
+        const shortPrompt = clean.length > 70 ? clean.slice(0, 70).trim() + '...' : clean;
+        return prefix ? `${prefix} - ${shortPrompt}` : shortPrompt;
+      }
+    }
+    if (filename) {
+      return filename
+        .replace(/\.html?$/i, '')
+        .replace(/[-_]+/g, ' ')
+        .replace(/\b\w/g, (c) => c.toUpperCase())
+        .trim();
+    }
+  }
+
   // 1. Check Listening parts sequentially (Part 1 -> Part 2 -> Part 3 -> Part 4)
   const partRegex = /<div[^>]*id=["']part-(\d+)["'][\s\S]*?(?=<div[^>]*id=["']part-\d+["']|<\/div>\s*<\/div>\s*<audio|$)/gi;
   const parts: Array<{ num: number; html: string }> = [];
@@ -147,24 +187,6 @@ export function extractTaskTitle(contentHtml: string, filename?: string): string
     for (const p of passages) {
       const title = extractTitleFromHtmlBlock(p.html);
       if (title) return title;
-    }
-  }
-
-  // 2.5 Check Writing task prompt
-  const writingPromptMatch = contentHtml.match(
-    /class=["'][^"']*task-prompt[^"']*["'][\s\S]*?<(?:strong|b|p)[^>]*>([\s\S]*?)<\/(?:strong|b|p)>/i,
-  );
-  if (writingPromptMatch && writingPromptMatch[1]?.trim()) {
-    const clean = writingPromptMatch[1]
-      .replace(/<[^>]+>/g, '')
-      .replace(/&amp;/g, '&')
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .trim();
-    if (clean.length > 5 && !/^(write about|ielts|part\s*[1-4])/i.test(clean)) {
-      return clean.length > 90 ? clean.slice(0, 90).trim() + '...' : clean;
     }
   }
 
