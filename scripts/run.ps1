@@ -466,14 +466,10 @@ try {
     $prismaBin = Join-Path $BACKEND 'node_modules\.bin\prisma.cmd'
 
     # Prisma generate
-    $prismaClientDll = Join-Path $BACKEND 'node_modules\.prisma\client\query_engine-windows.dll.node'
-    if (-not (Test-Path $prismaClientDll)) {
-        Write-Log 'Prisma Client generatsiya qilinmoqda...' 'STEP'
-        & $prismaBin generate 2>&1 | ForEach-Object { Write-Log "  prisma: $_" 'INFO' }
-        if ($LASTEXITCODE -ne 0) { throw "prisma generate exit code: $LASTEXITCODE" }
-    } else {
-        Write-Log 'Prisma Client allaqachon mavjud - o`tkazib yuborildi' 'INFO'
-    }
+    Write-Log 'Prisma Client generatsiya qilinmoqda...' 'STEP'
+    & $prismaBin generate 2>&1 | ForEach-Object { Write-Log "  prisma: $_" 'INFO' }
+    if ($LASTEXITCODE -ne 0) { throw "prisma generate exit code: $LASTEXITCODE" }
+    Write-Log 'Prisma Client muvaffaqiyatli generatsiya qilindi!' 'OK'
 
     # Prisma migrate
     Write-Log 'Prisma migratsiyalar qo`llanilmoqda...' 'STEP'
