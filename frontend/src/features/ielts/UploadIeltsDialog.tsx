@@ -15,8 +15,12 @@ import {
 import { useUploadIeltsTask, useIeltsTasks } from './api/ielts.api';
 import { extractErrorCode, errorCodeToI18nKey } from '@/lib/error-codes';
 
-export function detectIeltsTaskType(contentHtml: string): 'LISTENING' | 'READING' | 'WRITING' | 'UNKNOWN' {
+export function detectIeltsTaskType(
+  contentHtml: string,
+  filename?: string,
+): 'LISTENING' | 'READING' | 'WRITING' | 'UNKNOWN' {
   const hasWritingMarkers =
+    (filename ? /writing/i.test(filename) : false) ||
     /writing-textarea/i.test(contentHtml) ||
     /class=["'][^"']*writing-part[^"']*["']/i.test(contentHtml) ||
     /id=["']part-header-[12]["']/i.test(contentHtml) ||

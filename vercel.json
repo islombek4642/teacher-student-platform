@@ -1,0 +1,71 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "backend": {
+      "root": "backend",
+      "framework": "nestjs"
+    },
+    "frontend": {
+      "root": "frontend",
+      "framework": "vite",
+      "bindings": [
+        {
+          "type": "service",
+          "service": "backend",
+          "format": "url",
+          "env": "BACKEND_URL"
+        }
+      ]
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/auth/(.*)",
+      "destination": {
+        "service": "backend"
+      }
+    },
+    {
+      "source": "/teachers/(.*)",
+      "destination": {
+        "service": "backend"
+      }
+    },
+    {
+      "source": "/groups/(.*)",
+      "destination": {
+        "service": "backend"
+      }
+    },
+    {
+      "source": "/students/(.*)",
+      "destination": {
+        "service": "backend"
+      }
+    },
+    {
+      "source": "/ielts/(.*)",
+      "destination": {
+        "service": "backend"
+      }
+    },
+    {
+      "source": "/health",
+      "destination": {
+        "service": "backend"
+      }
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": {
+        "service": "backend"
+      }
+    },
+    {
+      "source": "/(.*)",
+      "destination": {
+        "service": "frontend"
+      }
+    }
+  ]
+}
