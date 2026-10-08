@@ -7,8 +7,7 @@
     "frontend"
   ],
   "scripts": {
-    "build": "npm run --prefix backend build && npm run --prefix frontend build",
-    "postinstall": "npm run --prefix backend postinstall"
+    "build": "npm run --prefix backend build && npm run --prefix frontend build"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.0",

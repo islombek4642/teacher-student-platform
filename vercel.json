@@ -1,5 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "build": {
+    "env": {
+      "PRISMA_SKIP_POSTINSTALL_GENERATE": "1"
+    }
+  },
+  "env": {
+    "PRISMA_SKIP_POSTINSTALL_GENERATE": "1"
+  },
   "services": {
     "backend": {
       "root": "backend",
