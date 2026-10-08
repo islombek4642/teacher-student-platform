@@ -7,6 +7,7 @@ export type IeltsTask = {
   title: string;
   type: 'LISTENING' | 'READING' | 'WRITING' | 'SPEAKING';
   createdAt: string;
+  contentHtml?: string;
   _count?: {
     groupTasks: number;
     submissions: number;
@@ -223,3 +224,48 @@ export function useGradeSubmission() {
     },
   });
 }
+
+export type SpeakingCriteria = {
+  fluencyCoherence: number;
+  lexicalResource: number;
+  grammaticalAccuracy: number;
+  pronunciation: number;
+};
+
+export type GradeSpeakingPayload = SpeakingCriteria & {
+  band?: number;
+  feedback?: string;
+};
+
+export function useGradeSpeakingSubmission() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      submissionId,
+      data,
+    }: {
+      submissionId: string;
+      data: GradeSpeakingPayload;
+    }) => {
+      return (await apiClient.patch(`/ielts/submissions/${submissionId}/grade-speaking`, data)).data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['submissions-to-grade'] });
+      queryClient.invalidateQueries({ queryKey: ['group-statistics'] });
+      queryClient.invalidateQueries({ queryKey: ['my-submissions'] });
+    },
+  });
+}
+
+export function useCreateSpeakingTask() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: { title: string; contentHtml: string; groupId?: string }) => {
+      return (await apiClient.post('/ielts/speaking/create', data)).data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ielts-tasks'] });
+    },
+  });
+}
+

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { IeltsService, detectIeltsTaskType, extractTaskTitle, calculateWritingBand } from './ielts.service';
+import { IeltsService, detectIeltsTaskType, extractTaskTitle, calculateWritingBand, calculateSpeakingBand } from './ielts.service';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { IeltsTaskType, Role } from '@prisma/client';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
@@ -378,4 +378,66 @@ describe('IeltsService', () => {
       });
     });
   });
+
+  describe('Speaking Module and Band Calculation', () => {
+    describe('calculateSpeakingBand', () => {
+      it('should calculate accurate standard IELTS bands for Speaking', () => {
+        expect(calculateSpeakingBand(6, 6, 6, 6)).toBe(6.0);
+        expect(calculateSpeakingBand(6.5, 6.5, 6, 6)).toBe(6.5);
+        expect(calculateSpeakingBand(6.5, 7, 6.5, 7)).toBe(7.0);
+        expect(calculateSpeakingBand(6, 6.5, 6, 6)).toBe(6.0);
+      });
+    });
+
+    describe('gradeSpeakingSubmission', () => {
+      const teacherUser = { sub: 'u-teacher', role: Role.TEACHER, profileId: 'tp-1' };
+      const dto = {
+        fluencyCoherence: 7.0,
+        lexicalResource: 6.5,
+        grammaticalAccuracy: 7.0,
+        pronunciation: 6.5,
+        feedback: 'Good pronunciation and natural rhythm.',
+      };
+
+      it('should grade speaking submission with 4 IELTS speaking rubrics', async () => {
+        mockPrisma.ieltsSubmission.findUnique = jest.fn().mockResolvedValueOnce({
+          id: 'sub-speaking-1',
+          studentId: 'sp-1',
+          taskId: 't-s1',
+          task: { id: 't-s1', teacherId: 'tp-1', type: IeltsTaskType.SPEAKING },
+        });
+        mockPrisma.teacherProfile.findUnique = jest.fn().mockResolvedValueOnce({
+          id: 'tp-1',
+          userId: 'u-teacher',
+        });
+        mockPrisma.ieltsSubmission.update = jest.fn().mockResolvedValueOnce({
+          id: 'sub-speaking-1',
+          band: 7.0,
+          isGraded: true,
+          criteriaJson: {
+            fluencyCoherence: 7.0,
+            lexicalResource: 6.5,
+            grammaticalAccuracy: 7.0,
+            pronunciation: 6.5,
+          },
+          feedback: dto.feedback,
+          gradedById: 'u-teacher',
+        });
+
+        const result = await service.gradeSpeakingSubmission(teacherUser, 'sub-speaking-1', dto);
+        expect(result).toBeDefined();
+        expect(mockPrisma.ieltsSubmission.update).toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: { id: 'sub-speaking-1' },
+            data: expect.objectContaining({
+              band: 7.0,
+              isGraded: true,
+              gradedById: 'u-teacher',
+            }),
+          }),
+        );
+      });
+    });
+  });
 });
+

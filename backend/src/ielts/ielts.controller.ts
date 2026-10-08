@@ -21,8 +21,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { JwtPayload } from '../auth/jwt-payload.interface';
 import { Response } from 'express';
-import { ApiTags, ApiConsumes, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { GradeSubmissionDto } from './dto/grade-submission.dto';
+import { GradeSpeakingSubmissionDto } from './dto/grade-speaking-submission.dto';
+import { CreateSpeakingTaskDto } from './dto/create-speaking-task.dto';
+import { ApiBearerAuth, ApiTags, ApiConsumes, ApiBody } from '@nestjs/swagger';
 
 @ApiTags('ielts')
 @ApiBearerAuth()
@@ -95,8 +97,9 @@ export class IeltsController {
   async getSubmissionsToGrade(
     @CurrentUser() user: JwtPayload,
     @Query('taskId') taskId?: string,
+    @Query('type') type?: IeltsTaskType,
   ) {
-    return this.ieltsService.getSubmissionsToGrade(user, taskId);
+    return this.ieltsService.getSubmissionsToGrade(user, taskId, type);
   }
 
   @Get('submissions/:id')
@@ -118,6 +121,46 @@ export class IeltsController {
     @Body() dto: GradeSubmissionDto,
   ) {
     return this.ieltsService.gradeSubmission(user, id, dto);
+  }
+
+  @Patch('submissions/:id/grade-speaking')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.TEACHER, Role.SUPER_ADMIN)
+  async gradeSpeakingSubmission(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: GradeSpeakingSubmissionDto,
+  ) {
+    return this.ieltsService.gradeSpeakingSubmission(user, id, dto);
+  }
+
+  @Post('speaking/upload-audio')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.STUDENT, Role.TEACHER, Role.SUPER_ADMIN)
+  @UseInterceptors(FileInterceptor('audio', { limits: { fileSize: 25 * 1024 * 1024 } }))
+  @ApiConsumes('multipart/form-data')
+  async uploadSpeakingAudio(@UploadedFile() file: Express.Multer.File) {
+    return this.ieltsService.saveSpeakingAudio(file);
+  }
+
+  @Get('speaking/audio/:filename')
+  async getSpeakingAudio(
+    @Param('filename') filename: string,
+    @Res() res: Response,
+  ) {
+    const { stream, mimeType } = await this.ieltsService.getSpeakingAudioStream(filename);
+    res.setHeader('Content-Type', mimeType);
+    stream.pipe(res);
+  }
+
+  @Post('speaking/create')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.TEACHER, Role.SUPER_ADMIN)
+  async createSpeakingTask(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: CreateSpeakingTaskDto,
+  ) {
+    return this.ieltsService.createSpeakingTask(user, dto);
   }
 
   @Post(':id/submit')

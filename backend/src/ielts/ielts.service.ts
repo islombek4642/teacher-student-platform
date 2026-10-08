@@ -9,9 +9,27 @@ import { IeltsTaskType, Role } from '@prisma/client';
 import { ERROR_CODES } from '../common/constants/error-codes.constant';
 import { JwtPayload } from '../auth/jwt-payload.interface';
 import { GradeSubmissionDto } from './dto/grade-submission.dto';
+import { GradeSpeakingSubmissionDto } from './dto/grade-speaking-submission.dto';
+import { CreateSpeakingTaskDto } from './dto/create-speaking-task.dto';
+import * as fs from 'fs';
+import * as path from 'path';
+import { randomUUID } from 'crypto';
 
 export function calculateWritingBand(tr: number, cc: number, lr: number, gra: number): number {
   const avg = (tr + cc + lr + gra) / 4;
+  const floor = Math.floor(avg);
+  const remainder = avg - floor;
+  if (remainder < 0.25) {
+    return floor;
+  } else if (remainder < 0.75) {
+    return floor + 0.5;
+  } else {
+    return floor + 1.0;
+  }
+}
+
+export function calculateSpeakingBand(fc: number, lr: number, gra: number, pr: number): number {
+  const avg = (fc + lr + gra + pr) / 4;
   const floor = Math.floor(avg);
   const remainder = avg - floor;
   if (remainder < 0.25) {
@@ -1773,7 +1791,7 @@ export class IeltsService {
     });
   }
 
-  async getSubmissionsToGrade(user: JwtPayload, taskId?: string) {
+  async getSubmissionsToGrade(user: JwtPayload, taskId?: string, type?: IeltsTaskType) {
     let teacherId: string | null = null;
     if (user.role === Role.TEACHER) {
       const teacherProfile = await this.prisma.teacherProfile.findUnique({
@@ -1788,9 +1806,11 @@ export class IeltsService {
       teacherId = teacherProfile.id;
     }
 
+    const taskTypeFilter = type ? type : { in: [IeltsTaskType.WRITING, IeltsTaskType.SPEAKING] };
+
     const where: any = {
       task: {
-        type: IeltsTaskType.WRITING,
+        type: taskTypeFilter,
         ...(teacherId ? { teacherId } : {}),
         ...(taskId ? { id: taskId } : {}),
       },
@@ -1922,6 +1942,181 @@ export class IeltsService {
       coherenceCohesion: dto.coherenceCohesion,
       lexicalResource: dto.lexicalResource,
       grammaticalAccuracy: dto.grammaticalAccuracy,
+    };
+
+    return this.prisma.ieltsSubmission.update({
+      where: { id: submissionId },
+      data: {
+        band: finalBand,
+        isGraded: true,
+        criteriaJson,
+        feedback: dto.feedback?.trim() || null,
+        gradedById: user.sub,
+        gradedAt: new Date(),
+      },
+      include: {
+        student: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+        task: {
+          select: {
+            title: true,
+            type: true,
+          },
+        },
+      },
+    });
+  }
+
+  async saveSpeakingAudio(file: Express.Multer.File) {
+    if (!file || !file.buffer) {
+      throw new BadRequestException({
+        errorCode: ERROR_CODES.VALIDATION_FAILED,
+        message: 'No audio file provided',
+      });
+    }
+
+    const uploadDir = path.join(process.cwd(), 'uploads', 'speaking');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
+    const origExt = path.extname(file.originalname || '') || '.webm';
+    const filename = `${Date.now()}-${randomUUID()}${origExt}`;
+    const filePath = path.join(uploadDir, filename);
+
+    fs.writeFileSync(filePath, file.buffer);
+
+    return {
+      audioUrl: `/ielts/speaking/audio/${filename}`,
+      filename,
+      size: file.size,
+      mimetype: file.mimetype || 'audio/webm',
+    };
+  }
+
+  async getSpeakingAudioStream(filename: string) {
+    const safeFilename = path.basename(filename);
+    const filePath = path.join(process.cwd(), 'uploads', 'speaking', safeFilename);
+
+    if (!fs.existsSync(filePath)) {
+      throw new NotFoundException({
+        errorCode: ERROR_CODES.FILE_NOT_FOUND,
+        message: 'Audio file not found',
+      });
+    }
+
+    const ext = path.extname(safeFilename).toLowerCase();
+    let mimeType = 'audio/webm';
+    if (ext === '.mp3') mimeType = 'audio/mpeg';
+    else if (ext === '.wav') mimeType = 'audio/wav';
+    else if (ext === '.ogg') mimeType = 'audio/ogg';
+    else if (ext === '.m4a') mimeType = 'audio/mp4';
+
+    return {
+      stream: fs.createReadStream(filePath),
+      mimeType,
+    };
+  }
+
+  async createSpeakingTask(user: JwtPayload, dto: CreateSpeakingTaskDto) {
+    let teacherId = '';
+    if (user.role === Role.TEACHER) {
+      const teacherProfile = await this.prisma.teacherProfile.findUnique({
+        where: { userId: user.sub },
+      });
+      if (!teacherProfile) {
+        throw new ForbiddenException({
+          errorCode: ERROR_CODES.FORBIDDEN_RESOURCE,
+          message: 'Teacher profile not found',
+        });
+      }
+      teacherId = teacherProfile.id;
+    } else if (user.role === Role.SUPER_ADMIN) {
+      const firstTeacher = await this.prisma.teacherProfile.findFirst();
+      if (!firstTeacher) {
+        throw new BadRequestException({
+          errorCode: ERROR_CODES.VALIDATION_FAILED,
+          message: 'No teacher profile exists to associate task with',
+        });
+      }
+      teacherId = firstTeacher.id;
+    } else {
+      throw new ForbiddenException({
+        errorCode: ERROR_CODES.FORBIDDEN_RESOURCE,
+        message: 'Only teachers can create tasks',
+      });
+    }
+
+    const task = await this.prisma.ieltsTask.create({
+      data: {
+        title: dto.title.trim(),
+        type: IeltsTaskType.SPEAKING,
+        contentHtml: dto.contentHtml,
+        teacherId,
+        groupId: dto.groupId || null,
+        ...(dto.groupId
+          ? {
+              groupTasks: {
+                create: {
+                  groupId: dto.groupId,
+                },
+              },
+            }
+          : {}),
+      },
+    });
+
+    return { id: task.id, title: task.title, type: task.type };
+  }
+
+  async gradeSpeakingSubmission(user: JwtPayload, submissionId: string, dto: GradeSpeakingSubmissionDto) {
+    const submission = await this.prisma.ieltsSubmission.findUnique({
+      where: { id: submissionId },
+      include: { task: true },
+    });
+
+    if (!submission) {
+      throw new NotFoundException({
+        errorCode: ERROR_CODES.SUBMISSION_NOT_FOUND,
+        message: 'Submission not found',
+      });
+    }
+
+    if (user.role === Role.TEACHER) {
+      const teacher = await this.prisma.teacherProfile.findUnique({
+        where: { userId: user.sub },
+      });
+      if (!teacher || teacher.id !== submission.task.teacherId) {
+        throw new ForbiddenException({
+          errorCode: ERROR_CODES.FORBIDDEN_RESOURCE,
+          message: 'You can only grade submissions for your tasks',
+        });
+      }
+    } else if (user.role !== Role.SUPER_ADMIN) {
+      throw new ForbiddenException({
+        errorCode: ERROR_CODES.FORBIDDEN_RESOURCE,
+        message: 'Only teachers and admins can grade submissions',
+      });
+    }
+
+    const finalBand = dto.band !== undefined
+      ? dto.band
+      : calculateSpeakingBand(
+          dto.fluencyCoherence,
+          dto.lexicalResource,
+          dto.grammaticalAccuracy,
+          dto.pronunciation,
+        );
+
+    const criteriaJson = {
+      fluencyCoherence: dto.fluencyCoherence,
+      lexicalResource: dto.lexicalResource,
+      grammaticalAccuracy: dto.grammaticalAccuracy,
+      pronunciation: dto.pronunciation,
     };
 
     return this.prisma.ieltsSubmission.update({
