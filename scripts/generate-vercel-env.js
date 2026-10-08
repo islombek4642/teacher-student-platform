@@ -11,7 +11,7 @@ const vercelEnvPath = path.join(rootDir, '.env.vercel');
 
 const jwtSecret = generateKey(32);
 const credKey = generateKey(32);
-const adminPassword = 'Admin_' + crypto.randomBytes(6).toString('hex') + '!';
+const adminPassword = '1';
 
 const content = `# Vercel Environment Variables — Auto-generated
 JWT_SECRET=${jwtSecret}
