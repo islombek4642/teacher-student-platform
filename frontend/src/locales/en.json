@@ -254,6 +254,7 @@
     "uploadValidOnly": "Upload {{count}} valid task(s)",
     "clearAll": "Clear all",
     "fileReady": "Ready",
+    "fileUploaded": "Uploaded",
     "fileDuplicate": "Task with this title already exists",
     "duplicateInBatch": "Duplicate in selected list",
     "upload": "Upload",

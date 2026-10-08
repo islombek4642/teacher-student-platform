@@ -244,8 +244,9 @@ export function UploadIeltsDialog({
   const [fileError, setFileError] = useState<string | null>(null);
   const [detectedType, setDetectedType] = useState<'LISTENING' | 'READING' | 'WRITING' | 'UNKNOWN' | null>(null);
   
-  // Multiple files state
   const [items, setItems] = useState<TaskFileItem[]>([]);
+  const [uploadedItemIds, setUploadedItemIds] = useState<Set<string>>(new Set());
+  const [failedItemIds, setFailedItemIds] = useState<Set<string>>(new Set());
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number }>({
     current: 0,
@@ -272,6 +273,8 @@ export function UploadIeltsDialog({
     setFileError(null);
     setDetectedType(null);
     setItems([]);
+    setUploadedItemIds(new Set());
+    setFailedItemIds(new Set());
     setIsUploading(false);
     setUploadProgress({ current: 0, total: 0 });
     if (fileInputRef.current) {
@@ -303,6 +306,8 @@ export function UploadIeltsDialog({
     const rawFiles = Array.from(e.target.files || []);
     setFileError(null);
     setDetectedType(null);
+    setUploadedItemIds(new Set());
+    setFailedItemIds(new Set());
 
     if (rawFiles.length === 0) {
       setFile(null);
@@ -408,9 +413,27 @@ export function UploadIeltsDialog({
   };
 
   const getItemStatus = (item: TaskFileItem, allItems: TaskFileItem[]) => {
+    if (uploadedItemIds.has(item.id)) {
+      return {
+        isValid: true,
+        isUploaded: true,
+        badgeText: t('ielts.fileUploaded'),
+      };
+    }
+
+    if (failedItemIds.has(item.id)) {
+      return {
+        isValid: false,
+        isUploaded: false,
+        badgeText: t('common.error'),
+        errorText: t('common.error'),
+      };
+    }
+
     if (item.typeMismatchError) {
       return {
         isValid: false,
+        isUploaded: false,
         badgeText:
           item.detectedType !== 'UNKNOWN'
             ? t(`ielts.${item.detectedType.toLowerCase()}`)
@@ -423,6 +446,7 @@ export function UploadIeltsDialog({
     if (!trimmed) {
       return {
         isValid: false,
+        isUploaded: false,
         badgeText: t('required'),
         errorText: t('required'),
       };
@@ -434,6 +458,7 @@ export function UploadIeltsDialog({
     if (existsInDb) {
       return {
         isValid: false,
+        isUploaded: false,
         badgeText: t('ielts.fileDuplicate'),
         errorText: t('ielts.taskAlreadyExists'),
       };
@@ -445,6 +470,7 @@ export function UploadIeltsDialog({
     if (duplicateInBatch) {
       return {
         isValid: false,
+        isUploaded: false,
         badgeText: t('ielts.duplicateInBatch'),
         errorText: t('ielts.duplicateInBatch'),
       };
@@ -452,6 +478,7 @@ export function UploadIeltsDialog({
 
     return {
       isValid: true,
+      isUploaded: false,
       badgeText: t('ielts.fileReady'),
     };
   };
@@ -490,18 +517,20 @@ export function UploadIeltsDialog({
     }
 
     // Multiple files upload
-    const validItems = items.filter((it) => getItemStatus(it, items).isValid);
-    if (validItems.length === 0) return;
+    const pendingItems = items.filter(
+      (it) => !uploadedItemIds.has(it.id) && getItemStatus(it, items).isValid,
+    );
+    if (pendingItems.length === 0) return;
 
     setIsUploading(true);
-    setUploadProgress({ current: 0, total: validItems.length });
+    setUploadProgress({ current: 0, total: pendingItems.length });
 
     let successCount = 0;
     let failCount = 0;
 
-    for (let i = 0; i < validItems.length; i++) {
-      const item = validItems[i];
-      setUploadProgress({ current: i + 1, total: validItems.length });
+    for (let i = 0; i < pendingItems.length; i++) {
+      const item = pendingItems[i];
+      setUploadProgress({ current: i + 1, total: pendingItems.length });
       try {
         await uploadAsync({
           title: item.title.trim(),
@@ -509,8 +538,10 @@ export function UploadIeltsDialog({
           file: item.file,
         });
         successCount++;
+        setUploadedItemIds((prev) => new Set(prev).add(item.id));
       } catch {
         failCount++;
+        setFailedItemIds((prev) => new Set(prev).add(item.id));
       }
     }
 
@@ -531,8 +562,11 @@ export function UploadIeltsDialog({
   };
 
   const isMulti = items.length > 1;
-  const validCount = isMulti
-    ? items.filter((it) => getItemStatus(it, items).isValid).length
+  const readyCount = isMulti
+    ? items.filter((it) => !uploadedItemIds.has(it.id) && getItemStatus(it, items).isValid).length
+    : 0;
+  const uploadedCount = isMulti
+    ? items.filter((it) => uploadedItemIds.has(it.id)).length
     : 0;
 
   return (
@@ -627,7 +661,9 @@ export function UploadIeltsDialog({
                     {t('ielts.selectedFilesCount', { count: items.length })}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    ({validCount} {t('ielts.fileReady').toLowerCase()})
+                    {uploadedCount > 0
+                      ? `(${uploadedCount} / ${items.length} ${t('ielts.fileUploaded').toLowerCase()})`
+                      : `(${readyCount} ${t('ielts.fileReady').toLowerCase()})`}
                   </span>
                 </div>
                 <Button
@@ -681,7 +717,9 @@ export function UploadIeltsDialog({
                     <div
                       key={item.id}
                       className={`p-3 rounded-lg border transition-all ${
-                        status.isValid
+                        status.isUploaded
+                          ? 'border-emerald-200 bg-emerald-50/40 dark:border-emerald-900/40 dark:bg-emerald-950/20'
+                          : status.isValid
                           ? 'border-border/60 bg-card hover:border-primary/40'
                           : 'border-red-200 bg-red-50/50 dark:border-red-900/30 dark:bg-red-950/20'
                       }`}
@@ -708,19 +746,20 @@ export function UploadIeltsDialog({
                         </div>
                         <div className="flex items-center gap-1.5 shrink-0">
                           <span
-                            className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                              status.isValid
+                            className={`text-[11px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1 ${
+                              status.isUploaded || status.isValid
                                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                                 : 'bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300'
                             }`}
                           >
+                            {status.isUploaded && <Icon icon="lucide:check" className="h-3 w-3" />}
                             {status.badgeText}
                           </span>
                           <button
                             type="button"
                             onClick={() => removeItem(item.id)}
-                            disabled={isUploading}
-                            className="p-1 rounded-md text-muted-foreground hover:text-red-600 hover:bg-muted transition-colors"
+                            disabled={isUploading || status.isUploaded}
+                            className="p-1 rounded-md text-muted-foreground hover:text-red-600 hover:bg-muted transition-colors disabled:opacity-30 disabled:pointer-events-none"
                           >
                             <Icon icon="lucide:x" className="h-3.5 w-3.5" />
                           </button>
@@ -729,16 +768,18 @@ export function UploadIeltsDialog({
 
                       <Input
                         value={item.title}
-                        disabled={isUploading}
+                        disabled={isUploading || status.isUploaded}
                         onChange={(e) => updateItemTitle(item.id, e.target.value)}
                         className={`h-8 text-xs font-medium ${
-                          !status.isValid
+                          status.isUploaded
+                            ? 'border-emerald-300 bg-emerald-50/20 text-emerald-900 dark:text-emerald-200'
+                            : !status.isValid
                             ? 'border-red-300 focus-visible:ring-red-400'
                             : ''
                         }`}
                         placeholder={t('ielts.exampleTest')}
                       />
-                      {status.errorText && (
+                      {!status.isUploaded && status.errorText && (
                         <p className="mt-1 text-[11px] font-medium text-red-600 dark:text-red-400">
                           {status.errorText}
                         </p>
@@ -763,13 +804,13 @@ export function UploadIeltsDialog({
           {isMulti ? (
             <Button
               onClick={handleUpload}
-              disabled={isUploading || isPending || validCount === 0}
+              disabled={isUploading || isPending || readyCount === 0}
             >
               {isUploading
                 ? t('common.loading')
-                : validCount === items.length
-                ? `${t('ielts.upload')} (${validCount})`
-                : t('ielts.uploadValidOnly', { count: validCount })}
+                : readyCount === items.length
+                ? `${t('ielts.upload')} (${readyCount})`
+                : t('ielts.uploadValidOnly', { count: readyCount })}
             </Button>
           ) : (
             <Button

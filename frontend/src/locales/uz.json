@@ -254,6 +254,7 @@
     "uploadValidOnly": "{{count}} ta to'g'ri topshiriqni yuklash",
     "clearAll": "Tozalash",
     "fileReady": "Tayyor",
+    "fileUploaded": "Yuklandi",
     "fileDuplicate": "Bunday nomli test mavjud",
     "duplicateInBatch": "Ro'yxat ichida takrorlangan",
     "upload": "Yuklash",
