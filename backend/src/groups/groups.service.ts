@@ -56,14 +56,21 @@ export class GroupsService {
 
   async remove(teacherProfileId: string, groupId: string) {
     await this.findOneOwned(teacherProfileId, groupId);
-    const studentCount = await this.prisma.studentProfile.count({ where: { groupId } });
-    if (studentCount > 0) {
-      throw new ConflictException({
-        errorCode: ERROR_CODES.GROUP_HAS_DEPENDENTS,
-        message: 'Group still has students',
+    await this.prisma.$transaction(async (tx) => {
+      const students = await tx.studentProfile.findMany({
+        where: { groupId },
+        select: { userId: true },
       });
-    }
-    await this.prisma.group.delete({ where: { id: groupId } });
+      const userIds = students.map((s) => s.userId);
+
+      await tx.group.delete({ where: { id: groupId } });
+
+      if (userIds.length > 0) {
+        await tx.user.deleteMany({
+          where: { id: { in: userIds } },
+        });
+      }
+    });
   }
 
   async importGroupsExcel(teacherProfileId: string, fileBuffer: Buffer) {

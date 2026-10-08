@@ -48,19 +48,64 @@ describe('GroupsService', () => {
     await expect(service.remove('t1', 'g1')).rejects.toBeInstanceOf(NotFoundException);
   });
 
-  it('remove rejects deleting a group that still has students or tasks', async () => {
+  it('remove deletes group and cleans up student User records in a transaction', async () => {
+    const tx = {
+      studentProfile: {
+        findMany: jest.fn().mockResolvedValue([{ userId: 'u1' }, { userId: 'u2' }]),
+      },
+      group: {
+        delete: jest.fn().mockResolvedValue({ id: 'g1' }),
+      },
+      user: {
+        deleteMany: jest.fn().mockResolvedValue({ count: 2 }),
+      },
+    };
+
     const prisma = {
       group: {
         findUnique: jest.fn().mockResolvedValue({ id: 'g1', teacherId: 't1' }),
-        delete: jest.fn(),
       },
-      studentProfile: { count: jest.fn().mockResolvedValue(1) },
-      task: { count: jest.fn().mockResolvedValue(0) },
+      $transaction: jest.fn().mockImplementation((cb) => cb(tx)),
     } as unknown as PrismaService;
     const service = new GroupsService(prisma);
 
-    await expect(service.remove('t1', 'g1')).rejects.toBeInstanceOf(ConflictException);
-    expect(prisma.group.delete).not.toHaveBeenCalled();
+    await service.remove('t1', 'g1');
+
+    expect(tx.studentProfile.findMany).toHaveBeenCalledWith({
+      where: { groupId: 'g1' },
+      select: { userId: true },
+    });
+    expect(tx.group.delete).toHaveBeenCalledWith({ where: { id: 'g1' } });
+    expect(tx.user.deleteMany).toHaveBeenCalledWith({
+      where: { id: { in: ['u1', 'u2'] } },
+    });
+  });
+
+  it('remove deletes empty group without calling user.deleteMany', async () => {
+    const tx = {
+      studentProfile: {
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+      group: {
+        delete: jest.fn().mockResolvedValue({ id: 'g1' }),
+      },
+      user: {
+        deleteMany: jest.fn(),
+      },
+    };
+
+    const prisma = {
+      group: {
+        findUnique: jest.fn().mockResolvedValue({ id: 'g1', teacherId: 't1' }),
+      },
+      $transaction: jest.fn().mockImplementation((cb) => cb(tx)),
+    } as unknown as PrismaService;
+    const service = new GroupsService(prisma);
+
+    await service.remove('t1', 'g1');
+
+    expect(tx.group.delete).toHaveBeenCalledWith({ where: { id: 'g1' } });
+    expect(tx.user.deleteMany).not.toHaveBeenCalled();
   });
 
   it('exportGroupsExcel produces a valid buffer with groups and students', async () => {
