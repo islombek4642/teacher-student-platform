@@ -52,30 +52,41 @@ export class TeachersService {
     const { page = 1, limit = 10 } = query;
     const skip = (page - 1) * limit;
 
-    const [items, total] = await this.prisma.$transaction([
-      this.prisma.teacherProfile.findMany({
-        skip,
-        take: limit,
-        include: { user: { select: { username: true, isActive: true, currentPassword: true } } },
-      }),
-      this.prisma.teacherProfile.count(),
-    ]);
+    try {
+      const [items, total] = await this.prisma.$transaction([
+        this.prisma.teacherProfile.findMany({
+          skip,
+          take: limit,
+          include: { user: { select: { username: true, isActive: true, currentPassword: true } } },
+        }),
+        this.prisma.teacherProfile.count(),
+      ]);
 
-    return {
-      data: items.map((t) => ({
-        id: t.id,
-        username: t.user.username,
-        firstName: t.firstName,
-        lastName: t.lastName,
-        isActive: t.user.isActive,
-        temporaryPassword: t.user.currentPassword ? decryptCredential(t.user.currentPassword) : null,
-      })),
-      meta: {
-        total,
-        page,
-        lastPage: Math.ceil(total / limit),
-      },
-    };
+      return {
+        data: items.map((t) => ({
+          id: t.id,
+          username: t.user.username,
+          firstName: t.firstName,
+          lastName: t.lastName,
+          isActive: t.user.isActive,
+          temporaryPassword: t.user.currentPassword ? decryptCredential(t.user.currentPassword) : null,
+        })),
+        meta: {
+          total,
+          page,
+          lastPage: Math.ceil(total / limit),
+        },
+      };
+    } catch {
+      return {
+        data: [],
+        meta: {
+          total: 0,
+          page,
+          lastPage: 0,
+        },
+      };
+    }
   }
 
   async resetPassword(teacherProfileId: string) {
