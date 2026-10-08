@@ -7,6 +7,15 @@ import { ERROR_CODES } from './common/constants/error-codes.constant';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
+  if (!process.env.DATABASE_URL) {
+    process.env.DATABASE_URL =
+      process.env.DATABASE_POSTGRES_PRISMA_URL ||
+      process.env.DATABASE_POSTGRES_URL ||
+      process.env.DATABASE_POSTGRES_URL_NON_POOLING ||
+      process.env.POSTGRES_PRISMA_URL ||
+      process.env.POSTGRES_URL;
+  }
+
   const app = await NestFactory.create(AppModule);
   const corsOrigin = process.env.CORS_ORIGIN;
   app.enableCors({ origin: corsOrigin ? corsOrigin.split(',') : true });
