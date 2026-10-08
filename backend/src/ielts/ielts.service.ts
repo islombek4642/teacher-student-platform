@@ -914,11 +914,14 @@ export function buildWritingReviewModeScript(submission?: {
 </script>`;
 }
 
-export function detectIeltsTaskType(contentHtml: string): IeltsTaskType | 'UNKNOWN' {
+export function detectIeltsTaskType(
+  contentHtml: string,
+  filename?: string,
+): IeltsTaskType | 'UNKNOWN' {
   const hasWritingMarkers =
+    (filename ? /writing/i.test(filename) : false) ||
     /writing-textarea/i.test(contentHtml) ||
     /class=["'][^"']*writing-part[^"']*["']/i.test(contentHtml) ||
-    /id=["']part-header-[12]["']/i.test(contentHtml) ||
     /ielts-writing-part-[12]/i.test(contentHtml) ||
     /<title>[^<]*writing[^<]*<\/title>/i.test(contentHtml);
 
@@ -939,11 +942,13 @@ export function detectIeltsTaskType(contentHtml: string): IeltsTaskType | 'UNKNO
     /passage-panel/i.test(contentHtml) ||
     /passage-title/i.test(contentHtml) ||
     /passage\s*[1-3]/i.test(contentHtml) ||
-    title.includes('reading');
+    title.includes('reading') ||
+    (filename ? /reading/i.test(filename) : false);
 
   const hasListeningMarkers =
     hasAudio ||
-    title.includes('listening');
+    title.includes('listening') ||
+    (filename ? /listening/i.test(filename) : false);
 
   if (hasListeningMarkers && !hasReadingMarkers) {
     return IeltsTaskType.LISTENING;
@@ -1095,7 +1100,7 @@ export class IeltsService {
       teacherId = anyTeacher.id;
     }
 
-    const detectedType = detectIeltsTaskType(contentHtml);
+    const detectedType = detectIeltsTaskType(contentHtml, htmlFile?.originalname);
     if (
       detectedType !== 'UNKNOWN' &&
       detectedType !== type

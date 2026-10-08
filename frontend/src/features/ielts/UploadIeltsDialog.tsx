@@ -23,7 +23,6 @@ export function detectIeltsTaskType(
     (filename ? /writing/i.test(filename) : false) ||
     /writing-textarea/i.test(contentHtml) ||
     /class=["'][^"']*writing-part[^"']*["']/i.test(contentHtml) ||
-    /id=["']part-header-[12]["']/i.test(contentHtml) ||
     /ielts-writing-part-[12]/i.test(contentHtml) ||
     /<title>[^<]*writing[^<]*<\/title>/i.test(contentHtml);
 
@@ -44,11 +43,13 @@ export function detectIeltsTaskType(
     /passage-panel/i.test(contentHtml) ||
     /passage-title/i.test(contentHtml) ||
     /passage\s*[1-3]/i.test(contentHtml) ||
-    title.includes('reading');
+    title.includes('reading') ||
+    (filename ? /reading/i.test(filename) : false);
 
   const hasListeningMarkers =
     hasAudio ||
-    title.includes('listening');
+    title.includes('listening') ||
+    (filename ? /listening/i.test(filename) : false);
 
   if (hasListeningMarkers && !hasReadingMarkers) {
     return 'LISTENING';
@@ -315,7 +316,7 @@ export function UploadIeltsDialog({
       const selectedFile = rawFiles[0];
       try {
         const text = await readFileAsText(selectedFile);
-        const detected = detectIeltsTaskType(text);
+        const detected = detectIeltsTaskType(text, selectedFile.name);
         setDetectedType(detected);
 
         // Check if uploaded file contradicts the section
@@ -357,7 +358,7 @@ export function UploadIeltsDialog({
       const f = rawFiles[i];
       try {
         const text = await readFileAsText(f);
-        const detected = detectIeltsTaskType(text);
+        const detected = detectIeltsTaskType(text, f.name);
         let mismatchErr: string | undefined;
 
         if (detected !== 'UNKNOWN' && detected !== type) {

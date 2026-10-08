@@ -236,6 +236,12 @@ describe('UploadIeltsDialog', () => {
       expect(detectIeltsTaskType(html)).toBe('WRITING');
     });
 
+    it('detects READING even when part-header-1 is present', async () => {
+      const { detectIeltsTaskType } = await import('./UploadIeltsDialog');
+      const html = `<html><head><title>IELTS CDI Reading Practice</title></head><body><div id="part-header-1" class="part-header"></div><div class="passage-panel">Passage 1</div></body></html>`;
+      expect(detectIeltsTaskType(html)).toBe('READING');
+    });
+
     it('shows type mismatch error when uploading WRITING file to READING dialog', async () => {
       render(
         <UploadIeltsDialog

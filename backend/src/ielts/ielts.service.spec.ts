@@ -69,6 +69,11 @@ describe('IeltsService', () => {
       expect(detectIeltsTaskType(html)).toBe(IeltsTaskType.READING);
     });
 
+    it('should detect READING when part-header-1 and passage panels are present', () => {
+      const html = '<html><head><title>IELTS CDI Reading Practice</title></head><body><div id="part-header-1" class="part-header"></div><div class="passage-panel"><div class="reading-passage">Passage 1</div></div></body></html>';
+      expect(detectIeltsTaskType(html)).toBe(IeltsTaskType.READING);
+    });
+
     it('should detect WRITING when writing markers or textarea are present', () => {
       const html = '<html><head><title>IELTS Writing Test</title></head><body><div class="writing-part" id="part-1"><textarea id="writingTextarea" class="writing-textarea"></textarea></div></body></html>';
       expect(detectIeltsTaskType(html)).toBe(IeltsTaskType.WRITING);
