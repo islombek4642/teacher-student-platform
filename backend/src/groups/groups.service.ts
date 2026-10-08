@@ -511,4 +511,25 @@ export class GroupsService {
       return b.testsTaken - a.testsTaken;
     });
   }
+
+  async exportGroupStatisticsExcel(teacherProfileId: string, groupId: string) {
+    const group = await this.findOneOwned(teacherProfileId, groupId);
+    const leaderboard = await this.getGroupLeaderboard(teacherProfileId, groupId);
+
+    const rows = leaderboard.map((item, index) => ({
+      'O\'rin': index + 1,
+      'Familiya': item.lastName,
+      'Ism': item.firstName,
+      'Login': item.username,
+      'Topshirilgan testlar': item.testsTaken,
+      'O\'rtacha Band': item.averageBand,
+      'Eng yaxshi Band': item.bestBand,
+      'Oxirgi faollik': item.lastActive ? new Date(item.lastActive).toLocaleDateString('uz-UZ') : '-',
+    }));
+
+    const sheetName = group.name.slice(0, 31);
+    return generateExcelBuffer({
+      [sheetName]: rows.length > 0 ? rows : [{ 'Holat': 'Hozircha natijalar mavjud emas' }],
+    });
+  }
 }

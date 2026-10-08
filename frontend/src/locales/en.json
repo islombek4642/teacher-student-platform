@@ -200,7 +200,10 @@
     "lastActive": "Last Active",
     "noLeaderboardData": "No student test submissions yet",
     "noSubmissionsDesc": "Once students start taking tests, detailed analytics and rankings will appear here.",
-    "rank": "Rank"
+    "rank": "Rank",
+    "exportExcel": "Export Excel",
+    "exportPdf": "Print / PDF",
+    "exportSuccess": "Statistics exported to Excel successfully"
   },
   "studentProgress": {
     "title": "My progress",

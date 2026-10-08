@@ -50,3 +50,10 @@ export function useGroupLeaderboard(groupId: string) {
     enabled: !!groupId,
   });
 }
+
+export async function exportGroupStatistics(groupId: string) {
+  const response = await apiClient.get(`/groups/${groupId}/statistics/export`, {
+    responseType: 'blob',
+  });
+  return response.data;
+}

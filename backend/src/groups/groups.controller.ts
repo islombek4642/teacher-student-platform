@@ -126,4 +126,18 @@ export class GroupsController {
   getGroupLeaderboard(@CurrentUser() user: JwtPayload, @Param('groupId') groupId: string) {
     return this.groupsService.getGroupLeaderboard(user.profileId!, groupId);
   }
+
+  @Get(':groupId/statistics/export')
+  async exportGroupStatisticsExcel(
+    @CurrentUser() user: JwtPayload,
+    @Param('groupId') groupId: string,
+    @Res() res: Response,
+  ) {
+    const buffer = await this.groupsService.exportGroupStatisticsExcel(user.profileId!, groupId);
+    res.set({
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': 'attachment; filename="group_statistics.xlsx"',
+    });
+    res.send(buffer);
+  }
 }

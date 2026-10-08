@@ -1,7 +1,12 @@
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Icon } from '@iconify/react';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { toast } from '@/components/ui/toast';
+import { downloadBlob } from '@/utils/fileDownload';
+import { exportLeaderboardToPrint } from '@/utils/exportResults';
 import {
   Table,
   TableBody,
@@ -13,11 +18,13 @@ import {
 import {
   useGroupOverviewStats,
   useGroupLeaderboard,
+  exportGroupStatistics,
 } from './api/group-statistics.api';
 
 export function GroupStatisticsPage() {
   const { id: groupId } = useParams<{ id: string }>();
   const { t } = useTranslation();
+  const [isExporting, setIsExporting] = useState(false);
 
   const { data: overview, isLoading: isOverviewLoading } = useGroupOverviewStats(
     groupId || '',
@@ -26,6 +33,45 @@ export function GroupStatisticsPage() {
     useGroupLeaderboard(groupId || '');
 
   const isLoading = isOverviewLoading || isLeaderboardLoading;
+
+  const handleExportExcel = async () => {
+    if (!groupId) return;
+    setIsExporting(true);
+    try {
+      const blob = await exportGroupStatistics(groupId);
+      downloadBlob(
+        blob,
+        `${overview?.groupName || 'guruh'}_statistika.xlsx`,
+      );
+      toast.add({
+        type: 'success',
+        description: t('statistics.exportSuccess', {
+          defaultValue: 'Statistika Excel fayliga muvaffaqiyatli yuklandi',
+        }),
+      });
+    } catch {
+      toast.add({
+        type: 'error',
+        description: t('common.error', { defaultValue: 'Xatolik yuz berdi' }),
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleExportPrint = () => {
+    if (!leaderboard) return;
+    const items = leaderboard.map((s, idx) => ({
+      rank: idx + 1,
+      fullName: `${s.firstName} ${s.lastName}`,
+      username: s.username,
+      testsTaken: s.testsTaken,
+      averageBand: s.averageBand,
+      bestBand: s.bestBand,
+      lastActive: s.lastActive,
+    }));
+    exportLeaderboardToPrint(overview?.groupName || 'Guruh', items);
+  };
 
   return (
     <div className="space-y-6">
@@ -126,16 +172,39 @@ export function GroupStatisticsPage() {
 
       {/* Leaderboard Section */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Icon icon="lucide:trophy" className="h-5 w-5 text-amber-500" />
             <h3 className="text-lg font-bold tracking-tight text-foreground">
               {t('statistics.leaderboard')}
             </h3>
+            <span className="text-xs text-muted-foreground ml-2">
+              {leaderboard ? `(${leaderboard.length} nafar o'quvchi)` : ''}
+            </span>
           </div>
-          <span className="text-xs text-muted-foreground">
-            {leaderboard ? `${leaderboard.length} nafar o'quvchi` : ''}
-          </span>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportExcel}
+              disabled={isExporting || !leaderboard || leaderboard.length === 0}
+              className="gap-1.5"
+            >
+              <Icon icon="lucide:file-spreadsheet" className="size-4 text-emerald-600" />
+              {t('statistics.exportExcel', { defaultValue: 'Excel yuklash' })}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportPrint}
+              disabled={!leaderboard || leaderboard.length === 0}
+              className="gap-1.5"
+            >
+              <Icon icon="lucide:printer" className="size-4 text-primary" />
+              {t('statistics.exportPdf', { defaultValue: 'Chop etish / PDF' })}
+            </Button>
+          </div>
         </div>
 
         <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm">

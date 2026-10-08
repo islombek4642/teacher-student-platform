@@ -200,7 +200,10 @@
     "lastActive": "Oxirgi test",
     "noLeaderboardData": "Hozircha test topshirgan o'quvchilar yo'q",
     "noSubmissionsDesc": "O'quvchilar testlarni yechishni boshlagach, bu yerda batafsil tahlil va reyting paydo bo'ladi.",
-    "rank": "O'rin"
+    "rank": "O'rin",
+    "exportExcel": "Excel yuklash",
+    "exportPdf": "Chop etish / PDF",
+    "exportSuccess": "Statistika Excel fayliga muvaffaqiyatli yuklandi"
   },
   "studentProgress": {
     "title": "Mening natijalarim",

@@ -306,4 +306,30 @@ describe('GroupsService', () => {
       expect(leaderboard[0].averageBand).toBe(6.5); // (7.0 + 6.0) / 2
     });
   });
+
+  describe('exportGroupStatisticsExcel', () => {
+    it('produces a valid buffer containing group leaderboard and statistics', async () => {
+      const prisma = {
+        group: {
+          findUnique: jest.fn().mockResolvedValue({ id: 'g1', name: 'IELTS Elite', teacherId: 't1' }),
+        },
+        studentProfile: {
+          findMany: jest.fn().mockResolvedValue([
+            {
+              id: 'sp1',
+              firstName: 'Ali',
+              lastName: 'Valiyev',
+              user: { username: 'ali' },
+              submissions: [{ taskId: 'task-1', band: 7.5, submittedAt: new Date() }],
+            },
+          ]),
+        },
+      } as unknown as PrismaService;
+      const service = new GroupsService(prisma);
+
+      const buffer = await service.exportGroupStatisticsExcel('t1', 'g1');
+      expect(Buffer.isBuffer(buffer)).toBe(true);
+      expect(buffer.length).toBeGreaterThan(0);
+    });
+  });
 });
