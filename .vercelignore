@@ -1,0 +1,11 @@
+# Files and directories to ignore when deploying to Vercel
+.git
+.github
+.agents
+logs
+dataset
+namunalar
+scripts
+*.xlsx
+docker-compose.prod.yml
+DEPLOYMENT.md

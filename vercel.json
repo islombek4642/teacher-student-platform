@@ -20,31 +20,31 @@
   },
   "rewrites": [
     {
-      "source": "/auth/(.*)",
+      "source": "/auth/:path*",
       "destination": {
         "service": "backend"
       }
     },
     {
-      "source": "/teachers/(.*)",
+      "source": "/teachers/:path*",
       "destination": {
         "service": "backend"
       }
     },
     {
-      "source": "/groups/(.*)",
+      "source": "/groups/:path*",
       "destination": {
         "service": "backend"
       }
     },
     {
-      "source": "/students/(.*)",
+      "source": "/students/:path*",
       "destination": {
         "service": "backend"
       }
     },
     {
-      "source": "/ielts/(.*)",
+      "source": "/ielts/:path*",
       "destination": {
         "service": "backend"
       }
@@ -56,7 +56,7 @@
       }
     },
     {
-      "source": "/api/(.*)",
+      "source": "/api/:path*",
       "destination": {
         "service": "backend"
       }
