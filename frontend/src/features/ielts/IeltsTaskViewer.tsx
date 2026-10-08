@@ -59,6 +59,13 @@ export function IeltsTaskViewer({
         } else {
           setConfirmOpen((prev) => !prev);
         }
+      } else if (e.data?.type === 'IELTS_TIME_EXPIRED') {
+        toast.add({
+          type: 'warning',
+          description: t('ielts.timeExpiredAutoSubmit', {
+            defaultValue: 'Vaqt tugadi! Javoblaringiz avtomatik topshirilmoqda...',
+          }),
+        });
       } else if (e.data?.type === 'IELTS_TEST_SUBMITTED' && isStudent && !isReviewRef.current && e.data.payload) {
         isSubmittedRef.current = true;
         setIsSubmitted(true);

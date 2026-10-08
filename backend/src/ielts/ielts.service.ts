@@ -359,6 +359,8 @@ export function extractBalancedDiv(html: string, className: string): string | nu
   return null;
 }
 
+export const IELTS_GUARANTEED_TIMER_HTML = `<div class="timer-container"><span class="timer-display" id="time">60:00</span></div>`;
+
 export function normalizeIeltsHeader(contentHtml: string, isPreview?: boolean, isReview?: boolean): string {
   const showReviewUi = isPreview || isReview;
   const retakeBtnHtml = isReview ? IELTS_RETAKE_BUTTON_HTML : '';
@@ -380,12 +382,24 @@ export function normalizeIeltsHeader(contentHtml: string, isPreview?: boolean, i
   }
 
   const partIndicator = extractBalancedDiv(headerHtml, 'part-indicator') || '';
-  const timerContainer = extractBalancedDiv(headerHtml, 'timer-container') || '';
+  let timerContainer = extractBalancedDiv(headerHtml, 'timer-container') || '';
+  if (!timerContainer) {
+    timerContainer = IELTS_GUARANTEED_TIMER_HTML;
+  }
+
+  // Strip pause/reset buttons for students during test to prevent tampering
+  if (!showReviewUi) {
+    timerContainer = timerContainer
+      .replace(/<div\b[^>]*class=["'][^"']*timer-controls[^"']*["'][\s\S]*?<\/div>/gi, '')
+      .replace(/<button\b[^>]*id=["']timer-toggle-btn["'][\s\S]*?<\/button>/gi, '')
+      .replace(/<button\b[^>]*id=["']timer-reset-btn["'][\s\S]*?<\/button>/gi, '');
+  }
+
   const headerTools = extractBalancedDiv(headerHtml, 'header-tools') || '';
   const headerIcons = extractBalancedDiv(headerHtml, 'header-icons') || '';
 
   let leftContent = partIndicator;
-  if (timerContainer && !leftContent.includes('timer-container')) {
+  if (!leftContent.includes('timer-container')) {
     leftContent += (leftContent ? ' ' : '') + timerContainer;
   }
 
@@ -403,6 +417,125 @@ export function normalizeIeltsHeader(contentHtml: string, isPreview?: boolean, i
   const newHeaderHtml = `<div class="header">\n    ${leftZoneHtml}\n    ${centerZoneHtml}\n    ${rightZoneHtml}\n  </div>`;
 
   return contentHtml.replace(headerHtml, newHeaderHtml);
+}
+
+export function buildIeltsTimerScript(taskId: string, durationMinutes: number = 60): string {
+  const storageKey = `ielts_exam_start_${taskId}`;
+  return `<script id="ielts-exam-timer">
+  (function() {
+    var taskId = ${JSON.stringify(taskId)};
+    var storageKey = ${JSON.stringify(storageKey)};
+    var durationSec = ${durationMinutes} * 60;
+    var now = Date.now();
+    var startTime = localStorage.getItem(storageKey);
+
+    if (!startTime) {
+      startTime = now;
+      try { localStorage.setItem(storageKey, String(startTime)); } catch(e) {}
+    } else {
+      startTime = parseInt(startTime, 10);
+      if (isNaN(startTime) || (now - startTime) > 24 * 3600 * 1000) {
+        startTime = now;
+        try { localStorage.setItem(storageKey, String(startTime)); } catch(e) {}
+      }
+    }
+
+    // Suppress blocking native alert during exams
+    window.alert = function(msg) {
+      console.warn('Exam alert suppressed:', msg);
+    };
+
+    // Neutralize legacy/dataset timers
+    if (typeof window.startTimer === 'function') {
+      window.startTimer = function() {};
+    }
+    if (typeof window.pauseTimer === 'function') {
+      window.pauseTimer = function() {};
+    }
+    if (typeof window.toggleTimer === 'function') {
+      window.toggleTimer = function() {};
+    }
+    if (window.timerInterval) {
+      try { clearInterval(window.timerInterval); } catch(e) {}
+    }
+
+    function getRemainingSeconds() {
+      var elapsed = Math.floor((Date.now() - startTime) / 1000);
+      return Math.max(0, durationSec - elapsed);
+    }
+
+    var hasAutoSubmitted = false;
+
+    function triggerAutoSubmit() {
+      if (hasAutoSubmitted) return;
+      hasAutoSubmitted = true;
+      try { localStorage.removeItem(storageKey); } catch(e) {}
+
+      try {
+        window.parent.postMessage({ type: 'IELTS_TIME_EXPIRED', taskId: taskId }, '*');
+      } catch(e) {}
+
+      if (typeof window.submitTest === 'function') {
+        try { window.submitTest(); return; } catch(e) {}
+      }
+      if (typeof window.checkAnswers === 'function') {
+        try { window.checkAnswers(); return; } catch(e) {}
+      }
+      var deliverBtn = document.getElementById('deliver-button');
+      if (deliverBtn) {
+        try { deliverBtn.click(); return; } catch(e) {}
+      }
+      var okBtn = document.getElementById('confirm-submit-ok');
+      if (okBtn) {
+        try { okBtn.click(); return; } catch(e) {}
+      }
+      var submitBtn = document.querySelector('.submit-button, .check-button');
+      if (submitBtn) {
+        try { submitBtn.click(); return; } catch(e) {}
+      }
+    }
+
+    function updateTimerDisplay() {
+      var rem = getRemainingSeconds();
+      var mins = Math.floor(rem / 60);
+      var secs = rem % 60;
+      var formatted = (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
+
+      var targets = document.querySelectorAll('.timer-display, #time, #timer, #time-left');
+      targets.forEach(function(el) {
+        el.textContent = formatted;
+        if (rem <= 60) {
+          el.style.color = '#ef4444';
+          el.style.fontWeight = 'bold';
+        } else if (rem <= 300) {
+          el.style.color = '#f59e0b';
+          el.style.fontWeight = 'bold';
+        } else {
+          el.style.color = '';
+        }
+      });
+
+      if (rem <= 0) {
+        triggerAutoSubmit();
+      }
+    }
+
+    updateTimerDisplay();
+    var timerId = setInterval(function() {
+      updateTimerDisplay();
+      if (getRemainingSeconds() <= 0) {
+        clearInterval(timerId);
+      }
+    }, 1000);
+
+    window.addEventListener('message', function(evt) {
+      if (evt.data && (evt.data.type === 'IELTS_TEST_SUBMITTED' || evt.data.type === 'CLOSE_IELTS_TASK')) {
+        clearInterval(timerId);
+        try { localStorage.removeItem(storageKey); } catch(e) {}
+      }
+    });
+  })();
+</script>`;
 }
 
 export const IELTS_ESC_LISTENER_SCRIPT = `<script>
@@ -1299,6 +1432,29 @@ export class IeltsService {
         }
       } else {
         task.contentHtml += IELTS_SUBMISSION_SCRIPT;
+      }
+    }
+
+    // 9. Harden dataset countdown timer and auto-submit
+    task.contentHtml = task.contentHtml.replace(
+      /\/\/\s*checkAnswers\(\);\s*\/\/\s*Disabled[^\n]*/gi,
+      'checkAnswers();',
+    );
+    task.contentHtml = task.contentHtml.replace(
+      /alert\s*\(\s*["']Time's up![^"']*["']\s*\);?/gi,
+      '',
+    );
+    task.contentHtml = task.contentHtml.replace(
+      /<script id=["']ielts-exam-timer["']>[\s\S]*?<\/script>/gi,
+      '',
+    );
+    if (mode !== 'review') {
+      const durationMinutes = task.type === IeltsTaskType.LISTENING ? 40 : 60;
+      const timerScript = buildIeltsTimerScript(task.id, durationMinutes);
+      if (task.contentHtml.includes('</body>')) {
+        task.contentHtml = task.contentHtml.replace('</body>', `${timerScript}</body>`);
+      } else {
+        task.contentHtml += timerScript;
       }
     }
 

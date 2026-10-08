@@ -288,7 +288,10 @@
     "reviewModeBanner": "Ko'rish rejimi: Xatolarni tahlil qilish (Read-only)",
     "previewMode": "Ko'rish rejimi",
     "retakeTest": "Qayta yechish",
-    "exitReview": "Chiqish"
+    "exitReview": "Chiqish",
+    "timeExpiredAutoSubmit": "Vaqt tugadi! Javoblaringiz avtomatik ravishda topshirilmoqda...",
+    "submittedSuccess": "Topshiriq topshirildi! Band: {{band}}",
+    "submitError": "Topshirishda xatolik yuz berdi"
   },
   "dashboard": {
     "teacherWelcome": "O'qituvchi boshqaruv paneli",

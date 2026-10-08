@@ -242,4 +242,55 @@ describe('IeltsService', () => {
       ).rejects.toThrow();
     });
   });
+
+  describe('Timer and Header Hardening', () => {
+    it('should inject timer container when missing from original header', async () => {
+      const mockTask = {
+        id: 't-timer-1',
+        title: 'Reading Task without Timer',
+        type: IeltsTaskType.READING,
+        contentHtml: '<html><head></head><body><div class="header"><div class="part-indicator">Part 1</div></div><p>Passage</p></body></html>',
+      };
+      mockPrisma.ieltsTask.findUnique.mockResolvedValueOnce(mockTask);
+
+      const result = await service.getTask('t-timer-1', 'take', false);
+      expect(result.contentHtml).toContain('timer-container');
+      expect(result.contentHtml).toContain('ielts-exam-timer');
+      expect(result.contentHtml).toContain('ielts_exam_start_t-timer-1');
+    });
+
+    it('should strip timer controls like pause and reset buttons for students during exams', async () => {
+      const htmlWithControls = `<html><head></head><body><div class="header">
+        <div class="timer-container">
+          <span class="timer-display">60:00</span>
+          <div class="timer-controls"><button id="timer-toggle-btn">Pause</button><button id="timer-reset-btn">Reset</button></div>
+        </div>
+      </div></body></html>`;
+      mockPrisma.ieltsTask.findUnique.mockResolvedValueOnce({
+        id: 't-timer-2',
+        title: 'Task with controls',
+        type: IeltsTaskType.READING,
+        contentHtml: htmlWithControls,
+      });
+
+      const result = await service.getTask('t-timer-2', 'take', false);
+      expect(result.contentHtml).not.toContain('timer-controls');
+      expect(result.contentHtml).not.toContain('timer-toggle-btn');
+      expect(result.contentHtml).not.toContain('timer-reset-btn');
+    });
+
+    it('should not inject the running exam timer script in review mode', async () => {
+      const mockTask = {
+        id: 't-timer-3',
+        title: 'Task in review',
+        type: IeltsTaskType.READING,
+        contentHtml: '<html><head></head><body><div class="header"><div class="timer-container"><span class="timer-display">60:00</span></div></div></body></html>',
+      };
+      mockPrisma.ieltsTask.findUnique.mockResolvedValueOnce(mockTask);
+      mockPrisma.ieltsSubmission.findFirst.mockResolvedValueOnce(null);
+
+      const result = await service.getTask('t-timer-3', 'review', false);
+      expect(result.contentHtml).not.toContain('ielts-exam-timer');
+    });
+  });
 });

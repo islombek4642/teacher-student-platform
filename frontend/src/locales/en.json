@@ -288,7 +288,10 @@
     "reviewModeBanner": "Review Mode: Analysing answers & errors (Read-only)",
     "previewMode": "Preview Mode",
     "retakeTest": "Retake Test",
-    "exitReview": "Exit"
+    "exitReview": "Exit",
+    "timeExpiredAutoSubmit": "Time is up! Your answers are being submitted automatically...",
+    "submittedSuccess": "Task submitted! Band: {{band}}",
+    "submitError": "An error occurred while submitting"
   },
   "dashboard": {
     "teacherWelcome": "Teacher Dashboard",
