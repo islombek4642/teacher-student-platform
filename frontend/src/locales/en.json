@@ -341,5 +341,33 @@
     "attemptNumber": "Attempt {{number}}",
     "scoreLabel": "Score",
     "pointsSuffix": "pts"
+  },
+  "profile": {
+    "settingsTitle": "Profile Settings",
+    "infoTab": "Profile",
+    "passwordTab": "Change Password",
+    "username": "Username",
+    "role": "Role",
+    "firstName": "First Name",
+    "firstNamePlaceholder": "Your first name",
+    "firstNameRequired": "First name is required",
+    "lastName": "Last Name",
+    "lastNamePlaceholder": "Your last name",
+    "lastNameRequired": "Last name is required",
+    "profileUpdatedSuccess": "Profile updated successfully",
+    "profileUpdateError": "Failed to update profile",
+    "currentPassword": "Current Password",
+    "currentPasswordPlaceholder": "Enter current password",
+    "currentPasswordRequired": "Current password is required",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "Enter new password (min 4 characters)",
+    "passwordMinLength": "Password must be at least 4 characters",
+    "confirmPassword": "Confirm New Password",
+    "confirmPasswordPlaceholder": "Re-enter new password",
+    "confirmPasswordRequired": "Please confirm your new password",
+    "passwordMismatch": "Passwords do not match",
+    "updatePassword": "Change Password",
+    "passwordChangedSuccess": "Password changed successfully",
+    "passwordChangeError": "Failed to change password"
   }
 }

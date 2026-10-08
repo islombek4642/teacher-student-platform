@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Icon } from '@iconify/react';
@@ -20,6 +21,7 @@ import {
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useAuth } from '@/auth/useAuth';
 import { useSidebarKeyboard } from '@/hooks/useSidebarKeyboard';
+import { ProfileSettingsDialog } from '@/features/profile/ProfileSettingsDialog';
 import type { Role } from '@/api/types';
 
 interface NavLinkConfig {
@@ -68,6 +70,7 @@ const ROLE_CONFIG: Record<Role, { icon: string; labelKey: string; colorClass: st
 
 export function AppLayout() {
   const { t } = useTranslation();
+  const [profileOpen, setProfileOpen] = useState(false);
   const { username, fullName, payload, logout } = useAuth();
   const displayName = fullName || (username ?? payload?.sub);
   const firstName = payload?.firstName || (fullName ? fullName.split(' ')[0] : (username ?? payload?.sub));
@@ -144,6 +147,15 @@ export function AppLayout() {
               </div>
             </div>
             <div className="flex items-center gap-1 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-2 shrink-0">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => setProfileOpen(true)}
+                aria-label={t('profile.settingsTitle', { defaultValue: 'Sozlamalar' })}
+                title={t('profile.settingsTitle', { defaultValue: 'Sozlamalar' })}
+              >
+                <Icon icon="lucide:settings" />
+              </Button>
               <LanguageSwitcher />
               <Button variant="ghost" size="icon-sm" onClick={logout} aria-label={t('nav.logout')}>
                 <Icon icon="lucide:log-out" />
@@ -160,6 +172,10 @@ export function AppLayout() {
           <Outlet />
         </main>
       </SidebarInset>
+
+      {profileOpen && (
+        <ProfileSettingsDialog open={profileOpen} onOpenChange={setProfileOpen} />
+      )}
     </SidebarProvider>
   );
 }

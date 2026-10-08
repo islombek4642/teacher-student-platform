@@ -341,5 +341,33 @@
     "attemptNumber": "{{number}}-urinish",
     "scoreLabel": "Ball",
     "pointsSuffix": "ball"
+  },
+  "profile": {
+    "settingsTitle": "Profil sozlamalari",
+    "infoTab": "Profil",
+    "passwordTab": "Parolni o'zgartirish",
+    "username": "Login",
+    "role": "Rol",
+    "firstName": "Ism",
+    "firstNamePlaceholder": "Ismingiz",
+    "firstNameRequired": "Ism kiritilishi shart",
+    "lastName": "Familiya",
+    "lastNamePlaceholder": "Familiyangiz",
+    "lastNameRequired": "Familiya kiritilishi shart",
+    "profileUpdatedSuccess": "Profil ma'lumotlari muvaffaqiyatli saqlandi",
+    "profileUpdateError": "Profilni yangilashda xatolik yuz berdi",
+    "currentPassword": "Joriy parol",
+    "currentPasswordPlaceholder": "Eski parolni kiriting",
+    "currentPasswordRequired": "Joriy parolni kiritish shart",
+    "newPassword": "Yangi parol",
+    "newPasswordPlaceholder": "Yangi parolni kiriting (kamida 4 ta belgi)",
+    "passwordMinLength": "Yangi parol kamida 4 ta belgidan iborat bo'lishi kerak",
+    "confirmPassword": "Yangi parolni tasdiqlang",
+    "confirmPasswordPlaceholder": "Yangi parolni qayta kiriting",
+    "confirmPasswordRequired": "Yangi parolni tasdiqlash shart",
+    "passwordMismatch": "Kiritilgan yangi parollar mos kelmadi",
+    "updatePassword": "Parolni yangilash",
+    "passwordChangedSuccess": "Parol muvaffaqiyatli o'zgartirildi",
+    "passwordChangeError": "Parolni o'zgartirishda xatolik yuz berdi"
   }
 }

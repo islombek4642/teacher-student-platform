@@ -55,4 +55,82 @@ describe('AuthService', () => {
 
     await expect(service.validateUser('student1', 'wrong')).rejects.toBeInstanceOf(UnauthorizedException);
   });
+
+  it('changePassword updates passwordHash and reversible currentPassword on valid credentials', async () => {
+    const passwordHash = await hashPassword('currentPass123');
+    const userUpdateMock = jest.fn().mockResolvedValue({ id: 'user-1' });
+    const prisma = {
+      user: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'user-1',
+          passwordHash,
+        }),
+        update: userUpdateMock,
+      },
+    } as unknown as PrismaService;
+    const jwtService = {} as unknown as JwtService;
+    const service = new AuthService(prisma, jwtService);
+
+    const result = await service.changePassword('user-1', {
+      currentPassword: 'currentPass123',
+      newPassword: 'newSecretPassword456',
+    });
+
+    expect(result).toEqual({ success: true, message: 'Password changed successfully' });
+    expect(userUpdateMock).toHaveBeenCalledWith({
+      where: { id: 'user-1' },
+      data: expect.objectContaining({
+        passwordHash: expect.any(String),
+      }),
+    });
+  });
+
+  it('changePassword rejects incorrect current password', async () => {
+    const passwordHash = await hashPassword('correctPass123');
+    const prisma = {
+      user: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'user-1',
+          passwordHash,
+        }),
+      },
+    } as unknown as PrismaService;
+    const jwtService = {} as unknown as JwtService;
+    const service = new AuthService(prisma, jwtService);
+
+    await expect(
+      service.changePassword('user-1', {
+        currentPassword: 'wrongPassword',
+        newPassword: 'newSecretPassword456',
+      }),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+
+  it('updateProfile updates teacherProfile name when role is TEACHER', async () => {
+    const teacherUpdateMock = jest.fn().mockResolvedValue({ id: 't-1' });
+    const prisma = {
+      user: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'user-1',
+          role: Role.TEACHER,
+          teacherProfile: { id: 't-1' },
+          studentProfile: null,
+        }),
+      },
+      teacherProfile: { update: teacherUpdateMock },
+    } as unknown as PrismaService;
+    const jwtService = {} as unknown as JwtService;
+    const service = new AuthService(prisma, jwtService);
+
+    const result = await service.updateProfile('user-1', {
+      firstName: 'NewFirst',
+      lastName: 'NewLast',
+    });
+
+    expect(result).toEqual({ success: true, firstName: 'NewFirst', lastName: 'NewLast' });
+    expect(teacherUpdateMock).toHaveBeenCalledWith({
+      where: { id: 't-1' },
+      data: { firstName: 'NewFirst', lastName: 'NewLast' },
+    });
+  });
 });

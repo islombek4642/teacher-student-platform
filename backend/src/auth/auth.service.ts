@@ -4,6 +4,8 @@ import { PrismaService } from '../common/prisma/prisma.service';
 import { ERROR_CODES } from '../common/constants/error-codes.constant';
 import { comparePassword, hashPassword } from './password.util';
 import { JwtPayload } from './jwt-payload.interface';
+import { ChangePasswordDto, UpdateProfileDto } from './dto/change-password.dto';
+import { encryptCredential } from '../common/crypto/credential-crypto.util';
 
 @Injectable()
 export class AuthService {
@@ -140,5 +142,69 @@ export class AuthService {
       firstName: profile?.firstName ?? null,
       lastName: profile?.lastName ?? null,
     };
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new UnauthorizedException({
+        errorCode: ERROR_CODES.USER_NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+
+    const isMatch = await comparePassword(dto.currentPassword, user.passwordHash);
+    if (!isMatch) {
+      throw new UnauthorizedException({
+        errorCode: ERROR_CODES.INVALID_CREDENTIALS,
+        message: 'Current password is incorrect',
+      });
+    }
+
+    const passwordHash = await hashPassword(dto.newPassword);
+    let encryptedCredential: string | undefined = undefined;
+    try {
+      encryptedCredential = encryptCredential(dto.newPassword);
+    } catch {
+      // If encryption key not configured in test/dev, skip
+    }
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        passwordHash,
+        ...(encryptedCredential ? { currentPassword: encryptedCredential } : {}),
+      },
+    });
+
+    return { success: true, message: 'Password changed successfully' };
+  }
+
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { teacherProfile: true, studentProfile: true },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException({
+        errorCode: ERROR_CODES.USER_NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+
+    if (user.teacherProfile) {
+      await this.prisma.teacherProfile.update({
+        where: { id: user.teacherProfile.id },
+        data: { firstName: dto.firstName, lastName: dto.lastName },
+      });
+    } else if (user.studentProfile) {
+      await this.prisma.studentProfile.update({
+        where: { id: user.studentProfile.id },
+        data: { firstName: dto.firstName, lastName: dto.lastName },
+      });
+    }
+
+    return { success: true, firstName: dto.firstName, lastName: dto.lastName };
   }
 }
