@@ -18,7 +18,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { Role, IeltsTaskType } from '@prisma/client';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { JwtPayload } from '../auth/jwt-payload.interface';
+import type { JwtPayload } from '../auth/jwt-payload.interface';
 import { Response } from 'express';
 import { ApiTags, ApiConsumes, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 

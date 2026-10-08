@@ -5,7 +5,7 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
-import { JwtPayload } from './jwt-payload.interface';
+import type { JwtPayload } from './jwt-payload.interface';
 
 @ApiTags('Auth')
 @Controller('auth')
