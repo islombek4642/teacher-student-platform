@@ -1,12 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "env": {
-    "JWT_SECRET": "7e67283909494e8a8efbe515efdd3fca25c1848ff44f9226a9b9ebab84f82068",
-    "CREDENTIALS_ENCRYPTION_KEY": "9e1e29bb3e15202edcdbfa860e452b2a9588edb0b7d4297aed363ef537ca7bc5",
-    "SUPER_ADMIN_USERNAME": "superadmin",
-    "SUPER_ADMIN_PASSWORD": "AdminParol2026!",
-    "JWT_EXPIRES_IN": "8h"
-  },
   "services": {
     "backend": {
       "root": "backend",
