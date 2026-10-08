@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Patch,
   UseGuards,
   UseInterceptors,
   UploadedFile,
@@ -21,6 +22,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { JwtPayload } from '../auth/jwt-payload.interface';
 import { Response } from 'express';
 import { ApiTags, ApiConsumes, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import { GradeSubmissionDto } from './dto/grade-submission.dto';
 
 @ApiTags('ielts')
 @ApiBearerAuth()
@@ -85,6 +87,37 @@ export class IeltsController {
   @Roles(Role.STUDENT)
   async getMySubmissions(@CurrentUser() user: JwtPayload) {
     return this.ieltsService.getMySubmissions(user);
+  }
+
+  @Get('submissions/to-grade')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.TEACHER, Role.SUPER_ADMIN)
+  async getSubmissionsToGrade(
+    @CurrentUser() user: JwtPayload,
+    @Query('taskId') taskId?: string,
+  ) {
+    return this.ieltsService.getSubmissionsToGrade(user, taskId);
+  }
+
+  @Get('submissions/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.TEACHER, Role.SUPER_ADMIN, Role.STUDENT)
+  async getSubmissionById(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.ieltsService.getSubmissionById(user, id);
+  }
+
+  @Patch('submissions/:id/grade')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.TEACHER, Role.SUPER_ADMIN)
+  async gradeSubmission(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: GradeSubmissionDto,
+  ) {
+    return this.ieltsService.gradeSubmission(user, id, dto);
   }
 
   @Post(':id/submit')

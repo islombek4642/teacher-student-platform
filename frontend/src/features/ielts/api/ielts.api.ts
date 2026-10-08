@@ -154,3 +154,72 @@ export function useSubmitIeltsTask() {
     },
   });
 }
+
+export type WritingCriteria = {
+  taskResponse: number;
+  coherenceCohesion: number;
+  lexicalResource: number;
+  grammaticalAccuracy: number;
+};
+
+export type GradeSubmissionPayload = WritingCriteria & {
+  band?: number;
+  feedback?: string;
+};
+
+export type SubmissionToGrade = {
+  id: string;
+  studentId: string;
+  taskId: string;
+  score: number;
+  total: number;
+  band: number;
+  attempt: number;
+  isGraded: boolean;
+  criteriaJson?: WritingCriteria | null;
+  feedback?: string | null;
+  submittedAt: string;
+  answersJson?: any;
+  student: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    group?: { id: string; name: string };
+    user?: { username: string };
+  };
+  task: {
+    id: string;
+    title: string;
+    type: 'WRITING' | 'SPEAKING';
+  };
+};
+
+export function useSubmissionsToGrade(taskId?: string) {
+  return useQuery({
+    queryKey: ['submissions-to-grade', taskId],
+    queryFn: async () => {
+      const url = taskId ? `/ielts/submissions/to-grade?taskId=${encodeURIComponent(taskId)}` : '/ielts/submissions/to-grade';
+      return (await apiClient.get<SubmissionToGrade[]>(url)).data;
+    },
+  });
+}
+
+export function useGradeSubmission() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      submissionId,
+      data,
+    }: {
+      submissionId: string;
+      data: GradeSubmissionPayload;
+    }) => {
+      return (await apiClient.patch(`/ielts/submissions/${submissionId}/grade`, data)).data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['submissions-to-grade'] });
+      queryClient.invalidateQueries({ queryKey: ['group-statistics'] });
+      queryClient.invalidateQueries({ queryKey: ['my-submissions'] });
+    },
+  });
+}

@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { WritingPage } from './WritingPage';
-import { useIeltsTasks, useBulkDeleteIeltsTasks } from './api/ielts.api';
+import { useIeltsTasks, useBulkDeleteIeltsTasks, useSubmissionsToGrade } from './api/ielts.api';
 import { useAuth } from '@/auth/useAuth';
 import { useStudentMySubmissions } from '@/features/student/api/student-results.api';
 
@@ -41,6 +41,10 @@ describe('WritingPage', () => {
     vi.mocked(useBulkDeleteIeltsTasks).mockReturnValue({
       mutate: vi.fn(),
       isPending: false,
+    } as any);
+    vi.mocked(useSubmissionsToGrade).mockReturnValue({
+      data: [],
+      isLoading: false,
     } as any);
   });
 

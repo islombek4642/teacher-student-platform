@@ -104,15 +104,20 @@ model GroupTask {
 }
 
 model IeltsSubmission {
-  id          String         @id @default(uuid())
-  studentId   String
-  taskId      String
-  score       Int
-  total       Int            @default(40)
-  band        Float
-  attempt     Int            @default(1)
-  answersJson Json
-  submittedAt DateTime       @default(now())
+  id           String         @id @default(uuid())
+  studentId    String
+  taskId       String
+  score        Int
+  total        Int            @default(40)
+  band         Float
+  attempt      Int            @default(1)
+  answersJson  Json
+  isGraded     Boolean        @default(false)
+  criteriaJson Json?
+  feedback     String?
+  gradedById   String?
+  gradedAt     DateTime?
+  submittedAt  DateTime       @default(now())
 
   student     StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
   task        IeltsTask      @relation(fields: [taskId], references: [id], onDelete: Cascade)

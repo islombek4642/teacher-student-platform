@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { IeltsService, detectIeltsTaskType, extractTaskTitle } from './ielts.service';
+import { IeltsService, detectIeltsTaskType, extractTaskTitle, calculateWritingBand } from './ielts.service';
 import { PrismaService } from '../common/prisma/prisma.service';
-import { IeltsTaskType } from '@prisma/client';
-import { BadRequestException } from '@nestjs/common';
+import { IeltsTaskType, Role } from '@prisma/client';
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { ERROR_CODES } from '../common/constants/error-codes.constant';
 
 describe('IeltsService', () => {
@@ -27,6 +27,7 @@ describe('IeltsService', () => {
       upsert: jest.fn(),
       findUnique: jest.fn(),
       findMany: jest.fn(),
+      update: jest.fn(),
     },
   };
 
@@ -291,6 +292,90 @@ describe('IeltsService', () => {
 
       const result = await service.getTask('t-timer-3', 'review', false);
       expect(result.contentHtml).not.toContain('ielts-exam-timer');
+    });
+  });
+
+  describe('Writing Teacher Review & Grading', () => {
+    describe('calculateWritingBand', () => {
+      it('should calculate accurate standard IELTS bands with proper rounding', () => {
+        // Average 6.0 -> 6.0
+        expect(calculateWritingBand(6, 6, 6, 6)).toBe(6.0);
+        // Average 6.25 -> rounds up to 6.5
+        expect(calculateWritingBand(6.5, 6.5, 6, 6)).toBe(6.5);
+        // Average 6.75 -> rounds up to 7.0
+        expect(calculateWritingBand(6.5, 7, 6.5, 7)).toBe(7.0);
+        // Average 6.125 -> rounds down to 6.0
+        expect(calculateWritingBand(6, 6.5, 6, 6)).toBe(6.0);
+        // Average 6.375 -> rounds to 6.5
+        expect(calculateWritingBand(6, 6.5, 6.5, 6.5)).toBe(6.5);
+      });
+    });
+
+    describe('gradeSubmission', () => {
+      const teacherUser = { sub: 'u-teacher', role: Role.TEACHER, profileId: 'tp-1' };
+      const dto = {
+        taskResponse: 7.0,
+        coherenceCohesion: 6.5,
+        lexicalResource: 7.0,
+        grammaticalAccuracy: 6.5,
+        feedback: 'Good paragraph structure and vocabulary.',
+      };
+
+      it('should successfully grade writing submission and calculate band', async () => {
+        mockPrisma.ieltsSubmission.findUnique = jest.fn().mockResolvedValueOnce({
+          id: 'sub-writing-1',
+          studentId: 'sp-1',
+          taskId: 't-w1',
+          task: { id: 't-w1', teacherId: 'tp-1', type: IeltsTaskType.WRITING },
+        });
+        mockPrisma.teacherProfile.findUnique = jest.fn().mockResolvedValueOnce({
+          id: 'tp-1',
+          userId: 'u-teacher',
+        });
+        mockPrisma.ieltsSubmission.update = jest.fn().mockResolvedValueOnce({
+          id: 'sub-writing-1',
+          band: 7.0,
+          isGraded: true,
+          criteriaJson: {
+            taskResponse: 7.0,
+            coherenceCohesion: 6.5,
+            lexicalResource: 7.0,
+            grammaticalAccuracy: 6.5,
+          },
+          feedback: dto.feedback,
+          gradedById: 'u-teacher',
+        });
+
+        const result = await service.gradeSubmission(teacherUser, 'sub-writing-1', dto);
+        expect(result).toBeDefined();
+        expect(mockPrisma.ieltsSubmission.update).toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: { id: 'sub-writing-1' },
+            data: expect.objectContaining({
+              band: 7.0,
+              isGraded: true,
+              gradedById: 'u-teacher',
+            }),
+          }),
+        );
+      });
+
+      it('should throw ForbiddenException if teacher does not own the task', async () => {
+        mockPrisma.ieltsSubmission.findUnique = jest.fn().mockResolvedValueOnce({
+          id: 'sub-writing-2',
+          studentId: 'sp-1',
+          taskId: 't-w2',
+          task: { id: 't-w2', teacherId: 'other-tp', type: IeltsTaskType.WRITING },
+        });
+        mockPrisma.teacherProfile.findUnique = jest.fn().mockResolvedValueOnce({
+          id: 'tp-1',
+          userId: 'u-teacher',
+        });
+
+        await expect(service.gradeSubmission(teacherUser, 'sub-writing-2', dto)).rejects.toThrow(
+          ForbiddenException,
+        );
+      });
     });
   });
 });

@@ -8,6 +8,20 @@ import { PrismaService } from '../common/prisma/prisma.service';
 import { IeltsTaskType, Role } from '@prisma/client';
 import { ERROR_CODES } from '../common/constants/error-codes.constant';
 import { JwtPayload } from '../auth/jwt-payload.interface';
+import { GradeSubmissionDto } from './dto/grade-submission.dto';
+
+export function calculateWritingBand(tr: number, cc: number, lr: number, gra: number): number {
+  const avg = (tr + cc + lr + gra) / 4;
+  const floor = Math.floor(avg);
+  const remainder = avg - floor;
+  if (remainder < 0.25) {
+    return floor;
+  } else if (remainder < 0.75) {
+    return floor + 0.5;
+  } else {
+    return floor + 1.0;
+  }
+}
 
 export const IELTS_EXIT_BUTTON_HTML = `<button type="button" class="ielts-exit-btn" onclick="window.parent.postMessage({type: 'CLOSE_IELTS_TASK'}, '*')" style="display:inline-flex; align-items:center; justify-content:center; padding:7px 14px; border:none; border-radius:6px; background-color:#ef4444; color:white; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; gap:6px; transition:background-color 0.2s; box-shadow:0 1px 2px rgba(0,0,0,0.05); white-space:nowrap; flex-shrink:0;" onmouseover="this.style.backgroundColor='#dc2626'" onmouseout="this.style.backgroundColor='#ef4444'">
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1756,6 +1770,184 @@ export class IeltsService {
         answersJson: true,
       },
       orderBy: { attempt: 'asc' },
+    });
+  }
+
+  async getSubmissionsToGrade(user: JwtPayload, taskId?: string) {
+    let teacherId: string | null = null;
+    if (user.role === Role.TEACHER) {
+      const teacherProfile = await this.prisma.teacherProfile.findUnique({
+        where: { userId: user.sub },
+      });
+      if (!teacherProfile) {
+        throw new ForbiddenException({
+          errorCode: ERROR_CODES.FORBIDDEN_RESOURCE,
+          message: 'Teacher profile not found',
+        });
+      }
+      teacherId = teacherProfile.id;
+    }
+
+    const where: any = {
+      task: {
+        type: IeltsTaskType.WRITING,
+        ...(teacherId ? { teacherId } : {}),
+        ...(taskId ? { id: taskId } : {}),
+      },
+    };
+
+    return this.prisma.ieltsSubmission.findMany({
+      where,
+      include: {
+        student: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            group: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            user: {
+              select: {
+                username: true,
+              },
+            },
+          },
+        },
+        task: {
+          select: {
+            id: true,
+            title: true,
+            type: true,
+          },
+        },
+      },
+      orderBy: [
+        { isGraded: 'asc' },
+        { submittedAt: 'desc' },
+      ],
+    });
+  }
+
+  async getSubmissionById(user: JwtPayload, submissionId: string) {
+    const submission = await this.prisma.ieltsSubmission.findUnique({
+      where: { id: submissionId },
+      include: {
+        student: {
+          include: {
+            user: { select: { username: true } },
+            group: { select: { id: true, name: true } },
+          },
+        },
+        task: true,
+      },
+    });
+
+    if (!submission) {
+      throw new NotFoundException({
+        errorCode: ERROR_CODES.SUBMISSION_NOT_FOUND,
+        message: 'Submission not found',
+      });
+    }
+
+    if (user.role === Role.STUDENT) {
+      const student = await this.prisma.studentProfile.findUnique({
+        where: { userId: user.sub },
+      });
+      if (!student || student.id !== submission.studentId) {
+        throw new ForbiddenException({
+          errorCode: ERROR_CODES.FORBIDDEN_RESOURCE,
+          message: 'Access denied',
+        });
+      }
+    } else if (user.role === Role.TEACHER) {
+      const teacher = await this.prisma.teacherProfile.findUnique({
+        where: { userId: user.sub },
+      });
+      if (!teacher || teacher.id !== submission.task.teacherId) {
+        throw new ForbiddenException({
+          errorCode: ERROR_CODES.FORBIDDEN_RESOURCE,
+          message: 'Access denied',
+        });
+      }
+    }
+
+    return submission;
+  }
+
+  async gradeSubmission(user: JwtPayload, submissionId: string, dto: GradeSubmissionDto) {
+    const submission = await this.prisma.ieltsSubmission.findUnique({
+      where: { id: submissionId },
+      include: { task: true },
+    });
+
+    if (!submission) {
+      throw new NotFoundException({
+        errorCode: ERROR_CODES.SUBMISSION_NOT_FOUND,
+        message: 'Submission not found',
+      });
+    }
+
+    if (user.role === Role.TEACHER) {
+      const teacher = await this.prisma.teacherProfile.findUnique({
+        where: { userId: user.sub },
+      });
+      if (!teacher || teacher.id !== submission.task.teacherId) {
+        throw new ForbiddenException({
+          errorCode: ERROR_CODES.FORBIDDEN_RESOURCE,
+          message: 'You can only grade submissions for your tasks',
+        });
+      }
+    } else if (user.role !== Role.SUPER_ADMIN) {
+      throw new ForbiddenException({
+        errorCode: ERROR_CODES.FORBIDDEN_RESOURCE,
+        message: 'Only teachers and admins can grade submissions',
+      });
+    }
+
+    const finalBand = dto.band !== undefined
+      ? dto.band
+      : calculateWritingBand(
+          dto.taskResponse,
+          dto.coherenceCohesion,
+          dto.lexicalResource,
+          dto.grammaticalAccuracy,
+        );
+
+    const criteriaJson = {
+      taskResponse: dto.taskResponse,
+      coherenceCohesion: dto.coherenceCohesion,
+      lexicalResource: dto.lexicalResource,
+      grammaticalAccuracy: dto.grammaticalAccuracy,
+    };
+
+    return this.prisma.ieltsSubmission.update({
+      where: { id: submissionId },
+      data: {
+        band: finalBand,
+        isGraded: true,
+        criteriaJson,
+        feedback: dto.feedback?.trim() || null,
+        gradedById: user.sub,
+        gradedAt: new Date(),
+      },
+      include: {
+        student: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+        task: {
+          select: {
+            title: true,
+            type: true,
+          },
+        },
+      },
     });
   }
 }

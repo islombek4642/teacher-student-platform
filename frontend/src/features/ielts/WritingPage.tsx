@@ -6,15 +6,19 @@ import { Button } from '@/components/ui/button';
 import {
   useIeltsTasks,
   useBulkDeleteIeltsTasks,
+  useSubmissionsToGrade,
   type IeltsSubmission,
+  type SubmissionToGrade,
 } from './api/ielts.api';
 import { UploadIeltsDialog } from './UploadIeltsDialog';
 import { IeltsTaskViewer } from './IeltsTaskViewer';
+import { WritingGradingDialog } from './WritingGradingDialog';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { toast } from '@/components/ui/toast';
 import { useAuth } from '@/auth/useAuth';
 import { usePaginationKeyboard } from '@/hooks/usePaginationKeyboard';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useStudentMySubmissions } from '@/features/student/api/student-results.api';
 import {
   Table,
@@ -67,6 +71,21 @@ export function WritingPage() {
 
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
+
+  const [teacherViewTab, setTeacherViewTab] = useState<'tasks' | 'reviews'>('tasks');
+  const [reviewFilter, setReviewFilter] = useState<'all' | 'pending' | 'graded'>('all');
+  const [gradingSubmission, setGradingSubmission] = useState<SubmissionToGrade | null>(null);
+  const [gradingOpen, setGradingOpen] = useState(false);
+
+  const { data: submissionsToGrade, isLoading: isReviewsLoading } = useSubmissionsToGrade();
+  const pendingReviewsCount = submissionsToGrade?.filter((s) => !s.isGraded).length || 0;
+
+  const filteredSubmissions = useMemo(() => {
+    if (!submissionsToGrade) return [];
+    if (reviewFilter === 'pending') return submissionsToGrade.filter((s) => !s.isGraded);
+    if (reviewFilter === 'graded') return submissionsToGrade.filter((s) => s.isGraded);
+    return submissionsToGrade;
+  }, [submissionsToGrade, reviewFilter]);
 
   const writingTasks = tasks?.filter((t) => t.type === 'WRITING') || [];
   const totalTasks = writingTasks.length;
@@ -179,7 +198,61 @@ export function WritingPage() {
         }
       />
 
-      {isTeacher && selectedRowIds.length > 0 && (
+      {isTeacher && (
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-3">
+          <Tabs
+            value={teacherViewTab}
+            onValueChange={(val: any) => setTeacherViewTab(val)}
+          >
+            <TabsList>
+              <TabsTrigger value="tasks" className="gap-2">
+                <Icon icon="lucide:file-text" className="w-4 h-4" />
+                <span>{t('grading.tasksTab', { defaultValue: "Topshiriqlar ro'yxati" })}</span>
+              </TabsTrigger>
+              <TabsTrigger value="reviews" className="gap-2">
+                <Icon icon="lucide:check-square" className="w-4 h-4" />
+                <span>{t('grading.reviewsTab', { defaultValue: 'Insholarni tekshirish' })}</span>
+                {pendingReviewsCount > 0 && (
+                  <Badge variant="destructive" className="h-5 px-1.5 text-[10px] font-bold">
+                    {pendingReviewsCount}
+                  </Badge>
+                )}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          {teacherViewTab === 'reviews' && (
+            <div className="flex items-center gap-1.5 bg-muted/60 p-1 rounded-lg">
+              <Button
+                variant={reviewFilter === 'all' ? 'default' : 'ghost'}
+                size="sm"
+                className="h-7 text-xs px-2.5"
+                onClick={() => setReviewFilter('all')}
+              >
+                {t('grading.filterAll', { defaultValue: 'Barchasi' })} ({submissionsToGrade?.length || 0})
+              </Button>
+              <Button
+                variant={reviewFilter === 'pending' ? 'default' : 'ghost'}
+                size="sm"
+                className="h-7 text-xs px-2.5"
+                onClick={() => setReviewFilter('pending')}
+              >
+                {t('grading.filterPending', { defaultValue: 'Baholanmaganlar' })} ({pendingReviewsCount})
+              </Button>
+              <Button
+                variant={reviewFilter === 'graded' ? 'default' : 'ghost'}
+                size="sm"
+                className="h-7 text-xs px-2.5"
+                onClick={() => setReviewFilter('graded')}
+              >
+                {t('grading.filterGraded', { defaultValue: 'Baholanganlar' })} ({(submissionsToGrade?.length || 0) - pendingReviewsCount})
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {isTeacher && teacherViewTab === 'tasks' && selectedRowIds.length > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 bg-primary/10 border border-primary/20 rounded-xl text-sm animate-in fade-in">
           <div className="flex items-center gap-3">
             <span className="font-semibold text-primary">
@@ -230,7 +303,90 @@ export function WritingPage() {
         </div>
       )}
 
-      <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm">
+      {isTeacher && teacherViewTab === 'reviews' ? (
+        <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm">
+          <Table>
+            <TableHeader className="bg-muted/50 font-semibold">
+              <TableRow className="h-[44px]">
+                <TableHead className="w-12 text-center">#</TableHead>
+                <TableHead>{t('grading.student', { defaultValue: "O'quvchi" })}</TableHead>
+                <TableHead className="w-36">{t('grading.group', { defaultValue: 'Guruh' })}</TableHead>
+                <TableHead>{t('grading.task', { defaultValue: 'Topshiriq' })}</TableHead>
+                <TableHead className="w-36">{t('grading.submittedAt', { defaultValue: 'Topshirilgan sana' })}</TableHead>
+                <TableHead className="w-28 text-center">{t('grading.status', { defaultValue: 'Holat' })}</TableHead>
+                <TableHead className="w-24 text-center">{t('grading.band', { defaultValue: 'Band' })}</TableHead>
+                <TableHead className="w-28 text-right">{t('grading.action', { defaultValue: 'Amal' })}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isReviewsLoading ? (
+                <TableRow className="h-[52px]">
+                  <TableCell colSpan={8} className="text-center text-muted-foreground">
+                    {t('common.loading')}
+                  </TableCell>
+                </TableRow>
+              ) : filteredSubmissions.length > 0 ? (
+                filteredSubmissions.map((sub, index) => (
+                  <TableRow key={sub.id} className="h-[52px] transition-colors">
+                    <TableCell className="w-12 text-center text-muted-foreground">
+                      {index + 1}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {sub.student.firstName} {sub.student.lastName}
+                    </TableCell>
+                    <TableCell className="w-36 text-muted-foreground text-xs">
+                      {sub.student.group?.name || '-'}
+                    </TableCell>
+                    <TableCell className="truncate max-w-[200px] text-xs">
+                      {sub.task.title}
+                    </TableCell>
+                    <TableCell className="w-36 text-muted-foreground text-xs">
+                      {new Date(sub.submittedAt).toLocaleDateString([], {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                      })}
+                    </TableCell>
+                    <TableCell className="w-28 text-center">
+                      <Badge variant={sub.isGraded ? 'default' : 'secondary'} className="text-[10px]">
+                        {sub.isGraded
+                          ? t('grading.graded', { defaultValue: 'Baholangan' })
+                          : t('grading.ungraded', { defaultValue: 'Baholanmagan' })}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="w-24 text-center font-bold text-sm">
+                      {sub.isGraded ? `Band ${sub.band}` : '-'}
+                    </TableCell>
+                    <TableCell className="w-28 text-right">
+                      <Button
+                        size="sm"
+                        variant={sub.isGraded ? 'outline' : 'default'}
+                        onClick={() => {
+                          setGradingSubmission(sub);
+                          setGradingOpen(true);
+                        }}
+                        className="text-xs font-semibold"
+                      >
+                        {sub.isGraded
+                          ? t('grading.regrade', { defaultValue: 'Qayta baholash' })
+                          : t('grading.grade', { defaultValue: 'Baholash' })}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow className="h-[180px]">
+                  <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                    <Icon icon="lucide:check-circle-2" className="mx-auto mb-2 h-8 w-8 opacity-50 text-emerald-500" />
+                    {t('grading.noSubmissions', { defaultValue: 'Tekshirish uchun insholar mavjud emas' })}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm">
         <Table>
           <TableHeader className="bg-muted/50 font-semibold">
             <TableRow className="h-[44px]">
@@ -374,6 +530,7 @@ export function WritingPage() {
           </TableBody>
         </Table>
       </div>
+      )}
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-4">
@@ -457,6 +614,15 @@ export function WritingPage() {
         variant="destructive"
         isLoading={bulkDeleteMutation.isPending}
         onConfirm={executeBulkDelete}
+      />
+
+      <WritingGradingDialog
+        submission={gradingSubmission}
+        open={gradingOpen}
+        onOpenChange={(open) => {
+          setGradingOpen(open);
+          if (!open) setGradingSubmission(null);
+        }}
       />
     </div>
   );
